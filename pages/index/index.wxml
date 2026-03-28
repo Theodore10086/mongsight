@@ -95,7 +95,7 @@
 
 <view class="top-bar" wx:if="{{currentTab === 0}}">
   <view class="sidebar-trigger" bindtap="onToggleLeftSidebar">
-    <text class="trigger-icon">☰</text>
+    <view class="trigger-icon icon-menu"></view>
   </view>
   <view class="user-pill" bindtap="onToggleUserStatus">
     <image class="user-avatar-small" wx:if="{{userProfile.avatarUrl && !avatarOptions.includes(userProfile.avatarUrl)}}" src="{{userProfile.avatarUrl}}" mode="aspectFill"></image>
@@ -105,19 +105,18 @@
       <text class="user-rank">Lv.{{userProfile.level}} · {{userProfile.title}}</text>
     </view>
     <view class="ink-jade-pill">
-      <text class="jade-icon">💎</text>
-      <text class="jade-count">{{userProfile.inkJades}}</text>
+      <text class="jade-count">{{userProfile.inkJades}} 砚</text>
     </view>
   </view>
 </view>
 
-<view class="template-modules {{showTemplate ? 'visible' : ''}}" hidden="{{!(showTemplate && currentTab === 0) || show3DView || showLeftSidebar || showCollectionSetup || showCollectionRecords || showCoordinateModal || showPreviewModal}}">
+<view class="template-modules visible" hidden="{{!(currentTab === 0) || show3DView || showLeftSidebar || showCollectionSetup || showCollectionRecords || showCoordinateModal || showPreviewModal}}">
   <view class="tools-row">
     <view class="floating-pill ai-pill {{isTechMode ? 'active' : ''}}" bindtap="onToggleMode">
       <text class="pill-icon">{{isTechMode ? '🎨' : '🤖'}}</text>
-      <text class="pill-text">{{isTechMode ? '水墨' : '蒙宝'}}</text>
+      <text class="pill-text">蒙宝</text>
     </view>
-    <view class="floating-pill audio-pill {{isPlaying ? 'active' : ''}}" bindtap="onPlayAudio">
+    <view wx:if="{{currentLesson.id !== 'collectionLab'}}" class="floating-pill audio-pill {{isPlaying ? 'active' : ''}}" bindtap="onPlayAudio">
       <text class="pill-icon">{{isPlaying ? '🔊' : '🔈'}}</text>
       <text class="pill-text">朗读</text>
     </view>
@@ -129,7 +128,7 @@
 </view>
 
 <view class="score-fab {{allStrokes.length > 0 ? 'visible' : ''}}" bindtap="onSubmitForScoring" hidden="{{!(showTemplate && allStrokes.length > 0 && currentTab === 0) || show3DView || showLeftSidebar || showCollectionSetup || showCollectionRecords || showCoordinateModal || showPreviewModal}}">
-  <text class="score-icon">📊</text>
+  <view class="score-icon icon-score"></view>
   <text class="score-text">打分</text>
 </view>
 
@@ -137,7 +136,7 @@
   <image class="blueprint-bg" src="{{currentFrameUrl}}" mode="aspectFill"></image>
   <canvas type="2d" id="playbackCanvas" class="playback-canvas"></canvas>
   <!-- 流动光标 -->
-  <view class="flow-cursor {{cursorVisible ? 'active' : ''}}" 
+  <view wx:if="{{replayDisplayMode === 'trajectory'}}" class="flow-cursor {{cursorVisible ? 'active' : ''}}" 
         style="left: {{cursorX}}%; top: {{cursorY}}%; transform: translate(-50%, -50%) scale({{viewAngle === 3 ? 1.4 : 1}});">
     <view class="cursor-glow"></view>
     <view class="cursor-ring"></view>
@@ -160,7 +159,7 @@
       <view class="angle-btn {{replayDisplayMode === 'result' ? 'active' : ''}}" bindtap="onChangeReplayDisplayMode" data-mode="result">成字效果</view>
     </view>
   </view>
-  <view class="time-slider">
+  <view class="time-slider" wx:if="{{replayDisplayMode === 'trajectory'}}">
     <view class="slider-header">
       <view class="slider-label">书写过程回放</view>
       <view class="progress-info">{{frameProgress}}%</view>
@@ -188,7 +187,7 @@
         <text class="replay-card-title">成字效果</text>
         <text class="replay-card-subtitle">{{collectionConfig.scriptTypeLabel}}</text>
       </view>
-      <image wx:if="{{playbackPreviewImageSrc}}" class="replay-result-image" src="{{playbackPreviewImageSrc}}" mode="aspectFit"></image>
+      <image wx:if="{{playbackPreviewImageSrc}}" class="replay-result-image {{replayDisplayMode === 'result' ? 'light-preview' : ''}}" src="{{playbackPreviewImageSrc}}" mode="aspectFit"></image>
       <image wx:else class="replay-result-image" src="{{currentLesson.bgImage}}" mode="aspectFit"></image>
       <view class="replay-card-meta replay-card-meta-stack">
         <text>{{collectionConfig.taskLabel}}</text>
@@ -205,19 +204,19 @@
   <view class="left-sidebar-header">
     <view class="sidebar-tabs">
       <view class="tab-item {{leftSidebarTab === 'zitie' ? 'active' : ''}}" data-tab="zitie" bindtap="onSelectLeftTab">
-        <text class="tab-icon">📝</text>
+        <view class="tab-icon icon-tab-zitie"></view>
         <text class="tab-text">字帖</text>
       </view>
       <view class="tab-item {{leftSidebarTab === 'bizhi' ? 'active' : ''}}" data-tab="bizhi" bindtap="onSelectLeftTab">
-        <text class="tab-icon">✒️</text>
+        <view class="tab-icon icon-tab-bi"></view>
         <text class="tab-text">笔纸</text>
       </view>
       <view class="tab-item {{leftSidebarTab === 'luokuan' ? 'active' : ''}}" data-tab="luokuan" bindtap="onSelectLeftTab">
-        <text class="tab-icon">🔴</text>
+        <view class="tab-icon icon-tab-lk"></view>
         <text class="tab-text">落款</text>
       </view>
       <view class="tab-item {{leftSidebarTab === 'shilian' ? 'active' : ''}}" data-tab="shilian" bindtap="onSelectLeftTab">
-        <text class="tab-icon">⚔️</text>
+        <view class="tab-icon icon-tab-sl"></view>
         <text class="tab-text">试炼</text>
       </view>
     </view>
@@ -244,16 +243,16 @@
       </view>
       
       <!-- 字帖操作功能 -->
-      <view class="section-title-bar" wx:if="{{showTemplate}}">
+      <view class="section-title-bar" wx:if="{{showTemplate || currentLesson.id === 'collectionLab'}}">
         <text class="section-title-text">字帖操作</text>
       </view>
-      <view class="action-buttons-grid" wx:if="{{showTemplate}}">
+      <view class="action-buttons-grid" wx:if="{{showTemplate || currentLesson.id === 'collectionLab'}}">
         <view class="action-btn-item" catchtap="onSaveImage">
-          <text class="action-btn-icon">🖼️</text>
+          <view class="action-btn-icon icon-frame"></view>
           <text class="action-btn-text">装裱</text>
         </view>
         <view class="action-btn-item" catchtap="onExportCoordinates">
-          <text class="action-btn-icon">📦</text>
+          <view class="action-btn-icon icon-export"></view>
           <text class="action-btn-text">导出数据</text>
         </view>
         <view class="action-btn-item" catchtap="onOpenCollectionSetup">
@@ -378,7 +377,7 @@
 </view>
 
 <!-- 左下角快捷操作按钮（独立于canvas-zone，确保可点击） -->
-<view class="quick-action-buttons" hidden="{{!(showTemplate && currentTab === 0) || show3DView || showLeftSidebar || showCollectionSetup || showCollectionRecords || showCoordinateModal || showPreviewModal}}" catch:tap="onQuickActionTap">
+<view class="quick-action-buttons" hidden="{{!((showTemplate || currentLesson.id === 'collectionLab') && currentTab === 0) || show3DView || showLeftSidebar || showCollectionSetup || showCollectionRecords || showCoordinateModal || showPreviewModal}}" catch:tap="onQuickActionTap">
   <view class="quick-btn" catchtap="onUndo">
     <text class="quick-btn-icon">↩️</text>
   </view>
@@ -456,6 +455,10 @@
     bindtouchmove="onSimpleTouchMove"
     bindtouchend="onSimpleTouchEnd"
   ></canvas>
+</view>
+
+<view class="hidden-preview-canvas-wrap">
+  <canvas type="2d" id="previewCanvas" class="hidden-preview-canvas"></canvas>
 </view>
 
 <!-- 字帖调节悬浮球 -->
@@ -704,6 +707,18 @@
       <view class="collection-filter-chip {{collectionRecordFilter === 'pending' ? 'active' : ''}}" data-value="pending" bindtap="onSelectCollectionRecordFilter">待审核</view>
       <view class="collection-filter-chip {{collectionRecordFilter === 'reviewed' ? 'active' : ''}}" data-value="reviewed" bindtap="onSelectCollectionRecordFilter">已审核</view>
     </view>
+    <view class="collection-filter-row secondary">
+      <view class="collection-filter-chip {{collectionRecordScriptFilter === 'all' ? 'active' : ''}}" data-value="all" bindtap="onSelectCollectionScriptFilter">全部脚本</view>
+      <view class="collection-filter-chip {{collectionRecordScriptFilter === 'mongolian' ? 'active' : ''}}" data-value="mongolian" bindtap="onSelectCollectionScriptFilter">蒙古文</view>
+      <view class="collection-filter-chip {{collectionRecordScriptFilter === 'uyghur' ? 'active' : ''}}" data-value="uyghur" bindtap="onSelectCollectionScriptFilter">回鹘文</view>
+      <view class="collection-filter-chip {{collectionRecordScriptFilter === 'manchu' ? 'active' : ''}}" data-value="manchu" bindtap="onSelectCollectionScriptFilter">满文</view>
+    </view>
+    <view class="collection-filter-row secondary">
+      <view class="collection-filter-chip {{collectionRecordRoleFilter === 'all' ? 'active' : ''}}" data-value="all" bindtap="onSelectCollectionRoleFilter">全部角色</view>
+      <view class="collection-filter-chip {{collectionRecordRoleFilter === 'expert' ? 'active' : ''}}" data-value="expert" bindtap="onSelectCollectionRoleFilter">专家样本</view>
+      <view class="collection-filter-chip {{collectionRecordRoleFilter === 'participant' ? 'active' : ''}}" data-value="participant" bindtap="onSelectCollectionRoleFilter">普通样本</view>
+      <view class="collection-filter-chip {{collectionRecordRoleFilter === 'admin' ? 'active' : ''}}" data-value="admin" bindtap="onSelectCollectionRoleFilter">管理员</view>
+    </view>
     <scroll-view scroll-y class="collection-records-scroll">
       <view class="collection-empty" wx:if="{{!isLoadingCollectionRecords && collectionRecords.length === 0}}">
         暂无采集记录
@@ -746,7 +761,17 @@
       <text class="coordinate-title">记录详情</text>
       <view class="coordinate-close" bindtap="onCloseCollectionRecordDetail">X</view>
     </view>
+    <view class="collection-loading" wx:if="{{isLoadingSelectedCollectionRecord}}">
+      正在加载样本详情...
+    </view>
     <view class="collection-form">
+      <view class="collection-preview-panel" wx:if="{{selectedCollectionRecordPreviewSrc}}">
+        <view class="collection-preview-header">
+          <text class="collection-label">轨迹展示</text>
+          <text class="collection-preview-hint">白底黑字预览</text>
+        </view>
+        <image class="collection-preview-image" src="{{selectedCollectionRecordPreviewSrc}}" mode="aspectFit"></image>
+      </view>
       <view class="collection-field">
         <text class="collection-label">任务</text>
         <text class="collection-detail-text">{{selectedCollectionRecord.taskLabel}}</text>
@@ -788,6 +813,10 @@
         <text class="collection-detail-text">{{selectedCollectionRecord.notes}}</text>
       </view>
       <view class="collection-field">
+        <text class="collection-label">云端状态</text>
+        <text class="collection-detail-text">{{selectedCollectionRecord.reviewStatus === 'local-pending' ? '离线待同步' : '已上传云端，审核用于区分有效样本'}}</text>
+      </view>
+      <view class="collection-field">
         <text class="collection-label">状态流转</text>
         <view class="collection-chip-row">
           <view class="collection-chip {{selectedCollectionRecord.reviewStatus === 'pending' ? 'active' : ''}}" data-status="pending" bindtap="onUpdateCollectionReviewStatus">待审核</view>
@@ -797,6 +826,12 @@
       </view>
     </view>
     <view class="coordinate-actions">
+      <view class="action-btn copy-btn" bindtap="onReplaySelectedCollectionRecord">
+        <text class="btn-text">回放样本</text>
+      </view>
+      <view class="action-btn download-btn" bindtap="onExportSelectedCollectionRecord">
+        <text class="btn-text">导出当前样本</text>
+      </view>
       <view class="action-btn copy-btn" bindtap="onCloseCollectionRecordDetail">
         <text class="btn-text">关闭</text>
       </view>

@@ -24,8 +24,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(10rpx);
+  background: rgba(10, 7, 4, 0.82);
+  backdrop-filter: blur(8rpx);
 }
 
 .celebration-content {
@@ -40,6 +40,8 @@
   transform: scale(1);
   opacity: 1;
 }
+
+/* ── Particles ─────────────────────────────────────────────── */
 
 .particle-container {
   position: absolute;
@@ -58,24 +60,21 @@
 }
 
 .particle-gold {
-  width: 12rpx;
-  height: 12rpx;
-  background: linear-gradient(135deg, #d4af37, #f5d76e);
-  box-shadow: 0 0 10rpx rgba(212, 175, 55, 0.8);
+  width: 10rpx;
+  height: 10rpx;
+  background: #c49a3c;
 }
 
 .particle-silver {
-  width: 10rpx;
-  height: 10rpx;
-  background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
-  box-shadow: 0 0 8rpx rgba(192, 192, 192, 0.6);
+  width: 8rpx;
+  height: 8rpx;
+  background: #a0a0a0;
 }
 
 .particle-iron {
-  width: 14rpx;
-  height: 14rpx;
-  background: linear-gradient(135deg, #4a4a4a, #6a6a6a);
-  box-shadow: 0 0 12rpx rgba(100, 100, 100, 0.5);
+  width: 10rpx;
+  height: 10rpx;
+  background: #5a5a5a;
 }
 
 @keyframes particleFall {
@@ -89,28 +88,25 @@
   }
 }
 
+/* ── Upgrade Card ──────────────────────────────────────────── */
+
 .upgrade-card {
   position: relative;
   width: 600rpx;
-  background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
-  border-radius: 32rpx;
+  background: #1c1410;
+  border-radius: 24rpx;
   overflow: hidden;
-  box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.5);
+  border: 1rpx solid rgba(196, 154, 60, 0.3);
 }
 
+/* Thin gold accent line at top — only decorative element */
 .card-glow {
   position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, transparent 60%);
-  animation: glowRotate 4s linear infinite;
-}
-
-@keyframes glowRotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3rpx;
+  background: #c49a3c;
 }
 
 .card-content {
@@ -120,6 +116,8 @@
   flex-direction: column;
   align-items: center;
 }
+
+/* ── Material Icons ────────────────────────────────────────── */
 
 .material-icon {
   width: 160rpx;
@@ -134,33 +132,21 @@
 
 @keyframes iconBounce {
   0% { transform: scale(0); }
-  50% { transform: scale(1.2); }
+  50% { transform: scale(1.15); }
   100% { transform: scale(1); }
 }
 
-.material-icon.bronze {
-  background: linear-gradient(145deg, #cd7f32, #8b4513);
-  box-shadow: 0 8rpx 30rpx rgba(205, 127, 50, 0.5);
-}
-
-.material-icon.silver {
-  background: linear-gradient(145deg, #c0c0c0, #808080);
-  box-shadow: 0 8rpx 30rpx rgba(192, 192, 192, 0.5);
-}
-
-.material-icon.gold {
-  background: linear-gradient(145deg, #d4af37, #8b6914);
-  box-shadow: 0 8rpx 30rpx rgba(212, 175, 55, 0.5);
-}
-
-.material-icon.iron {
-  background: linear-gradient(145deg, #4a4a4a, #1a1a1a);
-  box-shadow: 0 8rpx 30rpx rgba(100, 100, 100, 0.5);
-}
+/* Material tier colors remain distinct — they represent different achievement levels */
+.material-icon.bronze { background: #8b4513; }
+.material-icon.silver { background: #808080; }
+.material-icon.gold   { background: #8b6914; }
+.material-icon.iron   { background: #2a2a2a; }
 
 .icon-emoji {
   font-size: 80rpx;
 }
+
+/* ── Upgrade Info ──────────────────────────────────────────── */
 
 .upgrade-info {
   text-align: center;
@@ -170,8 +156,8 @@
 .upgrade-title {
   display: block;
   font-size: 40rpx;
-  color: #ffffff;
-  font-weight: bold;
+  color: #f5f0e8;
+  font-weight: 700;
   margin-bottom: 12rpx;
   letter-spacing: 4rpx;
 }
@@ -179,9 +165,11 @@
 .upgrade-subtitle {
   display: block;
   font-size: 28rpx;
-  color: #d4af37;
+  color: #c49a3c;
   letter-spacing: 2rpx;
 }
+
+/* ── Character Section ─────────────────────────────────────── */
 
 .character-section {
   display: flex;
@@ -194,27 +182,21 @@
   width: 100rpx;
   height: 100rpx;
   border-radius: 50%;
-  border: 3rpx solid #d4af37;
+  border: 2rpx solid rgba(196, 154, 60, 0.4);
   flex-shrink: 0;
   margin-right: 20rpx;
   animation: avatarSlideIn 0.6s ease-out;
 }
 
 @keyframes avatarSlideIn {
-  from {
-    transform: translateX(-50rpx);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
+  from { transform: translateX(-50rpx); opacity: 0; }
+  to   { transform: translateX(0);      opacity: 1; }
 }
 
 .character-dialog {
   flex: 1;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 16rpx;
+  background: rgba(245, 240, 232, 0.08);
+  border-radius: 12rpx;
   padding: 20rpx;
   animation: dialogFadeIn 0.6s ease-out 0.2s forwards;
   opacity: 0;
@@ -226,48 +208,49 @@
 
 .dialog-text {
   font-size: 26rpx;
-  color: #e8e8e8;
-  line-height: 1.6;
+  color: rgba(245, 240, 232, 0.8);
+  line-height: 1.65;
 }
+
+/* ── Action Buttons ────────────────────────────────────────── */
 
 .action-buttons {
   display: flex;
-  gap: 24rpx;
+  gap: 20rpx;
   width: 100%;
 }
 
 .action-btn {
   flex: 1;
   height: 80rpx;
-  border-radius: 40rpx;
+  border-radius: 10rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
+  transition: opacity 0.2s ease;
 }
 
 .action-btn:active {
-  transform: scale(0.95);
+  opacity: 0.65;
 }
 
 .action-btn.primary {
-  background: linear-gradient(145deg, #d4af37, #c9a227);
-  box-shadow: 0 4rpx 20rpx rgba(212, 175, 55, 0.4);
+  background: #c49a3c;
 }
 
 .action-btn.primary text {
   font-size: 28rpx;
-  color: #ffffff;
-  font-weight: 600;
+  color: #1c1410;
+  font-weight: 700;
   letter-spacing: 2rpx;
 }
 
 .action-btn.secondary {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1rpx solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  border: 1.5rpx solid rgba(245, 240, 232, 0.2);
 }
 
 .action-btn.secondary text {
   font-size: 26rpx;
-  color: #e8e8e8;
+  color: rgba(245, 240, 232, 0.65);
 }
