@@ -1,0 +1,10 @@
+{
+  "name": "miniprogram-1",
+  "private": true,
+  "scripts": {
+    "init:recognition": "node scripts/init-recognition-catalog.js"
+  },
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "disableScroll": true,
+  "usingComponents": {
+    "guide": "./guide/guide",
+    "auth-button": "./auth-button/auth-button",
+    "intro-video": "./intro-video/intro-video",
+    "welcome-bubble": "./welcome-bubble/welcome-bubble",
+    "particle-canvas": "./particle-canvas/particle-canvas",
+    "upgrade-celebration": "./upgrade-celebration/upgrade-celebration"
+  }
+}

@@ -1,0 +1,28 @@
+<view class="video-container {{visible ? 'active' : ''}}">
+  <!-- 视频播放器 -->
+  <video
+    id="intro-video"
+    class="intro-video"
+    src="{{src}}"
+    autoplay="{{autoplay}}"
+    loop="{{loop}}"
+    muted="{{muted}}"
+    enable-danmu="{{false}}"
+    show-center-play-btn="{{false}}"
+    show-play-btn="{{false}}"
+    controls="{{false}}"
+    object-fit="cover"
+    preload="auto"
+    bindplay="onPlay"
+    bindpause="onPause"
+    bindended="onEnded"
+    binderror="onError"
+    bindwaiting="onWaiting"
+    bindprogress="onProgress"
+  ></video>
+  
+  <!-- 跳过按钮 -->
+  <view class="skip-btn" bindtap="handleSkip" wx:if="{{showSkip}}">
+    <text>跳过 {{remainingTime}}s</text>
+  </view>
+</view>

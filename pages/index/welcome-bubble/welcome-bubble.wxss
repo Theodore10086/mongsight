@@ -1,0 +1,89 @@
+.bubble-container {
+  position: fixed;
+  z-index: 100;
+  opacity: 0;
+  transform: translateY(20rpx);
+  transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+}
+
+.bubble-container.active {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.bubble-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  max-width: 560rpx;
+}
+
+.bubble-tail {
+  position: absolute;
+  left: 40rpx;
+  top: -16rpx;
+  width: 0;
+  height: 0;
+  border-left: 16rpx solid transparent;
+  border-right: 16rpx solid transparent;
+  border-bottom: 16rpx solid rgba(255, 255, 255, 0.95);
+}
+
+.bubble-content {
+  display: flex;
+  align-items: flex-start;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20rpx);
+  border-radius: 24rpx;
+  padding: 24rpx;
+  box-shadow: 0 8rpx 40rpx rgba(0, 0, 0, 0.12);
+  border: 1rpx solid rgba(212, 175, 55, 0.2);
+}
+
+.bubble-avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-right: 20rpx;
+  background: linear-gradient(135deg, #f5f5f0, #e8e4d9);
+}
+
+.bubble-text-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.bubble-name {
+  font-size: 24rpx;
+  color: #d4af37;
+  font-weight: 600;
+  margin-bottom: 8rpx;
+  letter-spacing: 2rpx;
+}
+
+.bubble-message {
+  font-size: 28rpx;
+  color: #333333;
+  line-height: 1.6;
+  letter-spacing: 1rpx;
+}
+
+.bubble-action {
+  margin-top: 20rpx;
+  text-align: right;
+}
+
+.action-text {
+  display: inline-block;
+  padding: 16rpx 40rpx;
+  background: linear-gradient(135deg, #d4af37, #c9a227);
+  color: #ffffff;
+  font-size: 26rpx;
+  border-radius: 32rpx;
+  box-shadow: 0 4rpx 20rpx rgba(212, 175, 55, 0.4);
+  letter-spacing: 2rpx;
+}

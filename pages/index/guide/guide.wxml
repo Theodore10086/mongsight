@@ -1,0 +1,42 @@
+<view class="guide-container {{visible ? 'active' : ''}}">
+  <view 
+    class="guide-mask" 
+    style="opacity: {{currentStep.maskOpacity}}"
+    bindtap="handleMaskTap"
+  ></view>
+
+  <view wx:if="{{currentStep.state === 'INIT'}}" class="guide-intro">
+    <text class="intro-narrative fade-in">{{currentStep.narrative}}</text>
+    <text class="intro-subtitle fade-in-delay">{{currentStep.subtitle}}</text>
+  </view>
+
+  <view wx:if="{{currentStep.highlightStyle}}" class="guide-highlight">
+    <view 
+      class="highlight-box {{currentStep.showNPC ? 'breathing' : ''}}"
+      style="top: {{currentStep.highlightStyle.top}}; left: {{currentStep.highlightStyle.left}}; width: {{currentStep.highlightStyle.width}}; height: {{currentStep.highlightStyle.height}};"
+    >
+      <view class="highlight-corner top-left"></view>
+      <view class="highlight-corner top-right"></view>
+      <view class="highlight-corner bottom-left"></view>
+      <view class="highlight-corner bottom-right"></view>
+    </view>
+  </view>
+
+  <view wx:if="{{currentStep.arrowPointer && currentStep.highlightStyle}}" class="guide-arrow">
+    <view class="arrow-body"></view>
+    <view class="arrow-head"></view>
+    <view class="arrow-pulse"></view>
+  </view>
+
+  <view wx:if="{{currentStep.showNPC}}" class="guide-dialog {{currentStep.npcAnimation === 'slideInRight' ? 'dialog-fadein' : ''}}" bindtap="handleDialogTap">
+    <view class="dialog-content">
+      <text class="dialog-text">{{displayedText}}</text>
+      <view wx:if="{{!currentStep.autoAdvance && !isTyping}}" class="dialog-action" bindtap="handleContinue">
+        <text>继续</text>
+      </view>
+      <view wx:if="{{isTyping}}" class="dialog-typing">
+        <text class="typing-cursor">▌</text>
+      </view>
+    </view>
+  </view>
+</view>

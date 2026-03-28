@@ -1,0 +1,19 @@
+<view 
+  class="auth-button {{disabled ? 'disabled' : ''}} {{loading ? 'loading' : ''}}"
+  bindtap="handleTap"
+>
+  <view class="button-content">
+    <image 
+      wx:if="{{icon}}" 
+      class="button-icon" 
+      src="{{icon}}" 
+      mode="aspectFit"
+    ></image>
+    <text class="button-text">{{text}}</text>
+  </view>
+  <view wx:if="{{loading}}" class="button-loading">
+    <view class="loading-dot"></view>
+    <view class="loading-dot"></view>
+    <view class="loading-dot"></view>
+  </view>
+</view>
