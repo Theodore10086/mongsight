@@ -1,4 +1,4 @@
-# 蒙格穿梭 (Mengge Chuansuo) - 部署与安全指南
+# 智墨穿梭 (Zhimo Chuansuo) - 部署与安全指南
 
 ## 1. AutoDL GPU 服务器部署
 

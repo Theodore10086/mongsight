@@ -1,23 +1,72 @@
 <!-- 登录/授权界面 -->
 <view class="login-overlay {{identityState === 'UNAUTH' ? 'active' : ''}}" wx:if="{{identityState === 'UNAUTH'}}">
+  <!-- 同款银河星空背景 -->
+  <view class="starfield-bg login-starfield">
+    <view class="stars"></view>
+    <view class="stars-mid"></view>
+    <view class="stars-near"></view>
+    <view class="milky-way"></view>
+    <view class="nebula"></view>
+    <view class="horizon-glow"></view>
+    <view class="grassland"></view>
+  </view>
+
   <view class="login-container">
+    <!-- 顶部品牌区 -->
     <view class="login-logo">
-      <text class="logo-emoji">🏺</text>
-      <text class="app-title">蒙格穿梭</text>
+      <view class="logo-emblem icon-logo-emblem"></view>
+      <view class="login-title-deco">
+        <view class="login-deco-line"></view>
+        <text class="app-title">智墨穿梭</text>
+        <view class="login-deco-line"></view>
+      </view>
       <text class="app-subtitle">蒙古文书法学习之旅</text>
     </view>
-    
+
+    <!-- 吉祥物与欢迎语 -->
     <view class="login-character">
-      <text class="character-emoji">🐑</text>
+      <view class="character-silhouette icon-char-sheep"></view>
       <view class="character-speech">
         <text class="speech-text">赛奴！欢迎来到蒙古文书法的世界~</text>
       </view>
     </view>
-    
+
+    <!-- 头像 + 昵称 -->
+    <view class="profile-setup">
+      <button class="avatar-picker" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+        <image wx:if="{{loginAvatar}}" src="{{loginAvatar}}" class="avatar-preview" mode="aspectFill"/>
+        <view wx:else class="avatar-placeholder">
+          <text class="avatar-placeholder-text">＋ 选择头像</text>
+        </view>
+      </button>
+      <input
+        class="nickname-input"
+        type="nickname"
+        placeholder="输入你的昵称"
+        value="{{loginNickname}}"
+        bindinput="onNicknameInput"
+        maxlength="20"
+      />
+    </view>
+
+    <!-- 主要登录按钮 -->
     <button class="login-btn" bindtap="onWechatLogin">
-      <text class="btn-text">微信授权登录</text>
+      <text class="btn-text">进入书法世界</text>
     </button>
-    
+
+    <!-- 分隔线 -->
+    <view class="login-or-row">
+      <view class="or-line"></view>
+      <text class="or-text">或</text>
+      <view class="or-line"></view>
+    </view>
+
+    <!-- 先体验一下 — 显眼的次级按钮 -->
+    <view class="login-skip-btn" bindtap="onSkipLogin">
+      <text class="skip-btn-text">先体验一下</text>
+      <text class="skip-arrow">→</text>
+    </view>
+
     <view class="login-tips">
       <text class="tips-text">登录后可保存作品、查看学习进度</text>
     </view>
@@ -38,19 +87,44 @@
   <!-- 星空草原背景 -->
   <view class="starfield-bg">
     <view class="stars"></view>
+    <view class="stars-mid"></view>
+    <view class="stars-near"></view>
+    <view class="milky-way"></view>
     <view class="nebula"></view>
+    <view class="horizon-glow"></view>
+    <view class="grassland"></view>
   </view>
-  
+
+  <!-- 国风角落装饰 -->
+  <view class="corner-tl"></view>
+  <view class="corner-tr"></view>
+  <view class="corner-bl"></view>
+  <view class="corner-br"></view>
+
   <!-- 标题 -->
   <view class="guide-title-wrap">
-    <text class="guide-title-main">蒙格穿梭</text>
+    <!-- 上装饰线 -->
+    <view class="title-deco-row">
+      <view class="deco-line"></view>
+      <view class="deco-rhombus"></view>
+      <view class="deco-line"></view>
+    </view>
+    <text class="guide-title-main">智墨穿梭</text>
+    <!-- 下装饰线 -->
+    <view class="title-deco-row">
+      <view class="deco-line"></view>
+      <view class="deco-rhombus"></view>
+      <view class="deco-line"></view>
+    </view>
     <text class="guide-title-sub">开启你的草原书法之旅</text>
   </view>
-  
-  <!-- 金色光晕按钮 -->
+
+  <!-- 国风仪式感按钮 -->
   <view class="start-btn-wrap" catchtap="onAuthTap">
     <view class="start-btn-glow"></view>
     <view class="start-btn-inner">
+      <view class="btn-inner-ring"></view>
+      <view class="btn-inner-ring btn-inner-ring-2"></view>
       <text class="start-btn-text">开启入籍</text>
     </view>
   </view>
@@ -112,12 +186,12 @@
 
 <view class="template-modules visible" hidden="{{!(currentTab === 0) || show3DView || showLeftSidebar || showCollectionSetup || showCollectionRecords || showCoordinateModal || showPreviewModal}}">
   <view class="tools-row">
-    <view class="floating-pill ai-pill {{isTechMode ? 'active' : ''}}" bindtap="onToggleMode">
-      <text class="pill-icon">{{isTechMode ? '🎨' : '🤖'}}</text>
+    <view class="floating-pill ai-pill {{isTechMode ? 'active' : ''}}" bindtap="onOpenMengbaoPanel">
+      <view class="pill-icon {{isTechMode ? 'icon-pill-art' : 'icon-pill-ai'}}"></view>
       <text class="pill-text">蒙宝</text>
     </view>
     <view wx:if="{{currentLesson.id !== 'collectionLab'}}" class="floating-pill audio-pill {{isPlaying ? 'active' : ''}}" bindtap="onPlayAudio">
-      <text class="pill-icon">{{isPlaying ? '🔊' : '🔈'}}</text>
+      <view class="pill-icon {{isPlaying ? 'icon-pill-sound-on' : 'icon-pill-sound-off'}}"></view>
       <text class="pill-text">朗读</text>
     </view>
     <view class="floating-pill" bindtap="onToggleMemoryBox">
@@ -132,8 +206,23 @@
   <text class="score-text">打分</text>
 </view>
 
+<view class="mengbao-sheet-modal" wx:if="{{showMengbaoActionSheet}}">
+  <view class="coordinate-overlay" bindtap="onCloseMengbaoActionSheet"></view>
+  <view class="mengbao-sheet-content">
+    <view class="mengbao-sheet-header">
+      <text class="mengbao-sheet-icon">🤖</text>
+      <text class="mengbao-sheet-title">蒙宝AI</text>
+      <text class="mengbao-sheet-subtitle">选择你现在要做的事</text>
+    </view>
+    <view class="mengbao-sheet-actions">
+      <view class="mengbao-sheet-btn secondary" data-action="chat" bindtap="onSelectMengbaoAction">对话</view>
+      <view class="mengbao-sheet-btn primary" data-action="score" bindtap="onSelectMengbaoAction">打分</view>
+    </view>
+  </view>
+</view>
+
 <view class="memory-box-container {{show3DView ? 'active' : ''}}" wx:if="{{currentTab === 0}}">
-  <image class="blueprint-bg" src="{{currentFrameUrl}}" mode="aspectFill"></image>
+  <image wx:if="{{currentFrameUrl}}" class="blueprint-bg" src="{{currentFrameUrl}}" mode="aspectFill"></image>
   <canvas type="2d" id="playbackCanvas" class="playback-canvas"></canvas>
   <!-- 流动光标 -->
   <view wx:if="{{replayDisplayMode === 'trajectory'}}" class="flow-cursor {{cursorVisible ? 'active' : ''}}" 
@@ -256,15 +345,15 @@
           <text class="action-btn-text">导出数据</text>
         </view>
         <view class="action-btn-item" catchtap="onOpenCollectionSetup">
-          <text class="action-btn-icon">SET</text>
+          <view class="action-btn-icon icon-action-set"></view>
           <text class="action-btn-text">采集设置</text>
         </view>
         <view class="action-btn-item" catchtap="onSubmitCollectionSample">
-          <text class="action-btn-icon">UP</text>
+          <view class="action-btn-icon icon-action-upload"></view>
           <text class="action-btn-text">提交采集</text>
         </view>
         <view class="action-btn-item" catchtap="onOpenCollectionRecords">
-          <text class="action-btn-icon">REC</text>
+          <view class="action-btn-icon icon-action-rec"></view>
           <text class="action-btn-text">采集记录</text>
         </view>
       </view>
@@ -377,15 +466,15 @@
 </view>
 
 <!-- 左下角快捷操作按钮（独立于canvas-zone，确保可点击） -->
-<view class="quick-action-buttons" hidden="{{!((showTemplate || currentLesson.id === 'collectionLab') && currentTab === 0) || show3DView || showLeftSidebar || showCollectionSetup || showCollectionRecords || showCoordinateModal || showPreviewModal}}" catch:tap="onQuickActionTap">
+<view class="quick-action-buttons" hidden="{{!((showTemplate || currentLesson.id === 'collectionLab') && currentTab === 0) || identityState === 'UNAUTH' || !hasGuided || show3DView || showLeftSidebar || showCollectionSetup || showCollectionRecords || showCoordinateModal || showPreviewModal}}" catch:tap="onQuickActionTap">
   <view class="quick-btn" catchtap="onUndo">
-    <text class="quick-btn-icon">↩️</text>
+    <view class="quick-btn-icon icon-qb-undo"></view>
   </view>
   <view class="quick-btn" catchtap="onClearCanvas">
-    <text class="quick-btn-icon">🧹</text>
+    <view class="quick-btn-icon icon-qb-clear"></view>
   </view>
   <view class="quick-btn" catchtap="onToggleMusic" bindlongpress="onMusicLongPress">
-    <text class="quick-btn-icon">{{musicEnabled ? '🔊' : '🔇'}}</text>
+    <view class="quick-btn-icon {{musicEnabled ? 'icon-qb-sound-on' : 'icon-qb-sound-off'}}"></view>
   </view>
 </view>
 
@@ -461,49 +550,6 @@
   <canvas type="2d" id="previewCanvas" class="hidden-preview-canvas"></canvas>
 </view>
 
-<!-- 字帖调节悬浮球 -->
-<view class="template-control-area {{showTemplate ? 'visible' : ''}}" hidden="{{!(showTemplate && currentTab === 0) || show3DView || showLeftSidebar || showCollectionSetup || showCollectionRecords || showCoordinateModal || showPreviewModal}}">
-  <view 
-    class="template-control-ball" 
-    style="left: {{ballPosition.x}}px; top: {{ballPosition.y}}px;"
-    bindtouchstart="onBallTouchStart"
-    bindtouchmove="onBallTouchMove"
-    bindtouchend="onBallTouchEnd"
-    catchtap="onToggleBallPanel"
-  >
-    <view class="ball-icon">⚙️</view>
-    
-    <!-- 悬浮球展开面板 -->
-    <view class="ball-panel {{isBallExpanded ? 'expanded' : ''}}">
-      <view class="panel-content">
-        <view class="control-group">
-          <text class="control-label">缩放</text>
-          <slider 
-            min="0.5" max="2.0" step="0.1" 
-            value="{{templateSettings.scale}}" 
-            bindchange="onChangeScale" 
-            block-size="12" 
-            activeColor="#667eea" 
-          />
-          <text class="control-value">{{templateSettings.scale.toFixed(1)}}x</text>
-        </view>
-        
-        <view class="control-group">
-          <text class="control-label">淡浓</text>
-          <slider 
-            min="0.1" max="1.0" step="0.1" 
-            value="{{templateSettings.opacity}}" 
-            bindchange="onChangeOpacity" 
-            block-size="12" 
-            activeColor="#667eea" 
-          />
-          <text class="control-value">{{Math.round(templateSettings.opacity * 100)}}%</text>
-        </view>
-      </view>
-    </view>
-  </view>
-</view>
-
 <!-- 典雅中式选帖面板 -->
 <view class="lesson-picker-modal {{showLessonPicker ? 'active' : ''}}" catchtouchmove="true">
   <view class="modal-mask" bindtap="onCloseLessonPicker"></view>
@@ -523,7 +569,7 @@
           bindtap="onSelectLesson"
           data-lesson-id="songshu"
         >
-          <view class="lesson-icon">🌲</view>
+          <view class="lesson-icon icon-lesson-tree"></view>
           <view class="lesson-name">松树</view>
           <view class="lesson-subtitle">narasu</view>
           <view class="seal-mark" wx:if="{{currentLesson.id === 'songshu'}}">
@@ -536,7 +582,7 @@
           bindtap="onSelectLesson"
           data-lesson-id="hair"
         >
-          <view class="lesson-icon">❤️</view>
+          <view class="lesson-icon icon-lesson-heart"></view>
           <view class="lesson-name">爱</view>
           <view class="lesson-subtitle">hair</view>
           <view class="seal-mark" wx:if="{{currentLesson.id === 'hair'}}">
@@ -549,7 +595,7 @@
           bindtap="onSelectLesson"
           data-lesson-id="huch"
         >
-          <view class="lesson-icon">💪</view>
+          <view class="lesson-icon icon-lesson-strength"></view>
           <view class="lesson-name">力量</view>
           <view class="lesson-subtitle">huch</view>
           <view class="seal-mark" wx:if="{{currentLesson.id === 'huch'}}">
@@ -561,7 +607,7 @@
           bindtap="onSelectLesson"
           data-lesson-id="collectionLab"
         >
-          <view class="lesson-icon">🧪</view>
+          <view class="lesson-icon icon-lesson-lab"></view>
           <view class="lesson-name">采集字帖</view>
           <view class="lesson-subtitle">collection</view>
           <view class="seal-mark" wx:if="{{currentLesson.id === 'collectionLab'}}">
@@ -583,7 +629,7 @@
 </view>
 
 <view class="app-footer">
-  <text class="footer-brand">蒙格穿梭</text>
+  <text class="footer-brand">智墨穿梭</text>
   <text class="footer-version">Beta</text>
 </view>
 
@@ -634,7 +680,7 @@
       </view>
       
       <view class="score-feedback">
-        <text class="feedback-icon">💬</text>
+        <view class="feedback-icon icon-feedback-chat"></view>
         <text class="feedback-text">{{scoringDetail.feedback}}</text>
       </view>
       
@@ -706,14 +752,16 @@
       <view class="collection-filter-chip {{collectionRecordFilter === 'offline' ? 'active' : ''}}" data-value="offline" bindtap="onSelectCollectionRecordFilter">离线待同步</view>
       <view class="collection-filter-chip {{collectionRecordFilter === 'pending' ? 'active' : ''}}" data-value="pending" bindtap="onSelectCollectionRecordFilter">待审核</view>
       <view class="collection-filter-chip {{collectionRecordFilter === 'reviewed' ? 'active' : ''}}" data-value="reviewed" bindtap="onSelectCollectionRecordFilter">已审核</view>
+      <view class="collection-filter-chip admin {{isAdminMode ? 'active' : ''}}" bindtap="onToggleAdminMode">{{isAdminMode ? '退出管理员' : '管理员模式'}}</view>
+      <view class="collection-filter-chip" bindtap="onToggleCollectionAdvancedFilters">{{showCollectionAdvancedFilters ? '收起筛选' : '展开筛选'}}</view>
     </view>
-    <view class="collection-filter-row secondary">
+    <view class="collection-filter-row secondary" wx:if="{{showCollectionAdvancedFilters}}">
       <view class="collection-filter-chip {{collectionRecordScriptFilter === 'all' ? 'active' : ''}}" data-value="all" bindtap="onSelectCollectionScriptFilter">全部脚本</view>
       <view class="collection-filter-chip {{collectionRecordScriptFilter === 'mongolian' ? 'active' : ''}}" data-value="mongolian" bindtap="onSelectCollectionScriptFilter">蒙古文</view>
       <view class="collection-filter-chip {{collectionRecordScriptFilter === 'uyghur' ? 'active' : ''}}" data-value="uyghur" bindtap="onSelectCollectionScriptFilter">回鹘文</view>
       <view class="collection-filter-chip {{collectionRecordScriptFilter === 'manchu' ? 'active' : ''}}" data-value="manchu" bindtap="onSelectCollectionScriptFilter">满文</view>
     </view>
-    <view class="collection-filter-row secondary">
+    <view class="collection-filter-row secondary" wx:if="{{showCollectionAdvancedFilters}}">
       <view class="collection-filter-chip {{collectionRecordRoleFilter === 'all' ? 'active' : ''}}" data-value="all" bindtap="onSelectCollectionRoleFilter">全部角色</view>
       <view class="collection-filter-chip {{collectionRecordRoleFilter === 'expert' ? 'active' : ''}}" data-value="expert" bindtap="onSelectCollectionRoleFilter">专家样本</view>
       <view class="collection-filter-chip {{collectionRecordRoleFilter === 'participant' ? 'active' : ''}}" data-value="participant" bindtap="onSelectCollectionRoleFilter">普通样本</view>
@@ -746,6 +794,9 @@
     <view class="coordinate-actions">
       <view class="action-btn copy-btn" bindtap="onCloseCollectionRecords">
         <text class="btn-text">关闭</text>
+      </view>
+      <view class="action-btn download-btn" wx:if="{{isAdminMode}}" bindtap="onBatchApproveCollectionRecords">
+        <text class="btn-text">一键审核通过</text>
       </view>
       <view class="action-btn download-btn" bindtap="onSyncPendingCollectionSamples">
         <text class="btn-text">同步离线样本</text>
@@ -816,7 +867,7 @@
         <text class="collection-label">云端状态</text>
         <text class="collection-detail-text">{{selectedCollectionRecord.reviewStatus === 'local-pending' ? '离线待同步' : '已上传云端，审核用于区分有效样本'}}</text>
       </view>
-      <view class="collection-field">
+      <view class="collection-field" wx:if="{{isAdminMode}}">
         <text class="collection-label">状态流转</text>
         <view class="collection-chip-row">
           <view class="collection-chip {{selectedCollectionRecord.reviewStatus === 'pending' ? 'active' : ''}}" data-status="pending" bindtap="onUpdateCollectionReviewStatus">待审核</view>
@@ -844,7 +895,7 @@
   <view class="coordinate-overlay" bindtap="onCloseCoordinateModal"></view>
   <view class="coordinate-content">
     <view class="coordinate-header">
-      <text class="coordinate-title">📦 笔迹坐标数据</text>
+      <text class="coordinate-title">笔迹坐标数据</text>
       <view class="coordinate-close" bindtap="onCloseCoordinateModal">X</view>
     </view>
     
@@ -877,7 +928,7 @@
         <text class="btn-text">保存文件</text>
       </view>
       <view class="action-btn submit-btn" bindtap="onSubmitCollectionSample">
-        <text class="btn-icon">UP</text>
+        <view class="btn-icon icon-action-upload"></view>
         <text class="btn-text">提交采集</text>
       </view>
     </view>
@@ -930,7 +981,7 @@
         </view>
       </view>
       <view class="result-reward-highlight">
-        <text class="reward-icon">💎</text>
+        <view class="reward-icon icon-reward-gem"></view>
         <text class="reward-text">获得 {{challengeCorrectCount * 5}} 墨玉</text>
       </view>
       <view class="radar-container">
@@ -956,7 +1007,7 @@
   <!-- 商城 Tab -->
   <view class="tab-panel {{currentTab === 1 ? 'active' : ''}}">
     <view class="mall-header">
-      <text class="mall-title">🛒 墨宝商城</text>
+      <text class="mall-title">墨宝商城</text>
     </view>
     <view class="mall-categories">
       <view 
@@ -973,7 +1024,7 @@
       <view class="product-grid">
         <view class="product-card" wx:for="{{filteredProducts}}" wx:key="id" data-id="{{item.id}}" bindtap="onProductTap" style="animation: fadeInUp {{index * 0.03}}s ease-out;">
           <view class="product-image category-gradient-{{item.category}}">
-            <text class="product-emoji">{{item.category === 1 ? '🖤' : item.category === 2 ? '📄' : item.category === 3 ? '✒️' : item.category === 5 ? '📚' : '📦'}}</text>
+            <view class="product-cat-icon icon-cat-{{item.category}}"></view>
           </view>
           <view class="product-info">
             <text class="product-name">{{item.name}}</text>
@@ -992,7 +1043,7 @@
     <view class="product-modal-mask" bindtap="onCloseProductModal"></view>
     <view class="product-modal-content">
       <view class="product-modal-header">
-        <view class="product-modal-emoji category-gradient-{{currentProduct.category}}">{{currentProduct.category === 1 ? '🖤' : currentProduct.category === 2 ? '📄' : currentProduct.category === 3 ? '✒️' : currentProduct.category === 5 ? '📚' : '📦'}}</view>
+        <view class="product-modal-emoji category-gradient-{{currentProduct.category}}"><view class="product-cat-icon icon-cat-{{currentProduct.category}}"></view></view>
         <text class="product-modal-close" bindtap="onCloseProductModal">✕</text>
       </view>
       <view class="product-modal-body">
@@ -1016,7 +1067,10 @@
   <!-- 社区 Tab -->
   <view class="tab-panel {{currentTab === 2 ? 'active' : ''}}">
     <view class="community-header">
-      <text class="community-title">💬 书法社区</text>
+      <view class="fluid-blob fluid-blob-1"></view>
+      <view class="fluid-blob fluid-blob-2"></view>
+      <view class="fluid-blob fluid-blob-3"></view>
+      <text class="community-title">书法社区</text>
       <view class="post-btn" bindtap="onOpenPostModal">
         <text>发帖</text>
       </view>
@@ -1047,12 +1101,12 @@
         </view>
         <view class="feed-actions">
           <view class="action-item {{item.liked ? 'liked' : ''}}" data-id="{{item.id}}" bindtap="onLikePost">
-            <text class="action-icon">{{item.liked ? '❤️' : '🤍'}}</text>
+            <view class="action-icon {{item.liked ? 'icon-like-filled' : 'icon-like-outline'}}"></view>
             <text class="action-count">{{item.likes}}</text>
             <view class="like-effect" wx:if="{{item.liked && item.showLikeEffect}}"></view>
           </view>
           <view class="action-item" data-id="{{item.id}}" bindtap="onOpenComment">
-            <text class="action-icon">💬</text>
+            <view class="action-icon icon-comment-outline"></view>
             <text class="action-count">{{item.comments}}</text>
           </view>
         </view>
@@ -1132,14 +1186,18 @@
   <view class="tab-panel {{currentTab === 3 ? 'active' : ''}}">
     <!-- 个人头部 -->
     <view class="profile-header">
+      <view class="fluid-blob fluid-blob-p1"></view>
+      <view class="fluid-blob fluid-blob-p2"></view>
+      <view class="fluid-blob fluid-blob-p3"></view>
+      <view class="fluid-blob fluid-blob-p4"></view>
       <view class="profile-avatar-edit" bindtap="onEditAvatar">
         <image class="profile-avatar" wx:if="{{userProfile.avatarUrl && !avatarOptions.includes(userProfile.avatarUrl)}}" src="{{userProfile.avatarUrl}}" mode="aspectFill"></image>
         <view class="profile-avatar" wx:else>{{userProfile.avatarUrl || '👤'}}</view>
-        <view class="avatar-edit-icon">📷</view>
+        <view class="avatar-edit-icon icon-p-camera"></view>
       </view>
       <view class="profile-nickname-edit" bindtap="onEditNickname">
         <text class="profile-nickname">{{userProfile.nickName || '墨客'}}</text>
-        <text class="edit-icon">✏️</text>
+        <view class="edit-icon icon-p-edit"></view>
       </view>
       <view class="profile-level-row">
         <text class="profile-level">Lv.{{userProfile.level || 1}} {{userProfile.title || '牧羊人'}}</text>
@@ -1150,7 +1208,7 @@
     <!-- 签到卡片 -->
     <view class="checkin-card" bindtap="onDailyCheckin">
       <view class="checkin-left">
-        <text class="checkin-icon">📅</text>
+        <view class="checkin-icon icon-p-calendar"></view>
         <text class="checkin-title">每日签到</text>
         <text class="checkin-days">连续{{userProfile.streak || 0}}天</text>
       </view>
@@ -1184,19 +1242,19 @@
       <view class="privilege-title">我的权益</view>
       <view class="privilege-grid">
         <view class="privilege-item">
-          <text class="privilege-icon">💎</text>
+          <view class="privilege-icon icon-p-gem"></view>
           <text class="privilege-text">墨玉商城</text>
         </view>
         <view class="privilege-item">
-          <text class="privilege-icon">🎖️</text>
+          <view class="privilege-icon icon-p-badge"></view>
           <text class="privilege-text">成就徽章</text>
         </view>
         <view class="privilege-item">
-          <text class="privilege-icon">📅</text>
+          <view class="privilege-icon icon-p-calendar"></view>
           <text class="privilege-text">书法日历</text>
         </view>
         <view class="privilege-item">
-          <text class="privilege-icon">🎁</text>
+          <view class="privilege-icon icon-p-gift"></view>
           <text class="privilege-text">邀请好友</text>
         </view>
       </view>
@@ -1205,37 +1263,37 @@
     <!-- 功能菜单 -->
     <view class="profile-menu">
       <view class="menu-item" bindtap="onGoToOrders">
-        <text class="menu-icon">📦</text>
+        <view class="menu-icon icon-p-orders"></view>
         <text class="menu-text">我的订单</text>
         <text class="menu-arrow">›</text>
       </view>
       <view class="menu-item" bindtap="onGoToMyWorks">
-        <text class="menu-icon">🎨</text>
+        <view class="menu-icon icon-p-works"></view>
         <text class="menu-text">我的作品</text>
         <text class="menu-arrow">›</text>
       </view>
       <view class="menu-item" bindtap="onGoToMyPosts">
-        <text class="menu-icon">📝</text>
+        <view class="menu-icon icon-p-posts"></view>
         <text class="menu-text">我的帖子</text>
         <text class="menu-arrow">›</text>
       </view>
       <view class="menu-item" bindtap="onGoToMyLikes">
-        <text class="menu-icon">❤️</text>
+        <view class="menu-icon icon-p-likes"></view>
         <text class="menu-text">我的点赞</text>
         <text class="menu-arrow">›</text>
       </view>
       <view class="menu-item" bindtap="onGoToMyCollection">
-        <text class="menu-icon">⭐</text>
+        <view class="menu-icon icon-p-collection"></view>
         <text class="menu-text">我的收藏</text>
         <text class="menu-arrow">›</text>
       </view>
       <view class="menu-item" bindtap="onGoToAchievements">
-        <text class="menu-icon">🏆</text>
+        <view class="menu-icon icon-p-achievements"></view>
         <text class="menu-text">成就中心</text>
         <text class="menu-arrow">›</text>
       </view>
       <view class="menu-item" bindtap="onGoToSettings">
-        <text class="menu-icon">⚙️</text>
+        <view class="menu-icon icon-p-settings"></view>
         <text class="menu-text">设置</text>
         <text class="menu-arrow">›</text>
       </view>
@@ -1261,7 +1319,7 @@
       </view>
     </view>
     <view class="upload-avatar-btn" bindtap="onUploadAvatar">
-      <text class="upload-icon">📷</text>
+      <view class="upload-icon icon-p-camera-dark"></view>
       <text class="upload-text">上传图片作为头像</text>
     </view>
     <view class="selected-avatar-preview" wx:if="{{selectedAvatar && !avatarOptions.includes(selectedAvatar)}}">
@@ -1294,7 +1352,7 @@
   <view class="my-works-mask" bindtap="onCloseMyWorksModal"></view>
   <view class="my-works-content">
     <view class="my-works-header">
-      <text class="my-works-title">🎨 我的作品</text>
+      <text class="my-works-title">我的作品</text>
       <text class="my-works-close" bindtap="onCloseMyWorksModal">✕</text>
     </view>
     <scroll-view scroll-y class="my-works-grid">
@@ -1311,13 +1369,13 @@
   <view class="settings-mask" bindtap="onCloseSettingsModal"></view>
   <view class="settings-content">
     <view class="settings-header">
-      <text class="settings-title">⚙️ 设置</text>
+      <text class="settings-title">设置</text>
       <text class="settings-close" bindtap="onCloseSettingsModal">✕</text>
     </view>
     <view class="settings-body">
       <view class="settings-item">
         <text class="settings-label">版本号</text>
-        <text class="settings-value">3.3.3</text>
+        <text class="settings-value">5.0.1</text>
       </view>
       <view class="settings-item">
         <text class="settings-label">关于我们</text>
@@ -1366,7 +1424,11 @@
 <view class="ritual-container {{ritualActive ? 'active' : ''}}" wx:if="{{ritualActive}}">
   <view class="starfield-bg">
     <view class="stars"></view>
+    <view class="stars-mid"></view>
+    <view class="stars-near"></view>
+    <view class="milky-way"></view>
     <view class="nebula"></view>
+    <view class="grassland"></view>
   </view>
 
   <view class="npc-anchors">

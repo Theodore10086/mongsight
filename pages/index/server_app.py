@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-蒙格穿梭 - AI 推理服务 (FastAPI)
+智墨穿梭 - AI 推理服务 (FastAPI)
 部署位置: AutoDL GPU 服务器
 功能: 笔迹复原、DTW评分、艺术图生成
 """
@@ -19,7 +19,7 @@ from pydantic import BaseModel, Field
 import numpy as np
 
 app = FastAPI(
-    title="蒙格穿梭 AI 服务",
+    title="智墨穿梭 AI 服务",
     description="蒙古文笔法动态复原与学习平台 - AI推理API",
     version="1.0.0"
 )

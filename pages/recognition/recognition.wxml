@@ -9,7 +9,7 @@
   <!-- ── Action Buttons ────────────────────────────── -->
   <view class="action-grid">
     <button class="action-button primary" bindtap="onChooseFromCamera">
-      <view class="btn-icon icon-camera-light"></view>
+      <view class="btn-icon icon-camera-ink"></view>
       <text>拍照</text>
     </button>
     <button class="action-button" bindtap="onChooseFromAlbum">

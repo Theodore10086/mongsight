@@ -4,7 +4,40 @@
   "cloudfunctionRoot": "cloudfunctions/",
   "cloudId": "cloud1-6g6qzrswbfeff910",
   "packOptions": {
-    "ignore": [],
+    "ignore": [
+      {
+        "type": "glob",
+        "value": "node_modules/**/*"
+      },
+      {
+        "type": "glob",
+        "value": ".git/**/*"
+      },
+      {
+        "type": "glob",
+        "value": ".vs/**/*"
+      },
+      {
+        "type": "glob",
+        "value": ".claude/**/*"
+      },
+      {
+        "type": "glob",
+        "value": "package-lock.json"
+      },
+      {
+        "type": "glob",
+        "value": "RECOGNITION_DEPLOYMENT.md"
+      },
+      {
+        "type": "glob",
+        "value": "scripts/**/*"
+      },
+      {
+        "type": "glob",
+        "value": "assets/audio/*.mp3"
+      }
+    ],
     "include": [
       {
         "type": "file",

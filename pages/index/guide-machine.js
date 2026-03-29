@@ -13,7 +13,7 @@ const GuideSteps = [
     title: '序章',
     dialog: '',
     narrative: '每一个字，都有骨相...',
-    subtitle: '欢迎来到蒙格穿梭',
+    subtitle: '欢迎来到智墨穿梭',
     duration: 3000,
     autoAdvance: true,
     maskOpacity: 1,

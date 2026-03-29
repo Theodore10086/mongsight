@@ -71,12 +71,14 @@
 }
 
 /* Action button icons in sidebar */
-.icon-frame, .icon-export {
+.icon-frame, .icon-export,
+.icon-action-set, .icon-action-upload, .icon-action-rec {
   width: 40rpx;
   height: 40rpx;
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
+  flex-shrink: 0;
 }
 
 .icon-frame {
@@ -85,6 +87,378 @@
 
 .icon-export {
   background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'/><polyline points='17 8 12 3 7 8'/><line x1='12' y1='3' x2='12' y2='15'/></svg>");
+}
+
+/* ── 采集操作图标 SET / UP / REC ─────────────────────────── */
+
+/* SET — 采集设置：滑杆/调节图标 */
+.icon-action-set {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c49a3c' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><line x1='4' y1='6' x2='20' y2='6'/><line x1='4' y1='12' x2='20' y2='12'/><line x1='4' y1='18' x2='20' y2='18'/><circle cx='9' cy='6' r='2' fill='%23c49a3c' stroke='none'/><circle cx='15' cy='12' r='2' fill='%23c49a3c' stroke='none'/><circle cx='10' cy='18' r='2' fill='%23c49a3c' stroke='none'/></svg>");
+}
+
+/* UP — 提交采集：上传箭头 */
+.icon-action-upload {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c49a3c' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'/><polyline points='17 8 12 3 7 8'/><line x1='12' y1='3' x2='12' y2='15'/></svg>");
+}
+
+/* REC — 采集记录：时钟+列表图标 */
+.icon-action-rec {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c49a3c' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/><polyline points='14 2 14 8 20 8'/><line x1='9' y1='13' x2='15' y2='13'/><line x1='9' y1='17' x2='13' y2='17'/></svg>");
+}
+
+/* also used in submit-btn context (larger) */
+.action-btn .btn-icon.icon-action-upload {
+  width: 44rpx;
+  height: 44rpx;
+}
+
+/* ── Misc UI Icons ─────────────────────────────────────────── */
+
+/* Login screen — Mongolian vessel/urn emblem */
+.icon-logo-emblem {
+  width: 120rpx;
+  height: 120rpx;
+  margin-bottom: 24rpx;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c49a3c' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'><path d='M9 3h6l1 4H8L9 3z'/><path d='M8 7c0 5 1 9 4 11 3-2 4-6 4-11'/><path d='M6 7H4l1 5h14l1-5h-2'/><line x1='12' y1='18' x2='12' y2='21'/><line x1='9' y1='21' x2='15' y2='21'/></svg>");
+}
+
+/* Login screen — sheep/mascot silhouette */
+.icon-char-sheep {
+  width: 240rpx;
+  height: 200rpx;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  animation: floatCharacter 3s ease-in-out infinite;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 40' fill='none' stroke='%23c49a3c' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'><ellipse cx='22' cy='18' rx='12' ry='10' fill='rgba(196,154,60,0.12)'/><circle cx='22' cy='10' r='5' fill='rgba(196,154,60,0.15)'/><circle cx='14' cy='13' r='4' fill='rgba(196,154,60,0.1)'/><circle cx='30' cy='13' r='4' fill='rgba(196,154,60,0.1)'/><circle cx='22' cy='18' r='6' fill='rgba(196,154,60,0.12)'/><ellipse cx='22' cy='25' rx='7' ry='4'/><line x1='18' y1='29' x2='17' y2='36'/><line x1='21' y1='29' x2='21' y2='36'/><line x1='24' y1='29' x2='24' y2='36'/><line x1='27' y1='29' x2='28' y2='36'/><circle cx='20' cy='12' r='1.2' fill='%23c49a3c'/><circle cx='24' cy='12' r='1.2' fill='%23c49a3c'/><path d='M20 15 Q22 16.5 24 15'/></svg>");
+}
+
+/* Floating pill — art/paint mode */
+.icon-pill-art {
+  width: 28rpx;
+  height: 28rpx;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M12 20h9'/><path d='M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z'/></svg>");
+}
+.floating-pill.active .icon-pill-art {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f5f0e8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M12 20h9'/><path d='M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z'/></svg>");
+}
+
+/* Floating pill — AI/robot mode */
+.icon-pill-ai {
+  width: 28rpx;
+  height: 28rpx;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='11' width='18' height='10' rx='2'/><path d='M12 11V7'/><circle cx='12' cy='5' r='2'/><line x1='8' y1='15' x2='8' y2='17'/><line x1='16' y1='15' x2='16' y2='17'/></svg>");
+}
+.floating-pill.active .icon-pill-ai {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f5f0e8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='11' width='18' height='10' rx='2'/><path d='M12 11V7'/><circle cx='12' cy='5' r='2'/><line x1='8' y1='15' x2='8' y2='17'/><line x1='16' y1='15' x2='16' y2='17'/></svg>");
+}
+
+/* Floating pill — audio playing */
+.icon-pill-sound-on {
+  width: 28rpx;
+  height: 28rpx;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><polygon points='11 5 6 9 2 9 2 15 6 15 11 19 11 5'/><path d='M15.54 8.46a5 5 0 0 1 0 7.07'/><path d='M19.07 4.93a10 10 0 0 1 0 14.14'/></svg>");
+}
+.floating-pill.active .icon-pill-sound-on {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f5f0e8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><polygon points='11 5 6 9 2 9 2 15 6 15 11 19 11 5'/><path d='M15.54 8.46a5 5 0 0 1 0 7.07'/><path d='M19.07 4.93a10 10 0 0 1 0 14.14'/></svg>");
+}
+
+/* Floating pill — audio paused/off */
+.icon-pill-sound-off {
+  width: 28rpx;
+  height: 28rpx;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><polygon points='11 5 6 9 2 9 2 15 6 15 11 19 11 5'/><line x1='23' y1='9' x2='17' y2='15'/><line x1='17' y1='9' x2='23' y2='15'/></svg>");
+}
+
+/* Floating ball — settings sliders */
+.icon-ball-settings {
+  width: 34rpx;
+  height: 34rpx;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f5f0e8' stroke-width='1.5' stroke-linecap='round'><line x1='4' y1='6' x2='20' y2='6'/><line x1='4' y1='12' x2='20' y2='12'/><line x1='4' y1='18' x2='20' y2='18'/><circle cx='8' cy='6' r='2' fill='%23f5f0e8'/><circle cx='16' cy='12' r='2' fill='%23f5f0e8'/><circle cx='10' cy='18' r='2' fill='%23f5f0e8'/></svg>");
+}
+
+/* Lesson card icons */
+.icon-lesson-heart, .icon-lesson-tree, .icon-lesson-strength, .icon-lesson-lab {
+  width: 48rpx;
+  height: 48rpx;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* heart / love */
+.icon-lesson-heart {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z'/></svg>");
+}
+
+/* pine tree / 松树 */
+.icon-lesson-tree {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><polygon points='12 2 22 20 2 20'/><line x1='12' y1='20' x2='12' y2='24'/></svg>");
+}
+
+/* strength / 力量 — bold upward arrow */
+.icon-lesson-strength {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M12 5l0 14'/><path d='M5 12l7-7 7 7'/></svg>");
+}
+
+/* collection lab / 采集 — flask */
+.icon-lesson-lab {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M9 3h6v10l4 7H5l4-7V3z'/><line x1='9' y1='3' x2='15' y2='3'/></svg>");
+}
+
+/* Quick action buttons — undo / clear / sound */
+.quick-action-buttons {
+  position: fixed;
+  left: 20rpx;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.quick-btn {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  background: rgba(250, 247, 242, 0.92);
+  border: 1rpx solid rgba(28, 20, 16, 0.08);
+  box-shadow: 0 4rpx 16rpx rgba(28, 20, 16, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+}
+
+.quick-btn:active {
+  background: rgba(28, 20, 16, 0.08);
+}
+
+.quick-btn-icon {
+  width: 36rpx;
+  height: 36rpx;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.icon-qb-undo {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><polyline points='1 4 1 10 7 10'/><path d='M3.51 15a9 9 0 1 0 .49-3.5'/></svg>");
+}
+
+.icon-qb-clear {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><polyline points='3 6 5 6 21 6'/><path d='M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6'/><path d='M10 11v6'/><path d='M14 11v6'/><path d='M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2'/></svg>");
+}
+
+.icon-qb-sound-on {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><polygon points='11 5 6 9 2 9 2 15 6 15 11 19 11 5'/><path d='M15.54 8.46a5 5 0 0 1 0 7.07'/></svg>");
+}
+
+.icon-qb-sound-off {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><polygon points='11 5 6 9 2 9 2 15 6 15 11 19 11 5'/><line x1='23' y1='9' x2='17' y2='15'/><line x1='17' y1='9' x2='23' y2='15'/></svg>");
+}
+
+/* Score feedback — chat bubble */
+.icon-feedback-chat {
+  width: 36rpx;
+  height: 36rpx;
+  flex-shrink: 0;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z'/></svg>");
+}
+
+/* Reward — diamond/gem */
+.icon-reward-gem {
+  width: 48rpx;
+  height: 48rpx;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c49a3c' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M6 3h12l4 6-10 13L2 9l4-6z'/><path d='M11 3L8 9l4 13 4-13-3-6'/><path d='M2 9h20'/></svg>");
+}
+
+/* Community — like filled/outline */
+.icon-like-filled {
+  width: 32rpx;
+  height: 32rpx;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%237d2020' stroke='%237d2020' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z'/></svg>");
+}
+.icon-like-outline {
+  width: 32rpx;
+  height: 32rpx;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' opacity='0.45'><path d='M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z'/></svg>");
+}
+
+/* Community — comment bubble */
+.icon-comment-outline {
+  width: 32rpx;
+  height: 32rpx;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' opacity='0.45'><path d='M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z'/></svg>");
+}
+
+/* Mall product category icons — ink/paper/brush/book/box */
+.product-cat-icon {
+  width: 60%;
+  height: 60%;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.icon-cat-1 { /* 墨宝 ink */
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f5f0e8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M12 2a2 2 0 0 1 2 2c0 5-4 6-4 10a4 4 0 0 0 8 0c0-4-4-5-4-10a2 2 0 0 1 2-2z'/></svg>");
+}
+.icon-cat-2 { /* 纸张 paper */
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f5f0e8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/><polyline points='14 2 14 8 20 8'/></svg>");
+}
+.icon-cat-3 { /* 笔具 brush */
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f5f0e8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M12 20h9'/><path d='M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z'/></svg>");
+}
+.icon-cat-5 { /* 书籍 book */
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f5f0e8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M4 19.5A2.5 2.5 0 0 1 6.5 17H20'/><path d='M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z'/></svg>");
+}
+.icon-cat-0 { /* 其他 box */
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f5f0e8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z'/></svg>");
+}
+
+/* ── Profile Page Icons ────────────────────────────────────── */
+
+.icon-p-camera, .icon-p-edit, .icon-p-calendar,
+.icon-p-gem, .icon-p-badge, .icon-p-gift,
+.icon-p-orders, .icon-p-works, .icon-p-posts,
+.icon-p-likes, .icon-p-collection, .icon-p-achievements, .icon-p-settings {
+  display: block;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* avatar edit camera overlay — light stroke on dark bg */
+.icon-p-camera {
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f5f0e8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z'/><circle cx='12' cy='13' r='4'/></svg>");
+}
+
+/* upload button camera — ink stroke on light bg */
+.icon-p-camera-dark {
+  width: 36rpx;
+  height: 36rpx;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z'/><circle cx='12' cy='13' r='4'/></svg>");
+}
+
+/* nickname edit pencil */
+.icon-p-edit {
+  width: 28rpx;
+  height: 28rpx;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M12 20h9'/><path d='M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z'/></svg>");
+  opacity: 0.5;
+}
+
+/* calendar */
+.icon-p-calendar {
+  width: 36rpx;
+  height: 36rpx;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><rect x='3' y='4' width='18' height='18' rx='2' ry='2'/><line x1='16' y1='2' x2='16' y2='6'/><line x1='8' y1='2' x2='8' y2='6'/><line x1='3' y1='10' x2='21' y2='10'/></svg>");
+}
+
+/* diamond/gem */
+.icon-p-gem {
+  width: 40rpx;
+  height: 40rpx;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M6 3h12l4 6-10 13L2 9l4-6z'/><path d='M11 3L8 9l4 13 4-13-3-6'/><path d='M2 9h20'/></svg>");
+}
+
+/* achievement badge / medal */
+.icon-p-badge {
+  width: 40rpx;
+  height: 40rpx;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='8' r='6'/><path d='M15.477 12.89L17 22l-5-3-5 3 1.523-9.11'/></svg>");
+}
+
+/* gift */
+.icon-p-gift {
+  width: 40rpx;
+  height: 40rpx;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 12 20 22 4 22 4 12'/><rect x='2' y='7' width='20' height='5'/><line x1='12' y1='22' x2='12' y2='7'/><path d='M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z'/><path d='M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z'/></svg>");
+}
+
+/* orders / box */
+.icon-p-orders {
+  width: 36rpx;
+  height: 36rpx;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z'/><polyline points='3.27 6.96 12 12.01 20.73 6.96'/><line x1='12' y1='22.08' x2='12' y2='12'/></svg>");
+}
+
+/* works / calligraphy brush */
+.icon-p-works {
+  width: 36rpx;
+  height: 36rpx;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M12 20h9'/><path d='M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z'/></svg>");
+}
+
+/* posts / file-text */
+.icon-p-posts {
+  width: 36rpx;
+  height: 36rpx;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/><polyline points='14 2 14 8 20 8'/><line x1='16' y1='13' x2='8' y2='13'/><line x1='16' y1='17' x2='8' y2='17'/><polyline points='10 9 9 9 8 9'/></svg>");
+}
+
+/* likes / heart */
+.icon-p-likes {
+  width: 36rpx;
+  height: 36rpx;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z'/></svg>");
+}
+
+/* collection / bookmark */
+.icon-p-collection {
+  width: 36rpx;
+  height: 36rpx;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><polygon points='12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'/></svg>");
+}
+
+/* achievements / trophy */
+.icon-p-achievements {
+  width: 36rpx;
+  height: 36rpx;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M6 9H4.5a2.5 2.5 0 0 1 0-5H6'/><path d='M18 9h1.5a2.5 2.5 0 0 0 0-5H18'/><path d='M4 22h16'/><path d='M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22'/><path d='M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22'/><path d='M18 2H6v7a6 6 0 0 0 12 0V2z'/></svg>");
+}
+
+/* settings / gear */
+.icon-p-settings {
+  width: 36rpx;
+  height: 36rpx;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='3'/><path d='M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z'/></svg>");
 }
 
 /* ============================================================ */
@@ -233,7 +607,7 @@ page {
   align-items: center;
   justify-content: center;
   font-size: 28rpx;
-  background: #1c1410;
+  background: linear-gradient(135deg, #c49a3c 0%, #b8882a 100%);
   border-radius: 50%;
   position: relative;
   overflow: hidden;
@@ -340,16 +714,17 @@ page {
 }
 
 .floating-pill.active {
-  background: #1c1410;
+  background: linear-gradient(135deg, #c49a3c 0%, #b8882a 100%);
   border-color: transparent;
+  box-shadow: 0 3rpx 14rpx rgba(196, 154, 60, 0.38);
 }
 
 .floating-pill.active .pill-text {
-  color: #f5f0e8;
+  color: #1c1410;
 }
 
 .floating-pill.active .pill-icon {
-  color: #f5f0e8;
+  color: #1c1410;
 }
 
 .pill-icon {
@@ -378,7 +753,7 @@ page {
   gap: 6rpx;
   width: 96rpx;
   height: 96rpx;
-  background: #1c1410;
+  background: linear-gradient(135deg, #c49a3c 0%, #b8882a 100%);
   border-radius: 20rpx;
   cursor: pointer;
   transition: opacity 0.2s ease;
@@ -479,7 +854,7 @@ page {
   transform: translateY(-50%);
   width: 4rpx;
   height: 16rpx;
-  background: #1c1410;
+  background: #c49a3c;
   border-radius: 2rpx;
 }
 
@@ -1245,7 +1620,7 @@ page {
   gap: 16rpx;
   margin: 30rpx 0;
   padding: 24rpx;
-  background: #1c1410;
+  background: linear-gradient(135deg, #c49a3c 0%, #b8882a 100%);
   border-radius: 16rpx;
 }
 
@@ -1292,8 +1667,8 @@ page {
 .edit-modal-btn {
   width: 100%;
   height: 88rpx;
-  background: #1c1410;
-  color: #fff;
+  background: linear-gradient(135deg, #c49a3c 0%, #b8882a 100%);
+  color: #1c1410;
   border-radius: 44rpx;
   font-size: 32rpx;
   font-weight: 600;
@@ -1314,7 +1689,7 @@ page {
   right: 0;
   width: 48rpx;
   height: 48rpx;
-  background: #1c1410;
+  background: linear-gradient(135deg, #c49a3c 0%, #b8882a 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1335,8 +1710,6 @@ page {
 
 /* 社区样式 */
 .community-header {
-  padding: 30rpx;
-  background: #c49a3c;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1345,20 +1718,28 @@ page {
 .community-title {
   font-size: 36rpx;
   font-weight: 700;
-  color: #fff;
 }
 
 .post-btn {
-  padding: 12rpx 28rpx;
-  background: rgba(255, 255, 255, 0.25);
+  padding: 12rpx 32rpx;
+  background: rgba(245, 240, 232, 0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border-radius: 30rpx;
-  border: 1rpx solid rgba(255, 255, 255, 0.4);
+  border: 1rpx solid rgba(245, 240, 232, 0.2);
+  position: relative;
+  z-index: 2;
+}
+
+.post-btn:active {
+  background: rgba(245, 240, 232, 0.22);
 }
 
 .post-btn text {
   font-size: 26rpx;
-  color: #fff;
+  color: rgba(245, 240, 232, 0.9);
   font-weight: 500;
+  letter-spacing: 1rpx;
 }
 
 .community-feed {
@@ -1975,8 +2356,8 @@ page {
 .settings-btn {
   width: 100%;
   height: 88rpx;
-  background: #1c1410;
-  color: #fff;
+  background: linear-gradient(135deg, #c49a3c 0%, #b8882a 100%);
+  color: #1c1410;
   border-radius: 44rpx;
   font-size: 32rpx;
   font-weight: 600;
@@ -1988,13 +2369,13 @@ page {
 /* 商城样式 */
 .mall-header {
   padding: 30rpx;
-  background: #1c1410;
+  background: linear-gradient(160deg, #1a0e08 0%, #2d1a08 60%, #3d2510 100%);
 }
 
 .mall-title {
   font-size: 36rpx;
   font-weight: 700;
-  color: #fff;
+  color: #e8c97a;
 }
 
 .mall-categories {
@@ -2015,8 +2396,9 @@ page {
 }
 
 .category-item.active {
-  background: #1c1410;
-  color: #fff;
+  background: linear-gradient(135deg, #c49a3c 0%, #b8882a 100%);
+  color: #1c1410;
+  font-weight: 600;
 }
 
 .mall-products {
@@ -2296,8 +2678,8 @@ page {
   width: calc(100% - 80rpx);
   height: 96rpx;
   margin: 30rpx 40rpx;
-  background: #1c1410;
-  color: #fff;
+  background: linear-gradient(135deg, #c49a3c 0%, #b8882a 100%);
+  color: #1c1410;
   border-radius: 48rpx;
   font-size: 34rpx;
   font-weight: 600;
@@ -2306,16 +2688,94 @@ page {
   justify-content: center;
 }
 
-/* 社区样式 */
+/* ═══════════════════════════════════════════════════════════
+   WARM AMBER FLUID DESIGN — Non-Newtonian blob system
+   Organic flowing blobs with blur create liquid metal effect.
+   Palette: deep brown #1a0e08 → amber #c49a3c → peach #ffb366
+   ═══════════════════════════════════════════════════════════ */
+
+/* Base blob element */
+.fluid-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(28rpx);
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* ── Community header ─────────────────────────────────────── */
 .community-header {
-  padding: 30rpx;
-  background: #1c1410;
+  padding: 44rpx 36rpx 40rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #1a0e08 0%, #2a1508 50%, #1a0e08 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Blobs for community header */
+.community-header .fluid-blob-1 {
+  width: 260rpx;
+  height: 200rpx;
+  top: -60rpx;
+  right: -40rpx;
+  background: radial-gradient(ellipse, rgba(212, 134, 11, 0.65) 0%, rgba(196, 130, 30, 0.2) 50%, transparent 75%);
+  animation: fluidDrift1 8s ease-in-out infinite;
+}
+
+.community-header .fluid-blob-2 {
+  width: 180rpx;
+  height: 160rpx;
+  bottom: -40rpx;
+  left: 30%;
+  background: radial-gradient(ellipse, rgba(255, 140, 66, 0.45) 0%, rgba(230, 120, 40, 0.15) 50%, transparent 70%);
+  animation: fluidDrift2 10s ease-in-out infinite;
+  animation-delay: -3s;
+}
+
+.community-header .fluid-blob-3 {
+  width: 140rpx;
+  height: 120rpx;
+  top: -20rpx;
+  left: -30rpx;
+  background: radial-gradient(ellipse, rgba(196, 154, 60, 0.5) 0%, rgba(180, 120, 30, 0.15) 50%, transparent 70%);
+  animation: fluidDrift3 12s ease-in-out infinite;
+  animation-delay: -5s;
 }
 
 .community-title {
   font-size: 36rpx;
   font-weight: 700;
-  color: #fff;
+  color: rgba(245, 240, 232, 0.95);
+  position: relative;
+  z-index: 2;
+  letter-spacing: 2rpx;
+}
+
+/* ── Fluid blob animations ────────────────────────────────── */
+@keyframes fluidDrift1 {
+  0%   { transform: translate(0, 0)       scale(1)    rotate(0deg); }
+  25%  { transform: translate(-20rpx, 15rpx) scale(1.12) rotate(3deg); }
+  50%  { transform: translate(10rpx, -10rpx) scale(0.92) rotate(-2deg); }
+  75%  { transform: translate(-10rpx, 5rpx)  scale(1.08) rotate(1deg); }
+  100% { transform: translate(0, 0)       scale(1)    rotate(0deg); }
+}
+
+@keyframes fluidDrift2 {
+  0%   { transform: translate(0, 0)       scale(1)    rotate(0deg); }
+  33%  { transform: translate(30rpx, -15rpx) scale(1.15) rotate(-3deg); }
+  66%  { transform: translate(-15rpx, 10rpx) scale(0.88) rotate(4deg); }
+  100% { transform: translate(0, 0)       scale(1)    rotate(0deg); }
+}
+
+@keyframes fluidDrift3 {
+  0%   { transform: translate(0, 0)       scale(1); }
+  20%  { transform: translate(15rpx, 10rpx) scale(1.1); }
+  40%  { transform: translate(-20rpx, -8rpx) scale(0.95); }
+  60%  { transform: translate(8rpx, -15rpx) scale(1.08); }
+  80%  { transform: translate(-10rpx, 12rpx) scale(0.92); }
+  100% { transform: translate(0, 0)       scale(1); }
 }
 
 .community-feed {
@@ -2368,12 +2828,75 @@ page {
 }
 
 /* 个人中心样式 */
+/* ── Profile header — warm amber fluid ─────────────────────── */
 .profile-header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 60rpx 30rpx;
-  background: #1c1410;
+  padding: 80rpx 30rpx 56rpx;
+  background: linear-gradient(160deg, #1a0e08 0%, #2a1508 35%, #1e1008 65%, #1a0e08 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Fluid blobs for profile header */
+.profile-header .fluid-blob-p1 {
+  width: 360rpx;
+  height: 300rpx;
+  top: -80rpx;
+  right: -60rpx;
+  background: radial-gradient(ellipse, rgba(212, 134, 11, 0.55) 0%, rgba(196, 130, 30, 0.2) 45%, transparent 70%);
+  animation: fluidDrift1 9s ease-in-out infinite;
+}
+
+.profile-header .fluid-blob-p2 {
+  width: 280rpx;
+  height: 240rpx;
+  bottom: -60rpx;
+  left: -40rpx;
+  background: radial-gradient(ellipse, rgba(255, 140, 66, 0.45) 0%, rgba(230, 120, 40, 0.15) 45%, transparent 70%);
+  animation: fluidDrift2 11s ease-in-out infinite;
+  animation-delay: -4s;
+}
+
+.profile-header .fluid-blob-p3 {
+  width: 200rpx;
+  height: 180rpx;
+  top: 30%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse, rgba(196, 154, 60, 0.4) 0%, rgba(180, 120, 30, 0.12) 50%, transparent 70%);
+  animation: fluidDrift3 13s ease-in-out infinite;
+  animation-delay: -2s;
+}
+
+.profile-header .fluid-blob-p4 {
+  width: 160rpx;
+  height: 140rpx;
+  top: -30rpx;
+  left: 15%;
+  background: radial-gradient(ellipse, rgba(255, 179, 102, 0.35) 0%, rgba(230, 167, 86, 0.1) 50%, transparent 70%);
+  animation: fluidDrift1 14s ease-in-out infinite;
+  animation-delay: -7s;
+}
+
+/* Gold rim separator */
+.profile-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1rpx;
+  background: rgba(196, 154, 60, 0.25);
+  pointer-events: none;
+}
+
+.profile-avatar-edit,
+.profile-nickname-edit,
+.profile-level-row {
+  position: relative;
+  z-index: 2;
 }
 
 .profile-avatar {
@@ -2385,8 +2908,9 @@ page {
   align-items: center;
   justify-content: center;
   font-size: 80rpx;
-  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.25);
   overflow: hidden;
+  border: 2rpx solid rgba(196, 154, 60, 0.3);
 }
 
 .profile-avatar image {
@@ -2742,6 +3266,77 @@ page {
   position: relative;
 }
 
+.mengbao-sheet-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1002;
+}
+
+.mengbao-sheet-content {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  width: 82%;
+  max-width: 560rpx;
+  transform: translate(-50%, -50%);
+  border-radius: 28rpx;
+  background: linear-gradient(180deg, rgba(12, 24, 42, 0.98) 0%, rgba(18, 36, 62, 0.98) 100%);
+  border: 1rpx solid rgba(212, 175, 55, 0.22);
+  box-shadow: 0 24rpx 80rpx rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.mengbao-sheet-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12rpx;
+  padding: 40rpx 32rpx 30rpx;
+}
+
+.mengbao-sheet-icon {
+  font-size: 40rpx;
+}
+
+.mengbao-sheet-title {
+  font-size: 38rpx;
+  color: #f5d77f;
+  font-weight: 700;
+}
+
+.mengbao-sheet-subtitle {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.mengbao-sheet-actions {
+  display: flex;
+  gap: 20rpx;
+  padding: 0 28rpx 28rpx;
+}
+
+.mengbao-sheet-btn {
+  flex: 1;
+  height: 92rpx;
+  border-radius: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.mengbao-sheet-btn.secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: #d9e7ff;
+  border: 1rpx solid rgba(255, 255, 255, 0.12);
+}
+
+.mengbao-sheet-btn.primary {
+  background: linear-gradient(135deg, #c89b3c 0%, #f5d77f 100%);
+  color: #1b1b1b;
+}
+
 .coordinate-content::before {
   content: '';
   position: absolute;
@@ -2824,6 +3419,10 @@ page {
   z-index: 1;
 }
 
+.collection-filter-row.secondary {
+  padding-top: 12rpx;
+}
+
 .collection-filter-chip {
   padding: 10rpx 18rpx;
   border-radius: 999rpx;
@@ -2837,6 +3436,10 @@ page {
   background: rgba(212, 175, 55, 0.18);
   color: #f5d77f;
   border-color: rgba(212, 175, 55, 0.42);
+}
+
+.collection-filter-chip.admin {
+  margin-left: auto;
 }
 
 .collection-record-card {
@@ -2887,6 +3490,32 @@ page {
   padding: 40rpx 0 56rpx;
   text-align: center;
   color: rgba(255, 255, 255, 0.66);
+}
+
+.collection-preview-panel {
+  padding: 20rpx;
+  border-radius: 22rpx;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1rpx solid rgba(212, 175, 55, 0.14);
+}
+
+.collection-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14rpx;
+}
+
+.collection-preview-hint {
+  font-size: 20rpx;
+  color: rgba(255, 255, 255, 0.54);
+}
+
+.collection-preview-image {
+  width: 100%;
+  height: 320rpx;
+  border-radius: 18rpx;
+  background: #ffffff;
 }
 
 .collection-detail-text {
@@ -3412,7 +4041,7 @@ page {
   align-items: center;
   justify-content: space-between;
   padding: 20rpx 24rpx;
-  background: #1c1410;
+  background: linear-gradient(160deg, #1a0e08 0%, #2d1a08 60%, #3d2510 100%);
   position: relative;
   overflow: hidden;
   flex-shrink: 0;
@@ -3752,7 +4381,7 @@ page {
   transform: translateY(-50%);
   width: 5rpx;
   height: 20rpx;
-  background: #1c1410;
+  background: #c49a3c;
   border-radius: 3rpx;
 }
 
@@ -3805,14 +4434,14 @@ page {
   width: 100%;
   max-width: 100%;
   padding: 8rpx 12rpx;
-  background: #1c1410;
+  background: linear-gradient(135deg, #c49a3c 0%, #b8882a 100%);
   border: none;
   border-radius: 10rpx;
   font-size: 20rpx;
   font-weight: 700;
-  color: #fff;
+  color: #1c1410;
   cursor: pointer;
-  box-shadow: 0 3rpx 8rpx rgba(28, 20, 16, 0.35);
+  box-shadow: 0 3rpx 8rpx rgba(196, 154, 60, 0.35);
   transition: all 0.25s ease;
   display: flex;
   align-items: center;
@@ -4074,6 +4703,21 @@ page {
   box-shadow: 0 18rpx 48rpx rgba(0, 0, 0, 0.28);
 }
 
+.hidden-preview-canvas-wrap {
+  position: fixed;
+  left: -9999rpx;
+  top: -9999rpx;
+  width: 420px;
+  height: 620px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hidden-preview-canvas {
+  width: 420px;
+  height: 620px;
+}
+
 .slider-header {
   display: flex;
   justify-content: space-between;
@@ -4144,6 +4788,8 @@ page {
 
 .replay-result-panel.result-focus {
   justify-content: center;
+  bottom: calc(96rpx + env(safe-area-inset-bottom));
+  width: calc(100% - 48rpx);
 }
 
 .replay-card {
@@ -4189,6 +4835,7 @@ page {
 .final-result-card.expanded {
   max-width: none;
   width: 100%;
+  min-height: 620rpx;
 }
 
 .replay-card-meta-stack {
@@ -4203,7 +4850,16 @@ page {
 }
 
 .final-result-card.expanded .replay-result-image {
-  height: 320rpx;
+  height: 500rpx;
+  background: #ffffff;
+  padding: 24rpx;
+  box-sizing: border-box;
+}
+
+.replay-result-image.light-preview {
+  background: #ffffff;
+  padding: 20rpx;
+  box-sizing: border-box;
 }
 
 .close-btn {
@@ -4928,102 +5584,6 @@ page {
   }
 }
 
-/* --- 字帖调节悬浮球样式 --- */
-.template-control-area {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 110;
-  pointer-events: none; /* 整个区域不拦截事件 */
-}
-
-.template-control-area.visible {
-  pointer-events: none;
-}
-
-.template-control-ball {
-  position: absolute;
-  width: 80rpx;
-  height: 80rpx;
-  z-index: 111;
-  pointer-events: auto; /* 只有球本身可交互 */
-}
-
-.ball-icon {
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(40px);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 32rpx;
-  box-shadow: 
-    0 8rpx 32rpx rgba(0, 0, 0, 0.2),
-    0 0 0 1rpx rgba(255, 255, 255, 0.4);
-  transition: all 0.3s ease;
-}
-
-.ball-panel {
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%) scale(0);
-  opacity: 0;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  pointer-events: none;
-  margin-top: 10rpx;
-}
-
-.ball-panel.expanded {
-  transform: translateX(-50%) scale(1);
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.panel-content {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(50px);
-  border-radius: 20rpx;
-  padding: 20rpx;
-  box-shadow: 
-    0 20rpx 60rpx rgba(0, 0, 0, 0.25),
-    0 0 0 1rpx rgba(255, 255, 255, 0.5);
-  min-width: 280rpx;
-  display: flex;
-  flex-direction: column;
-  gap: 16rpx;
-}
-
-.control-group {
-  display: flex;
-  align-items: center;
-  gap: 12rpx;
-}
-
-.control-label {
-  font-size: 14rpx;
-  color: #666;
-  font-weight: 600;
-  min-width: 40rpx;
-}
-
-.control-group slider {
-  flex: 1;
-  margin: 0;
-}
-
-.control-value {
-  font-size: 14rpx;
-  color: #1c1410;
-  font-weight: 600;
-  min-width: 40rpx;
-  text-align: center;
-}
-
 /* --- 选帖面板幽灵按钮样式 --- */
 .footer-actions {
   display: flex;
@@ -5318,6 +5878,10 @@ page {
    登录/授权界面样式
    ======================================== */
 
+/* ═══════════════════════════════════════════════════════════
+   登录界面 — 国风重设计
+   ═══════════════════════════════════════════════════════════ */
+
 .login-overlay {
   position: fixed;
   top: 0;
@@ -5325,10 +5889,11 @@ page {
   right: 0;
   bottom: 0;
   z-index: 9998;
-  background: #100c08;
+  background: #04060e;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.5s ease;
@@ -5339,95 +5904,168 @@ page {
   pointer-events: auto;
 }
 
+/* 登录页的星空背景用共享 starfield-bg 类 */
+.login-starfield {
+  z-index: 0;
+}
+
 .login-container {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 60rpx;
+  padding: 0 60rpx 80rpx;
   width: 100%;
-  max-width: 600rpx;
+  max-width: 640rpx;
+  z-index: 2;
+  overflow-y: auto;
+  max-height: 100vh;
 }
 
+/* ── 品牌区 ── */
 .login-logo {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 60rpx;
+  margin-bottom: 32rpx;
+  padding-top: 80rpx;
 }
 
-.logo-image {
-  width: 180rpx;
-  height: 180rpx;
-  margin-bottom: 24rpx;
+.login-title-deco {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  margin-bottom: 12rpx;
 }
 
-.logo-emoji {
-  font-size: 120rpx;
-  margin-bottom: 24rpx;
+.login-deco-line {
+  width: 60rpx;
+  height: 1rpx;
+  background: linear-gradient(90deg, transparent, rgba(196,154,60,0.6));
+}
+
+.login-title-deco .login-deco-line:last-child {
+  background: linear-gradient(90deg, rgba(196,154,60,0.6), transparent);
 }
 
 .app-title {
-  font-size: 56rpx;
-  font-weight: 700;
-  color: #c49a3c;
-  letter-spacing: 4rpx;
+  font-size: 60rpx;
+  font-weight: 800;
+  color: #e8c97a;
+  letter-spacing: 6rpx;
+  text-shadow: 0 0 24rpx rgba(196,154,60,0.4), 0 2rpx 12rpx rgba(0,0,0,0.6);
 }
 
 .app-subtitle {
-  font-size: 26rpx;
-  color: rgba(255, 255, 255, 0.7);
-  margin-top: 12rpx;
-  letter-spacing: 2rpx;
+  font-size: 24rpx;
+  color: rgba(200, 175, 130, 0.7);
+  letter-spacing: 3rpx;
 }
 
+/* ── 吉祥物区 ── */
 .login-character {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 80rpx;
+  margin-bottom: 40rpx;
 }
 
 .character-image {
-  width: 240rpx;
-  height: 240rpx;
-  animation: floatCharacter 3s ease-in-out infinite;
-}
-
-.character-emoji {
-  font-size: 160rpx;
+  width: 200rpx;
+  height: 200rpx;
   animation: floatCharacter 3s ease-in-out infinite;
 }
 
 @keyframes floatCharacter {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-20rpx); }
+  50% { transform: translateY(-16rpx); }
 }
 
 .character-speech {
-  margin-top: 24rpx;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 24rpx;
-  padding: 20rpx 32rpx;
-  max-width: 400rpx;
+  margin-top: 20rpx;
+  background: rgba(196, 154, 60, 0.08);
+  border: 1rpx solid rgba(196, 154, 60, 0.2);
+  border-radius: 20rpx;
+  padding: 18rpx 30rpx;
+  max-width: 440rpx;
 }
 
 .speech-text {
-  font-size: 28rpx;
-  color: #f5f0e6;
-  line-height: 1.5;
+  font-size: 26rpx;
+  color: rgba(245, 240, 232, 0.85);
+  line-height: 1.6;
+  text-align: center;
 }
 
+/* ── 头像 + 昵称区 ── */
+.profile-setup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20rpx;
+  margin-bottom: 40rpx;
+  width: 480rpx;
+}
+
+.avatar-picker {
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: 50%;
+  padding: 0;
+  background: rgba(196, 154, 60, 0.1);
+  border: 3rpx dashed rgba(196, 154, 60, 0.45);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-picker::after {
+  border: none;
+}
+
+.avatar-preview {
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: 50%;
+}
+
+.avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-placeholder-text {
+  font-size: 22rpx;
+  color: rgba(196, 154, 60, 0.75);
+}
+
+.nickname-input {
+  width: 100%;
+  height: 84rpx;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1.5rpx solid rgba(196, 154, 60, 0.28);
+  border-radius: 42rpx;
+  padding: 0 36rpx;
+  font-size: 30rpx;
+  color: #f5f0e6;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+/* ── 主登录按钮 ── */
 .login-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 480rpx;
   height: 96rpx;
-  background: linear-gradient(135deg, #07c160 0%, #06ad56 100%);
+  background: linear-gradient(135deg, #c49a3c 0%, #b8882a 100%);
   border-radius: 48rpx;
   border: none;
-  box-shadow: 0 8rpx 24rpx rgba(7, 193, 96, 0.4);
-  margin-bottom: 32rpx;
+  box-shadow: 0 8rpx 28rpx rgba(196, 154, 60, 0.38);
+  margin-bottom: 0;
 }
 
 .login-btn::after {
@@ -5435,23 +6073,75 @@ page {
 }
 
 .btn-icon {
-  width: 48rpx;
-  height: 48rpx;
-  margin-right: 16rpx;
+  width: 44rpx;
+  height: 44rpx;
+  margin-right: 14rpx;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
 .btn-text {
-  font-size: 32rpx;
-  color: #ffffff;
-  font-weight: 600;
+  font-size: 34rpx;
+  color: #1c1410;
+  font-weight: 700;
+  letter-spacing: 2rpx;
 }
 
+/* ── 分隔线 ── */
+.login-or-row {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  width: 480rpx;
+  margin: 28rpx 0;
+}
+
+.or-line {
+  flex: 1;
+  height: 1rpx;
+  background: rgba(196, 154, 60, 0.2);
+}
+
+.or-text {
+  font-size: 24rpx;
+  color: rgba(196, 154, 60, 0.5);
+  flex-shrink: 0;
+}
+
+/* ── 先体验一下 — 次级按钮 ── */
+.login-skip-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  width: 480rpx;
+  height: 88rpx;
+  border: 1.5rpx solid rgba(196, 154, 60, 0.5);
+  border-radius: 44rpx;
+  background: rgba(196, 154, 60, 0.06);
+  margin-bottom: 32rpx;
+}
+
+.skip-btn-text {
+  font-size: 32rpx;
+  color: rgba(196, 154, 60, 0.9);
+  font-weight: 500;
+  letter-spacing: 2rpx;
+}
+
+.skip-arrow {
+  font-size: 32rpx;
+  color: rgba(196, 154, 60, 0.7);
+}
+
+/* ── 提示文字 ── */
 .login-tips {
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
 .tips-text {
-  font-size: 24rpx;
+  font-size: 22rpx;
   color: rgba(255, 255, 255, 0.6);
 }
 
@@ -5612,48 +6302,383 @@ page {
   51%, 100% { opacity: 0; }
 }
 
-/* 星空草原背景 */
+/* ═══════════════════════════════════════════════════════════
+   蒙古草原银河星空 — Mongolian Grassland Milky Way
+   一个真正令人震撼的银河夜空 — 宇宙的浩瀚与神秘
+   ═══════════════════════════════════════════════════════════ */
+
 .starfield-bg {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: #0d0906;
+  top: 0; left: 0; right: 0; bottom: 0;
+  /* 深空底色 — 从天顶深邃墨蓝过渡到地平线暖褐 */
+  background: linear-gradient(
+    180deg,
+    #04060e 0%,
+    #06080f 15%,
+    #080a12 30%,
+    #0a0c14 50%,
+    #0e0a0a 72%,
+    #1a0e06 88%,
+    #2a1808 100%
+  );
   overflow: hidden;
 }
 
+/* ── Layer 1 — 星尘：最密集的远星 ──────────────────────────── */
 .stars {
   position: absolute;
-  width: 100%;
-  height: 100%;
-  background-image: 
-    radial-gradient(2rpx 2rpx at 20rpx 30rpx, #fff, transparent),
-    radial-gradient(2rpx 2rpx at 40rpx 70rpx, rgba(255,255,255,0.8), transparent),
-    radial-gradient(1rpx 1rpx at 90rpx 40rpx, #fff, transparent),
-    radial-gradient(2rpx 2rpx at 130rpx 80rpx, rgba(255,255,255,0.6), transparent),
-    radial-gradient(1rpx 1rpx at 160rpx 120rpx, #fff, transparent),
-    radial-gradient(2rpx 2rpx at 200rpx 50rpx, rgba(255,255,255,0.7), transparent),
-    radial-gradient(1rpx 1rpx at 250rpx 150rpx, #fff, transparent),
-    radial-gradient(2rpx 2rpx at 300rpx 90rpx, rgba(255,255,255,0.5), transparent),
-    radial-gradient(1rpx 1rpx at 350rpx 180rpx, #fff, transparent),
-    radial-gradient(2rpx 2rpx at 400rpx 60rpx, rgba(255,255,255,0.8), transparent);
-  background-size: 450rpx 200rpx;
-  animation: twinkle 4s ease-in-out infinite;
+  width: 100%; height: 85%; top: 0;
+  background-image:
+    radial-gradient(1rpx 1rpx at  10rpx  15rpx, rgba(255,255,255,0.9),  transparent),
+    radial-gradient(1rpx 1rpx at  28rpx  52rpx, rgba(200,220,255,0.6),  transparent),
+    radial-gradient(1rpx 1rpx at  42rpx  8rpx,  rgba(255,255,255,0.7),  transparent),
+    radial-gradient(1rpx 1rpx at  58rpx  38rpx, rgba(255,248,220,0.5),  transparent),
+    radial-gradient(1rpx 1rpx at  72rpx  65rpx, rgba(200,210,255,0.65), transparent),
+    radial-gradient(1rpx 1rpx at  88rpx  22rpx, rgba(255,255,255,0.85), transparent),
+    radial-gradient(1rpx 1rpx at 105rpx  58rpx, rgba(255,255,255,0.5),  transparent),
+    radial-gradient(1rpx 1rpx at 118rpx  5rpx,  rgba(200,220,255,0.7),  transparent),
+    radial-gradient(1rpx 1rpx at 135rpx  45rpx, rgba(255,255,255,0.6),  transparent),
+    radial-gradient(1rpx 1rpx at 150rpx  72rpx, rgba(255,248,220,0.55), transparent),
+    radial-gradient(1rpx 1rpx at 168rpx  18rpx, rgba(255,255,255,0.8),  transparent),
+    radial-gradient(1rpx 1rpx at 182rpx  55rpx, rgba(200,210,255,0.6),  transparent),
+    radial-gradient(1rpx 1rpx at 198rpx  32rpx, rgba(255,248,220,0.75), transparent),
+    radial-gradient(1rpx 1rpx at 215rpx  68rpx, rgba(255,255,255,0.5),  transparent),
+    radial-gradient(1rpx 1rpx at 232rpx  12rpx, rgba(200,220,255,0.65), transparent),
+    radial-gradient(1rpx 1rpx at 248rpx  48rpx, rgba(255,255,255,0.7),  transparent),
+    radial-gradient(1rpx 1rpx at 265rpx  75rpx, rgba(255,248,220,0.5),  transparent),
+    radial-gradient(1rpx 1rpx at 280rpx  25rpx, rgba(200,210,255,0.6),  transparent),
+    radial-gradient(1rpx 1rpx at 295rpx  60rpx, rgba(255,255,255,0.7),  transparent),
+    radial-gradient(1rpx 1rpx at 312rpx  15rpx, rgba(255,255,255,0.85), transparent);
+  background-size: 340rpx 85rpx;
+  animation: twinkle1 4s ease-in-out infinite;
 }
 
+/* ── Layer 1b — 额外星尘（偏移铺设，增密度）──────────────── */
+.stars::before {
+  content: '';
+  position: absolute;
+  width: 100%; height: 100%;
+  background-image:
+    radial-gradient(1rpx 1rpx at 15rpx  42rpx, rgba(255,255,255,0.6),  transparent),
+    radial-gradient(1rpx 1rpx at 48rpx  18rpx, rgba(200,215,255,0.55), transparent),
+    radial-gradient(1rpx 1rpx at 75rpx  70rpx, rgba(255,255,255,0.5),  transparent),
+    radial-gradient(1rpx 1rpx at 108rpx 28rpx, rgba(255,248,220,0.65), transparent),
+    radial-gradient(1rpx 1rpx at 142rpx 62rpx, rgba(200,210,255,0.5),  transparent),
+    radial-gradient(1rpx 1rpx at 175rpx 10rpx, rgba(255,255,255,0.7),  transparent),
+    radial-gradient(1rpx 1rpx at 205rpx 50rpx, rgba(255,248,220,0.55), transparent),
+    radial-gradient(1rpx 1rpx at 238rpx 35rpx, rgba(200,220,255,0.6),  transparent),
+    radial-gradient(1rpx 1rpx at 268rpx 78rpx, rgba(255,255,255,0.5),  transparent),
+    radial-gradient(1rpx 1rpx at 298rpx 22rpx, rgba(200,210,255,0.65), transparent),
+    radial-gradient(1rpx 1rpx at 325rpx 55rpx, rgba(255,255,255,0.7),  transparent),
+    radial-gradient(1rpx 1rpx at 352rpx 8rpx,  rgba(255,248,220,0.6),  transparent),
+    radial-gradient(1rpx 1rpx at 378rpx 68rpx, rgba(255,255,255,0.5),  transparent),
+    radial-gradient(1rpx 1rpx at 402rpx 40rpx, rgba(200,215,255,0.55), transparent),
+    radial-gradient(1rpx 1rpx at 430rpx 15rpx, rgba(255,255,255,0.75), transparent);
+  background-size: 450rpx 90rpx;
+  animation: twinkle2 5.5s ease-in-out infinite;
+  animation-delay: -1.5s;
+}
+
+/* ── Layer 2 — 中等亮星 ────────────────────────────────────── */
+.stars-mid {
+  position: absolute;
+  width: 100%; height: 78%; top: 2%;
+  background-image:
+    radial-gradient(1.5rpx 1.5rpx at 20rpx  30rpx, rgba(255,255,255,0.9),  transparent),
+    radial-gradient(1.5rpx 1.5rpx at 58rpx  58rpx, rgba(200,215,255,0.75), transparent),
+    radial-gradient(2rpx   2rpx   at 95rpx  12rpx, rgba(255,250,230,0.95), transparent),
+    radial-gradient(1.5rpx 1.5rpx at 132rpx 50rpx, rgba(200,210,255,0.7),  transparent),
+    radial-gradient(1.5rpx 1.5rpx at 170rpx 25rpx, rgba(255,255,255,0.8),  transparent),
+    radial-gradient(2rpx   2rpx   at 208rpx 65rpx, rgba(255,248,220,0.85), transparent),
+    radial-gradient(1.5rpx 1.5rpx at 245rpx 8rpx,  rgba(200,220,255,0.9),  transparent),
+    radial-gradient(1.5rpx 1.5rpx at 282rpx 45rpx, rgba(255,255,255,0.7),  transparent),
+    radial-gradient(2rpx   2rpx   at 318rpx 32rpx, rgba(255,248,220,0.85), transparent),
+    radial-gradient(1.5rpx 1.5rpx at 355rpx 70rpx, rgba(200,210,255,0.75), transparent),
+    radial-gradient(1.5rpx 1.5rpx at 392rpx 18rpx, rgba(255,255,255,0.8),  transparent),
+    radial-gradient(2rpx   2rpx   at 428rpx 55rpx, rgba(255,250,230,0.9),  transparent);
+  background-size: 460rpx 95rpx;
+  animation: twinkle2 7s ease-in-out infinite;
+  animation-delay: -2.5s;
+}
+
+/* ── Layer 3 — 明亮近星（稀疏、大粒） ──────────────────────── */
+.stars-near {
+  position: absolute;
+  width: 100%; height: 72%; top: 3%;
+  background-image:
+    radial-gradient(3rpx 3rpx   at 55rpx  35rpx, rgba(255,255,255,1),    transparent),
+    radial-gradient(3.5rpx 3.5rpx at 165rpx 20rpx, rgba(255,248,220,1), transparent),
+    radial-gradient(2.5rpx 2.5rpx at 275rpx 58rpx, rgba(200,220,255,0.95), transparent),
+    radial-gradient(4rpx 4rpx   at 385rpx 15rpx, rgba(255,250,235,1),    transparent),
+    radial-gradient(3rpx 3rpx   at 480rpx 48rpx, rgba(255,255,255,0.9),  transparent),
+    radial-gradient(3.5rpx 3.5rpx at 575rpx 28rpx, rgba(200,215,255,1), transparent),
+    radial-gradient(2.5rpx 2.5rpx at 665rpx 55rpx, rgba(255,255,255,0.95), transparent);
+  background-size: 720rpx 80rpx;
+  animation: twinkle3 10s ease-in-out infinite;
+  animation-delay: -4s;
+}
+
+/* ── Layer 3b — 星芒十字光（最亮几颗带衍射光芒） ────────── */
+.stars-near::before {
+  content: '';
+  position: absolute;
+  width: 100%; height: 100%;
+  background-image:
+    /* 竖线芒 */
+    radial-gradient(1rpx 8rpx at 165rpx 20rpx, rgba(255,250,235,0.7), transparent),
+    radial-gradient(1rpx 8rpx at 385rpx 15rpx, rgba(255,250,235,0.8), transparent),
+    radial-gradient(1rpx 6rpx at 575rpx 28rpx, rgba(200,215,255,0.6), transparent),
+    /* 横线芒 */
+    radial-gradient(8rpx 1rpx at 165rpx 20rpx, rgba(255,250,235,0.7), transparent),
+    radial-gradient(8rpx 1rpx at 385rpx 15rpx, rgba(255,250,235,0.8), transparent),
+    radial-gradient(6rpx 1rpx at 575rpx 28rpx, rgba(200,215,255,0.6), transparent);
+  background-size: 720rpx 80rpx;
+  animation: twinkle3 10s ease-in-out infinite;
+  animation-delay: -4s;
+}
+
+/* ── Layer 4 — 银河 ─────────────────────────────────────────
+   真实银河的特征：
+   · 核心偏向一侧（人马座方向），不在正中
+   · 宽度不均匀，有收窄和膨大
+   · 内部有暗星云裂缝（马头星云、煤袋星云等）
+   · 整体呈雾状流动，无规则竖线
+   ─────────────────────────────────────────────────────────── */
+
+/* 主光带 — 非对称，核心偏向43%位置 */
+.milky-way {
+  position: absolute;
+  width: 280%;
+  height: 62%;
+  top: 2%;
+  left: -90%;
+  transform: rotate(-28deg);
+  transform-origin: 45% 50%;
+  /* 不对称的星光带：左侧稀薄→核心区极亮→右侧逐渐消散 */
+  background: linear-gradient(
+    90deg,
+    transparent                     8%,
+    rgba(140,155,195,0.012)        16%,
+    rgba(170,182,218,0.032)        24%,
+    rgba(195,205,238,0.058)        31%,
+    rgba(215,222,250,0.088)        37%,
+    rgba(232,238,255,0.13)         42%,
+    rgba(248,250,255,0.18)         46%,  /* 核心最亮，偏左 */
+    rgba(255,255,255,0.20)         49%,
+    rgba(248,250,255,0.16)         52%,
+    rgba(230,235,255,0.10)         57%,
+    rgba(205,215,242,0.062)        64%,
+    rgba(175,188,222,0.030)        73%,
+    rgba(148,162,200,0.012)        83%,
+    transparent                    93%
+  );
+  filter: blur(9rpx);
+  pointer-events: none;
+  animation: galaxyBreath 18s ease-in-out infinite;
+}
+
+@keyframes galaxyBreath {
+  0%   { opacity: 0.8; filter: blur(9rpx);  }
+  35%  { opacity: 1;   filter: blur(7rpx);  }
+  70%  { opacity: 0.88;filter: blur(10rpx); }
+  100% { opacity: 0.8; filter: blur(9rpx);  }
+}
+
+/* 星云团 — 不规则分布，模拟真实星云团簇结构 */
+.milky-way::before {
+  content: '';
+  position: absolute;
+  width: 100%; height: 100%;
+  background-image:
+    /* ── 核心区星云团（密集，46-53%） ── */
+    radial-gradient(38rpx 11rpx at 47% 47%, rgba(255,252,240,0.16), transparent),
+    radial-gradient(22rpx 7rpx  at 50% 53%, rgba(240,242,255,0.12), transparent),
+    radial-gradient(30rpx 9rpx  at 44% 51%, rgba(255,250,235,0.13), transparent),
+    radial-gradient(18rpx 6rpx  at 52% 46%, rgba(230,238,255,0.10), transparent),
+    /* ── 核心左翼（稀疏，30-43%） ── */
+    radial-gradient(45rpx 8rpx  at 37% 50%, rgba(210,220,248,0.07), transparent),
+    radial-gradient(26rpx 6rpx  at 32% 46%, rgba(255,248,228,0.06), transparent),
+    radial-gradient(20rpx 5rpx  at 40% 54%, rgba(200,215,245,0.08), transparent),
+    radial-gradient(35rpx 7rpx  at 28% 49%, rgba(215,225,250,0.05), transparent),
+    /* ── 核心右翼（消散，55-78%） ── */
+    radial-gradient(28rpx 7rpx  at 58% 48%, rgba(220,228,252,0.07), transparent),
+    radial-gradient(40rpx 9rpx  at 64% 52%, rgba(200,212,245,0.06), transparent),
+    radial-gradient(22rpx 5rpx  at 71% 47%, rgba(210,218,248,0.05), transparent),
+    radial-gradient(32rpx 6rpx  at 78% 51%, rgba(195,208,240,0.04), transparent),
+    /* ── 暗星云裂缝 — 打破规则感的关键 ── */
+    radial-gradient(42rpx 9rpx  at 43% 49%, rgba(2,3,10,0.14),     transparent),
+    radial-gradient(28rpx 7rpx  at 55% 51%, rgba(1,2,8,0.11),      transparent),
+    radial-gradient(18rpx 5rpx  at 48% 45%, rgba(3,4,12,0.09),     transparent),
+    radial-gradient(35rpx 8rpx  at 34% 52%, rgba(1,2,7,0.08),      transparent),
+    radial-gradient(22rpx 6rpx  at 67% 48%, rgba(2,3,10,0.07),     transparent),
+    radial-gradient(16rpx 4rpx  at 74% 53%, rgba(1,2,8,0.06),      transparent);
+  filter: blur(6rpx);
+  animation: nebulaFlow 25s ease-in-out infinite;
+}
+
+@keyframes nebulaFlow {
+  0%   { opacity: 0.75; transform: translateX(0);      }
+  33%  { opacity: 1;    transform: translateX(-4rpx);  }
+  66%  { opacity: 0.85; transform: translateX(3rpx);   }
+  100% { opacity: 0.75; transform: translateX(0);      }
+}
+
+/* 银河内星尘 — 不等间距，密集在核心区 */
+.milky-way::after {
+  content: '';
+  position: absolute;
+  width: 100%; height: 100%;
+  background-image:
+    /* 核心区密集星点 */
+    radial-gradient(1rpx 1rpx at 44% 48%, rgba(255,255,255,0.7),  transparent),
+    radial-gradient(1rpx 1rpx at 46% 52%, rgba(200,214,255,0.55), transparent),
+    radial-gradient(1rpx 1rpx at 48% 47%, rgba(255,252,230,0.65), transparent),
+    radial-gradient(1rpx 1rpx at 50% 51%, rgba(255,255,255,0.75), transparent),
+    radial-gradient(1rpx 1rpx at 52% 49%, rgba(220,230,255,0.6),  transparent),
+    radial-gradient(1rpx 1rpx at 49% 53%, rgba(255,250,235,0.5),  transparent),
+    /* 左翼星点（越往左越稀疏） */
+    radial-gradient(1rpx 1rpx at 41% 50%, rgba(255,255,255,0.5),  transparent),
+    radial-gradient(1rpx 1rpx at 38% 47%, rgba(200,212,255,0.4),  transparent),
+    radial-gradient(1rpx 1rpx at 35% 52%, rgba(255,248,228,0.35), transparent),
+    radial-gradient(1rpx 1rpx at 31% 49%, rgba(255,255,255,0.28), transparent),
+    radial-gradient(1rpx 1rpx at 27% 51%, rgba(200,210,248,0.22), transparent),
+    /* 右翼星点（越往右越稀疏） */
+    radial-gradient(1rpx 1rpx at 56% 48%, rgba(255,255,255,0.45), transparent),
+    radial-gradient(1rpx 1rpx at 60% 52%, rgba(200,215,255,0.38), transparent),
+    radial-gradient(1rpx 1rpx at 65% 49%, rgba(255,248,228,0.3),  transparent),
+    radial-gradient(1rpx 1rpx at 70% 51%, rgba(255,255,255,0.22), transparent),
+    radial-gradient(1rpx 1rpx at 76% 48%, rgba(200,212,255,0.16), transparent),
+    /* 随机偏移额外星点，打破节律 */
+    radial-gradient(1rpx 1rpx at 43% 54%, rgba(255,255,255,0.4),  transparent),
+    radial-gradient(1rpx 1rpx at 53% 44%, rgba(230,240,255,0.45), transparent),
+    radial-gradient(1rpx 1rpx at 39% 53%, rgba(255,252,235,0.32), transparent),
+    radial-gradient(1rpx 1rpx at 62% 46%, rgba(255,255,255,0.28), transparent);
+  animation: twinkle2 6s ease-in-out infinite;
+  animation-delay: -2s;
+}
+
+/* ── Layer 5 — 地平线大气辉光（黄金草原光污染） ────────────── */
 .nebula {
   position: absolute;
-  width: 100%;
-  height: 60%;
-  bottom: 0;
-  background: linear-gradient(180deg, transparent 0%, rgba(88, 28, 135, 0.15) 30%, rgba(59, 7, 100, 0.2) 60%, rgba(30, 10, 50, 0.4) 100%);
-  filter: blur(30rpx);
+  width: 100%; height: 55%; bottom: 0;
+  background:
+    /* 主光晕：从透明到暖金 */
+    linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(60, 40, 15, 0.04) 15%,
+      rgba(100, 65, 15, 0.1) 30%,
+      rgba(150, 90, 20, 0.2) 50%,
+      rgba(196, 130, 35, 0.32) 68%,
+      rgba(210, 155, 50, 0.42) 82%,
+      rgba(180, 120, 30, 0.52) 100%
+    ),
+    /* 天际线上方的薄雾 */
+    radial-gradient(
+      ellipse 120% 40% at 50% 95%,
+      rgba(220, 170, 60, 0.25),
+      transparent
+    );
+  filter: blur(16rpx);
 }
 
-@keyframes twinkle {
-  0%, 100% { opacity: 0.8; }
-  50% { opacity: 1; }
+/* 地平线金色光边 */
+.nebula::before {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 4rpx;
+  background: linear-gradient(
+    90deg,
+    transparent 5%,
+    rgba(220,170,60,0.3) 20%,
+    rgba(255,200,80,0.5) 50%,
+    rgba(220,170,60,0.3) 80%,
+    transparent 95%
+  );
+  filter: blur(4rpx);
+}
+
+/* ── Layer 6 — 流星（两道划过夜空的亮线） ─────────────────── */
+.nebula::after {
+  content: '';
+  position: absolute;
+  top: 15%;
+  left: -10%;
+  width: 120rpx;
+  height: 2rpx;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+  transform: rotate(-35deg);
+  animation: shootingStar 8s ease-in-out infinite;
+  animation-delay: -2s;
+}
+
+@keyframes shootingStar {
+  0%      { opacity: 0; transform: rotate(-35deg) translateX(-200rpx); }
+  2%      { opacity: 1; }
+  6%      { opacity: 0; transform: rotate(-35deg) translateX(800rpx); }
+  100%    { opacity: 0; transform: rotate(-35deg) translateX(800rpx); }
+}
+
+/* ── Layer 7 — 草原起伏剪影 ────────────────────────────────── */
+.grassland {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 120rpx;
+  overflow: hidden;
+}
+.grassland::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: -15%;
+  width: 130%;
+  height: 100%;
+  background: linear-gradient(180deg, #1a0e06, #0d0906);
+  border-radius: 80% 120% 0 0 / 70rpx 50rpx 0 0;
+}
+.grassland::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 15%;
+  width: 110%;
+  height: 75%;
+  background: linear-gradient(180deg, #1a0e06, #0d0906);
+  border-radius: 50% 70% 0 0 / 45rpx 55rpx 0 0;
+}
+
+/* ── 地平线强化金光 ───────────────────────────────────────── */
+.horizon-glow {
+  position: absolute;
+  width: 100%; height: 35%;
+  bottom: 80rpx;
+  background: radial-gradient(
+    ellipse 90% 50% at 50% 100%,
+    rgba(220,170,60,0.18) 0%,
+    rgba(180,120,30,0.08) 40%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* ── 闪烁动画 — 多套不同节奏避免同步 ──────────────────────── */
+@keyframes twinkle1 {
+  0%   { opacity: 0.6; }
+  50%  { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+@keyframes twinkle2 {
+  0%   { opacity: 0.7; }
+  40%  { opacity: 1; }
+  80%  { opacity: 0.55; }
+  100% { opacity: 0.7; }
+}
+@keyframes twinkle3 {
+  0%   { opacity: 0.5; }
+  30%  { opacity: 0.9; }
+  70%  { opacity: 1; }
+  100% { opacity: 0.5; }
 }
 
 /* 角色立绘 */
@@ -5719,51 +6744,168 @@ page {
   letter-spacing: 4rpx;
 }
 
-/* 金色光晕按钮 */
+/* 开启入籍 — 星空风格按钮（细圈 + 磨砂玻璃背景） */
 .start-btn-wrap {
   position: absolute;
-  bottom: 28vh;
+  bottom: 26vh;
   left: 50%;
   transform: translateX(-50%);
   z-index: 30;
   cursor: pointer;
 }
 
+/* Outer breathing halo — two concentric rings */
 .start-btn-glow {
   position: absolute;
+  top: -28rpx;
+  left: -28rpx;
+  right: -28rpx;
+  bottom: -28rpx;
+  border: 1rpx solid rgba(196, 154, 60, 0.18);
+  border-radius: 50%;
+  animation: rimBreath 3s ease-in-out infinite;
+}
+.start-btn-glow::before {
+  content: '';
+  position: absolute;
   top: -20rpx;
-  left: -30rpx;
-  right: -30rpx;
+  left: -20rpx;
+  right: -20rpx;
   bottom: -20rpx;
-  background: radial-gradient(ellipse at center, rgba(212, 175, 55, 0.4) 0%, rgba(212, 175, 55, 0.1) 50%, transparent 70%);
-  border-radius: 100rpx;
-  animation: glowPulse 2s ease-in-out infinite;
+  border: 1rpx solid rgba(196, 154, 60, 0.08);
+  border-radius: 50%;
+  animation: rimBreath 3s ease-in-out infinite;
+  animation-delay: -1s;
 }
 
-@keyframes glowPulse {
-  0%, 100% { transform: scale(1); opacity: 0.8; }
-  50% { transform: scale(1.1); opacity: 1; }
+@keyframes rimBreath {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50%       { opacity: 1;   transform: scale(1.03); }
 }
 
 .start-btn-inner {
   position: relative;
-  width: 280rpx;
-  height: 280rpx;
+  width: 240rpx;
+  height: 240rpx;
   border-radius: 50%;
-  background: linear-gradient(135deg, #c49a3c 0%, #f5e6c8 50%, #c9a227 100%);
+  /* Dark glass — lets starfield show through */
+  background: rgba(13, 9, 6, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1.5rpx solid rgba(196, 154, 60, 0.55);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 
-    0 10rpx 40rpx rgba(212, 175, 55, 0.5),
-    inset 0 2rpx 10rpx rgba(255, 255, 255, 0.4);
+  box-shadow:
+    0 0 40rpx rgba(196, 154, 60, 0.12),
+    inset 0 0 30rpx rgba(196, 154, 60, 0.05);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.start-btn-inner:active {
+  border-color: rgba(196, 154, 60, 0.9);
+  box-shadow: 0 0 60rpx rgba(196, 154, 60, 0.3), inset 0 0 30rpx rgba(196, 154, 60, 0.1);
 }
 
 .start-btn-text {
-  font-size: 36rpx;
-  font-weight: 700;
-  color: #1c1410;
-  letter-spacing: 4rpx;
+  font-size: 32rpx;
+  font-weight: 500;
+  color: rgba(245, 240, 232, 0.92);
+  letter-spacing: 6rpx;
+  position: relative;
+  z-index: 2;
+  text-shadow: 0 0 20rpx rgba(196, 154, 60, 0.4);
+}
+
+/* ── 国风仪式感 — 按钮内同心环 ─────────────────────────────── */
+.btn-inner-ring {
+  position: absolute;
+  top: 22rpx;
+  left: 22rpx;
+  right: 22rpx;
+  bottom: 22rpx;
+  border-radius: 50%;
+  border: 1rpx solid rgba(196, 154, 60, 0.25);
+  pointer-events: none;
+  z-index: 1;
+}
+.btn-inner-ring-2 {
+  top: 38rpx;
+  left: 38rpx;
+  right: 38rpx;
+  bottom: 38rpx;
+  border-color: rgba(196, 154, 60, 0.12);
+}
+
+/* ── 国风角落装饰 ─────────────────────────────────────────── */
+.corner-tl, .corner-tr, .corner-bl, .corner-br {
+  position: absolute;
+  width: 48rpx;
+  height: 48rpx;
+  z-index: 25;
+  pointer-events: none;
+}
+.corner-tl {
+  top: 60rpx;
+  left: 36rpx;
+  border-top: 2rpx solid rgba(196,154,60,0.45);
+  border-left: 2rpx solid rgba(196,154,60,0.45);
+}
+.corner-tr {
+  top: 60rpx;
+  right: 36rpx;
+  border-top: 2rpx solid rgba(196,154,60,0.45);
+  border-right: 2rpx solid rgba(196,154,60,0.45);
+}
+.corner-bl {
+  bottom: 160rpx;
+  left: 36rpx;
+  border-bottom: 2rpx solid rgba(196,154,60,0.45);
+  border-left: 2rpx solid rgba(196,154,60,0.45);
+}
+.corner-br {
+  bottom: 160rpx;
+  right: 36rpx;
+  border-bottom: 2rpx solid rgba(196,154,60,0.45);
+  border-right: 2rpx solid rgba(196,154,60,0.45);
+}
+
+/* ── 国风标题装饰线 ───────────────────────────────────────── */
+.title-deco-row {
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+  width: 320rpx;
+  margin: 14rpx 0;
+}
+.deco-line {
+  flex: 1;
+  height: 1rpx;
+  background: linear-gradient(90deg, transparent, rgba(196,154,60,0.55), transparent);
+}
+.deco-rhombus {
+  width: 10rpx;
+  height: 10rpx;
+  background: rgba(196,154,60,0.75);
+  transform: rotate(45deg);
+  flex-shrink: 0;
+  box-shadow: 0 0 8rpx rgba(196,154,60,0.4);
+}
+
+/* ── 地平线强化金光 ───────────────────────────────────────── */
+.horizon-glow {
+  position: absolute;
+  width: 100%;
+  height: 30%;
+  bottom: 100rpx;
+  background: radial-gradient(
+    ellipse 80% 60% at 50% 100%,
+    rgba(196,154,60,0.22) 0%,
+    rgba(160,110,20,0.12) 40%,
+    transparent 100%
+  );
+  filter: blur(8rpx);
+  pointer-events: none;
 }
 
 /* 乙游风对话框 */
@@ -6004,11 +7146,11 @@ page {
 }
 
 .tab-item.active {
-  background: #1c1410;
+  background: rgba(196, 154, 60, 0.12);
 }
 
 .tab-item.active .tab-text {
-  color: #fff;
+  color: #c49a3c;
 }
 
 .tab-item.active .tab-icon {
@@ -6078,6 +7220,12 @@ page {
 
 .action-btn-icon {
   font-size: 36rpx;
+  width: 40rpx;
+  height: 40rpx;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
 }
 
 .action-btn-text {
@@ -6152,15 +7300,15 @@ page {
   right: 12rpx;
   width: 40rpx;
   height: 40rpx;
-  background: #1c1410;
+  background: linear-gradient(135deg, #c49a3c 0%, #b8882a 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: #1c1410;
   font-size: 24rpx;
   font-weight: bold;
-  box-shadow: 0 4rpx 8rpx rgba(28, 20, 16, 0.4);
+  box-shadow: 0 4rpx 8rpx rgba(196, 154, 60, 0.4);
 }
 
 /* 纸张选择 */
@@ -6336,9 +7484,10 @@ page {
   gap: 24rpx;
   margin: 24rpx;
   padding: 32rpx;
-  background: #1c1410;
+  background: linear-gradient(160deg, #1a0e08 0%, #2d1a08 50%, #3d2510 100%);
   border-radius: 28rpx;
-  box-shadow: 0 8rpx 32rpx rgba(28, 20, 16, 0.4);
+  box-shadow: 0 8rpx 32rpx rgba(196, 154, 60, 0.25);
+  border: 1rpx solid rgba(196, 154, 60, 0.2);
 }
 
 .challenge-icon-large {

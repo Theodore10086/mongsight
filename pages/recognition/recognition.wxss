@@ -80,9 +80,11 @@
 }
 
 .action-button.primary {
-  background: #1c1410;
-  color: #f5f0e8;
+  background: linear-gradient(135deg, #c49a3c 0%, #b8882a 100%);
+  color: #1c1410;
   border-color: transparent;
+  box-shadow: 0 4rpx 20rpx rgba(196, 154, 60, 0.35);
+  font-weight: 700;
 }
 
 /* ── SVG ICON SYSTEM ───────────────────────────────────────── */
@@ -96,7 +98,12 @@
   background-position: center;
 }
 
-/* Camera — light (for dark/primary button) */
+/* Camera — ink dark (for gold/amber primary button) */
+.icon-camera-ink {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'><path d='M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z'/><circle cx='12' cy='13' r='4'/></svg>");
+}
+
+/* Camera — light (legacy, kept for other uses) */
 .icon-camera-light {
   background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f5f0e8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z'/><circle cx='12' cy='13' r='4'/></svg>");
 }
@@ -154,8 +161,10 @@
 }
 
 .minor-button.primary {
-  background: #1c1410;
-  color: #f5f0e8;
+  background: linear-gradient(135deg, #c49a3c 0%, #b8882a 100%);
+  color: #1c1410;
+  font-weight: 700;
+  box-shadow: 0 4rpx 16rpx rgba(196, 154, 60, 0.3);
 }
 
 .minor-button.ghost {

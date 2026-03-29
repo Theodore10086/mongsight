@@ -98,8 +98,10 @@
 
 .action-button.primary,
 .minor-button.primary {
-  background: #1c1410;
-  color: #f5f0e8;
+  background: linear-gradient(135deg, #c49a3c 0%, #b8882a 100%);
+  color: #1c1410;
+  font-weight: 700;
+  box-shadow: 0 4rpx 20rpx rgba(196, 154, 60, 0.32);
 }
 
 .minor-button {

@@ -4,6 +4,11 @@ cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 
 const db = cloud.database();
 const _ = db.command;
+const ADMIN_CODE = '123456';
+
+function isAdminAuthorized(event = {}) {
+  return String(event.adminCode || '') === ADMIN_CODE;
+}
 
 async function upsertParticipant(openId, profile = {}, collectionConfig = {}) {
   const collection = db.collection('trajectory_participants');
@@ -116,7 +121,7 @@ async function listMySamples(openId, event = {}) {
   }
   const limit = Math.min(Number(event.limit) || 20, 100);
   const result = await db.collection('trajectory_samples')
-    .where({ openid: openId })
+    .where(isAdminAuthorized(event) ? {} : { openid: openId })
     .orderBy('submittedAt', 'desc')
     .limit(limit)
     .get();
@@ -142,8 +147,57 @@ async function listMySamples(openId, event = {}) {
       sessionId: item.sessionId,
       submittedAt: item.submittedAt,
       notes: item.notes || '',
-      isStandardSample: !!item.isStandardSample
+      isStandardSample: !!item.isStandardSample,
+      hasPreview: !!item.finalImageFileID
     }))
+  };
+}
+
+async function getSampleDetail(openId, event = {}) {
+  const sampleId = String(event.sampleId || '');
+  if (!sampleId) {
+    throw new Error('missing sampleId');
+  }
+
+  const sample = await db.collection('trajectory_samples').doc(sampleId).get();
+  const data = sample.data;
+  if (!data) {
+    throw new Error('sample not found');
+  }
+
+  if (data.openid !== openId && !isAdminAuthorized(event)) {
+    throw new Error('forbidden');
+  }
+
+  return {
+    id: data._id,
+    taskLabel: data.taskLabel,
+    taskId: data.taskId,
+    projectId: data.projectId,
+    projectName: data.projectName,
+    scriptType: data.scriptType,
+    contentLabel: data.contentLabel || '',
+    role: data.role,
+    qualityStatus: data.qualityStatus || 'pending',
+    reviewStatus: data.reviewStatus || 'pending',
+    pointCount: data.summary?.pointCount || 0,
+    strokeCount: data.summary?.strokeCount || 0,
+    durationMs: data.summary?.durationMs || 0,
+    deviceBrand: data.device?.brand || '',
+    deviceModel: data.device?.model || '',
+    participantId: data.participantId,
+    sessionId: data.sessionId,
+    submittedAt: data.submittedAt,
+    notes: data.notes || '',
+    isStandardSample: !!data.isStandardSample,
+    participantSnapshot: data.participantSnapshot || {},
+    device: data.device || {},
+    summary: data.summary || {},
+    strokes: data.strokes || [],
+    finalImageFileID: data.finalImageFileID || '',
+    finalImageCloudPath: data.finalImageCloudPath || '',
+    clientExportVersion: data.clientExportVersion || 'research-sample.v1',
+    tags: Array.isArray(data.tags) ? data.tags : []
   };
 }
 
@@ -164,7 +218,7 @@ async function updateReviewStatus(openId, event = {}) {
     throw new Error('sample not found');
   }
 
-  if (target.data.openid !== openId) {
+  if (target.data.openid !== openId && !isAdminAuthorized(event)) {
     throw new Error('forbidden');
   }
 
@@ -183,6 +237,33 @@ async function updateReviewStatus(openId, event = {}) {
   };
 }
 
+async function batchReview(event = {}) {
+  if (!isAdminAuthorized(event)) {
+    throw new Error('admin auth required');
+  }
+
+  const reviewStatus = String(event.reviewStatus || 'approved');
+  const sampleIds = Array.isArray(event.sampleIds) ? event.sampleIds.filter(Boolean) : [];
+  if (!sampleIds.length) {
+    throw new Error('missing sampleIds');
+  }
+
+  for (const sampleId of sampleIds) {
+    await db.collection('trajectory_samples').doc(sampleId).update({
+      data: {
+        reviewStatus,
+        qualityStatus: reviewStatus === 'approved' ? 'reviewed' : 'pending',
+        updatedAt: db.serverDate()
+      }
+    });
+  }
+
+  return {
+    count: sampleIds.length,
+    reviewStatus
+  };
+}
+
 exports.main = async (event = {}) => {
   const { OPENID } = cloud.getWXContext();
   const action = event.action || 'submitSample';
@@ -193,6 +274,8 @@ exports.main = async (event = {}) => {
         return { success: true, data: await submitSample(OPENID, event) };
       case 'listMySamples':
         return { success: true, data: await listMySamples(OPENID, event) };
+      case 'getSampleDetail':
+        return { success: true, data: await getSampleDetail(OPENID, event) };
       case 'upsertParticipant':
         return {
           success: true,
@@ -202,6 +285,8 @@ exports.main = async (event = {}) => {
         };
       case 'updateReviewStatus':
         return { success: true, data: await updateReviewStatus(OPENID, event) };
+      case 'batchReview':
+        return { success: true, data: await batchReview(event) };
       default:
         return { success: false, error: `unsupported action: ${action}` };
     }

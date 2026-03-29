@@ -133,7 +133,7 @@ const calligraphyMap = {
     mongolian: '',
     title: '采集字帖',
     audioSrc: '',
-    bgImage: '/assets/images/songshu.jpg',
+    bgImage: '',
     framePrefix: 'frame_collection_',
     tips: '用于轨迹采集与回放复核，可自由书写并提交研究样本。',
     guides: []
@@ -152,10 +152,10 @@ Page({
     
     // TabBar 配置
     tabs: [
-      { id: 0, name: '首页', icon: '🏠', activeIcon: '🏠' },
-      { id: 1, name: '商城', icon: '🛒', activeIcon: '🛒' },
-      { id: 2, name: '社区', icon: '💬', activeIcon: '💬' },
-      { id: 3, name: '我', icon: '👤', activeIcon: '👤' }
+      { id: 0, name: '首页' },
+      { id: 1, name: '商城' },
+      { id: 2, name: '社区' },
+      { id: 3, name: '我' }
     ],
     
     // 商城数据
@@ -208,7 +208,7 @@ Page({
       { id: 4, avatar: '🌟', nickname: '墨韵大师', content: '今日创作：草原天路。蒙古文书法的魅力在于线条的流畅与力度并存。', images: [], likes: 36, comments: 12, liked: false, commentsList: [] },
       { id: 5, avatar: '🐎', nickname: '草原雄鹰', content: '分享一个学习蒙古文书法的技巧：先从基本笔画开始，循序渐进。', images: [], likes: 18, comments: 5, liked: false, commentsList: [] },
       { id: 6, avatar: '🦅', nickname: '雄鹰展翅', content: '蒙古文书法太有魅力了！练习了一个月，终于掌握了基本笔画的写法。继续加油！', images: [], likes: 15, comments: 4, liked: false, commentsList: [] },
-      { id: 7, avatar: '🌙', nickname: '草原明月', content: '推荐一个学习蒙古文书法的APP——蒙格穿梭，界面美观，内容丰富，非常适合初学者！', images: [], likes: 28, comments: 7, liked: false, commentsList: [] },
+      { id: 7, avatar: '🌙', nickname: '草原明月', content: '推荐一个学习蒙古文书法的APP——智墨穿梭，界面美观，内容丰富，非常适合初学者！', images: [], likes: 28, comments: 7, liked: false, commentsList: [] },
       { id: 8, avatar: '🔥', nickname: '书法热情', content: '今日练习成果：终于写出了满意的"爱"字！蒙古文的笔画真的太优美了。', images: [], likes: 42, comments: 15, liked: false, commentsList: [] },
       { id: 9, avatar: '💎', nickname: '墨玉公子', content: '蒙文书法入门难不难？我来分享一下我的学习方法，希望能帮到大家。', images: [], likes: 20, comments: 6, liked: false, commentsList: [] },
       { id: 10, avatar: '🌈', nickname: '彩虹草原', content: '今天参加了草原书法展，看到了很多蒙古文书法大家的作品，太震撼了！', images: [], likes: 55, comments: 18, liked: false, commentsList: [] }
@@ -273,17 +273,18 @@ Page({
       y: 0          // Y轴偏移
     },
 
+    isPinching: false, // 双指缩放状态
+    pinchData: {
+      initialDistance: 0,    // 初始双指距离
+      initialScale: 1.0,     // 初始缩放值
+      initialOpacity: 0.5,  // 初始透明度
+      initialCenterY: 0      // 初始中心Y用于透明度调节
+    },
+
     showLessonPicker: false, // 控制选帖面板显示
 
     isToolbarCollapsed: false, // 控制底部工具栏折叠状态
     isToolbarMinimized: false, // 控制底部工具栏最小化状态
-    
-    // 悬浮球相关状态
-    isBallExpanded: false, // 悬浮球展开状态
-    ballPosition: {
-      x: 300, // 悬浮球初始位置x
-      y: 400  // 悬浮球初始位置y
-    },
 
     // 提示框拖拽相关状态
     tipPosition: {
@@ -607,6 +608,8 @@ Page({
     // --- 用户身份与引导状态 ---
     identityState: 'UNAUTH',  // UNAUTH | AUTH_SUCCESS | VIDEO_INTRO | WRITING_TEST
     hasGuided: false,         // 是否已完成新手引导
+    loginAvatar: '',          // 登录页头像
+    loginNickname: '',        // 登录页昵称
     // --------------------
     previewImageSrc: '',
     playbackPreviewImageSrc: '',
@@ -651,11 +654,20 @@ Page({
     showCollectionRecords: false,
     showCollectionRecordDetail: false,
     collectionSubmitResult: null,
+    showMengbaoActionSheet: false,
     allCollectionRecords: [],
     collectionRecords: [],
     isLoadingCollectionRecords: false,
     collectionRecordFilter: 'all',
+    collectionRecordScriptFilter: 'all',
+    collectionRecordRoleFilter: 'all',
+    showCollectionAdvancedFilters: false,
+    isAdminMode: false,
+    adminCodeVerified: false,
     selectedCollectionRecord: {},
+    selectedCollectionRecordRawPayload: null,
+    selectedCollectionRecordPreviewSrc: '',
+    isLoadingSelectedCollectionRecord: false,
     replayDisplayMode: 'trajectory',
     collectionConfig: {
       projectId: 'mengge-lab',
@@ -819,11 +831,115 @@ Page({
     }
 
     try {
-      return await this.captureSimpleCanvasPreview(true)
+      return await this.renderStrokePreview(this.data.allStrokes, {
+        updateState: true,
+        strokeColor: '#111111',
+        backgroundColor: '#ffffff'
+      })
     } catch (error) {
       console.warn('[Collection] refreshPlaybackPreview failed:', error)
       return ''
     }
+  },
+
+  async renderStrokePreview(strokes = [], options = {}) {
+    if (!strokes || !strokes.length) {
+      if (options.updateState) {
+        this.setData({ playbackPreviewImageSrc: '' })
+      }
+      return ''
+    }
+
+    return new Promise((resolve, reject) => {
+      const query = wx.createSelectorQuery()
+      query.select('#previewCanvas')
+        .fields({ node: true, size: true })
+        .exec((res) => {
+          if (!res || !res[0] || !res[0].node) {
+            reject(new Error('preview canvas unavailable'))
+            return
+          }
+
+          try {
+            const canvas = res[0].node
+            const ctx = canvas.getContext('2d')
+            const dpr = wx.getSystemInfoSync().pixelRatio || 2
+            const width = 420
+            const height = 620
+            canvas.width = width * dpr
+            canvas.height = height * dpr
+            ctx.scale(dpr, dpr)
+
+            ctx.clearRect(0, 0, width, height)
+            ctx.fillStyle = options.backgroundColor || '#ffffff'
+            ctx.fillRect(0, 0, width, height)
+            ctx.lineCap = 'round'
+            ctx.lineJoin = 'round'
+
+            let minX = Infinity
+            let minY = Infinity
+            let maxX = -Infinity
+            let maxY = -Infinity
+            strokes.forEach((stroke) => {
+              const points = stroke.points || stroke || []
+              points.forEach((point) => {
+                if (typeof point.x === 'number' && typeof point.y === 'number') {
+                  minX = Math.min(minX, point.x)
+                  minY = Math.min(minY, point.y)
+                  maxX = Math.max(maxX, point.x)
+                  maxY = Math.max(maxY, point.y)
+                }
+              })
+            })
+
+            const bboxWidth = Math.max(1, maxX - minX)
+            const bboxHeight = Math.max(1, maxY - minY)
+            const paddingX = 48
+            const paddingY = 42
+            const scale = Math.min(
+              (width - paddingX * 2) / bboxWidth,
+              (height - paddingY * 2) / bboxHeight
+            ) * 0.92
+            const offsetX = (width - bboxWidth * scale) / 2 - minX * scale
+            const offsetY = (height - bboxHeight * scale) / 2 - minY * scale
+
+            strokes.forEach((stroke) => {
+              const points = stroke.points || stroke || []
+              if (!points.length) return
+              ctx.beginPath()
+              points.forEach((point, index) => {
+                const x = point.x * scale + offsetX
+                const y = point.y * scale + offsetY
+                if (index === 0) {
+                  ctx.moveTo(x, y)
+                } else {
+                  ctx.lineTo(x, y)
+                }
+              })
+              const force = Number(points[points.length - 1]?.f || points[points.length - 1]?.pressure || 0.5)
+              ctx.lineWidth = Math.max(4, Math.min(12, 5 + force * 4))
+              ctx.strokeStyle = options.strokeColor || '#111111'
+              ctx.stroke()
+            })
+
+            wx.canvasToTempFilePath({
+              canvas,
+              fileType: 'png',
+              success: (result) => {
+                if (options.updateState) {
+                  this.setData({
+                    playbackPreviewImageSrc: result.tempFilePath
+                  })
+                }
+                resolve(result.tempFilePath)
+              },
+              fail: reject
+            })
+          } catch (error) {
+            reject(error)
+          }
+        })
+    })
   },
 
   resetPlaybackOverlayState() {
@@ -885,8 +1001,77 @@ Page({
     return nextItem
   },
 
+  mapPendingCollectionRecord(item = {}) {
+    const payload = item.payload || {}
+    return {
+      id: item.id,
+      taskLabel: payload?.task?.taskLabel || '离线待同步样本',
+      taskId: payload?.task?.taskId || '',
+      projectId: payload?.project?.projectId || 'mengge-lab',
+      projectName: payload?.project?.projectName || '文字轨迹采集计划',
+      scriptType: payload?.task?.scriptTypeLabel || payload?.task?.scriptType || '未知',
+      scriptTypeKey: payload?.task?.scriptType || 'mongolian',
+      role: payload?.participant?.roleLabel || payload?.participant?.role || '未知',
+      roleKey: payload?.participant?.role || 'participant',
+      qualityStatus: 'pending',
+      reviewStatus: 'local-pending',
+      pointCount: payload?.sample?.summary?.pointCount || 0,
+      strokeCount: payload?.sample?.summary?.strokeCount || 0,
+      durationMs: payload?.sample?.summary?.durationMs || 0,
+      contentLabel: payload?.task?.contentLabel || '',
+      submittedAt: item.createdAt,
+      notes: item.errorMessage || '',
+      isStandardSample: !!payload?.sample?.isStandardSample,
+      rawPayload: payload
+    }
+  },
+
+  buildCollectionPayloadFromRecord(record = {}) {
+    if (record.rawPayload) {
+      return record.rawPayload
+    }
+
+    return {
+      version: record.clientExportVersion || 'research-sample.v1',
+      exportTime: record.submittedAt || new Date().toISOString(),
+      project: {
+        projectId: record.projectId || 'mengge-lab',
+        projectName: record.projectName || '文字轨迹采集计划'
+      },
+      task: {
+        taskId: record.taskId || '',
+        taskLabel: record.taskLabel || '',
+        contentLabel: record.contentLabel || '',
+        scriptType: record.scriptTypeKey || record.scriptType || 'mongolian',
+        scriptTypeLabel: SCRIPT_TYPE_LABELS[record.scriptTypeKey || record.scriptType] || record.scriptType || '蒙古文'
+      },
+      participant: {
+        participantId: record.participantId || '',
+        role: record.roleKey || record.role || 'participant',
+        roleLabel: ROLE_LABELS[record.roleKey || record.role] || record.role || '普通样本',
+        nickname: record.participantSnapshot?.nickname || this.data.userProfile?.nickName || this.data.userProfile?.nickname || '',
+        avatar: record.participantSnapshot?.avatar || this.data.userProfile?.avatarUrl || this.data.userProfile?.avatar || ''
+      },
+      device: record.device || {},
+      sample: {
+        sampleLocalId: record.id || '',
+        isStandardSample: !!record.isStandardSample,
+        summary: record.summary || {
+          strokeCount: record.strokeCount || 0,
+          pointCount: record.pointCount || 0,
+          durationMs: record.durationMs || 0
+        },
+        previewFileID: record.finalImageFileID || '',
+        previewCloudPath: record.finalImageCloudPath || ''
+      },
+      strokes: record.strokes || []
+    }
+  },
+
   applyCollectionRecordFilters(records = this.data.allCollectionRecords || []) {
     const filter = this.data.collectionRecordFilter || 'all'
+    const scriptFilter = this.data.collectionRecordScriptFilter || 'all'
+    const roleFilter = this.data.collectionRecordRoleFilter || 'all'
     let nextRecords = records
 
     if (filter === 'offline') {
@@ -897,10 +1082,58 @@ Page({
       nextRecords = records.filter((item) => item.reviewStatus && !['pending', 'local-pending'].includes(item.reviewStatus))
     }
 
+    if (scriptFilter !== 'all') {
+      nextRecords = nextRecords.filter((item) => item.scriptTypeKey === scriptFilter || item.scriptType === scriptFilter)
+    }
+
+    if (roleFilter !== 'all') {
+      nextRecords = nextRecords.filter((item) => item.roleKey === roleFilter || item.role === roleFilter)
+    }
+
     this.setData({
       allCollectionRecords: records,
       collectionRecords: nextRecords
     })
+  },
+
+  async ensureAdminMode() {
+    if (this.data.adminCodeVerified) {
+      return true
+    }
+
+    const result = await new Promise((resolve) => {
+      wx.showModal({
+        title: '管理员验证',
+        content: '请输入管理员验证码',
+        editable: true,
+        placeholderText: '请输入 123456',
+        success: resolve,
+        fail: () => resolve({ confirm: false })
+      })
+    })
+
+    if (!result.confirm) {
+      return false
+    }
+
+    const code = String(result.content || '').trim()
+    if (code !== '123456') {
+      wx.showToast({
+        title: '验证码错误',
+        icon: 'none'
+      })
+      return false
+    }
+
+    this.setData({
+      isAdminMode: true,
+      adminCodeVerified: true
+    })
+    wx.showToast({
+      title: '已进入管理员模式',
+      icon: 'success'
+    })
+    return true
   },
 
   onLoad() {
@@ -908,11 +1141,11 @@ Page({
     this.ensureCollectionConfig()
     this.setData({
       tabs: [
-        { id: 0, name: '\u9996\u9875', icon: '🏠', activeIcon: '🏠' },
-        { id: 4, name: '\u8bc6\u522b', icon: '📷', activeIcon: '📷', pagePath: '/pages/scan/scan' },
-        { id: 2, name: '\u793e\u533a', icon: '💬', activeIcon: '💬' },
-        { id: 1, name: '\u5546\u57ce', icon: '🛍️', activeIcon: '🛍️' },
-        { id: 3, name: '\u6211', icon: '🙂', activeIcon: '🙂' }
+        { id: 0, name: '首页' },
+        { id: 4, name: '识别', pagePath: '/pages/scan/scan' },
+        { id: 2, name: '社区' },
+        { id: 1, name: '商城' },
+        { id: 3, name: '我' }
       ]
     })
     // 初始化云开发
@@ -1027,121 +1260,118 @@ Page({
 
   // 微信登录授权
   onWechatLogin() {
+    const nickName = (this.data.loginNickname || '').trim() || '新用户'
+    const avatarUrl = this.data.loginAvatar || ''
+    const userInfo = { nickName, avatarUrl }
+
     wx.showLoading({ title: '登录中...', mask: true })
-    
-    wx.getUserProfile({
-      desc: '用于创建你的书法档案',
-      success: async (res) => {
-        console.log('[Login] 微信授权成功')
-        
-        const userInfo = res.userInfo
-        
-        wx.login({
-          success: async (loginRes) => {
-            console.log('[Login] wx.login success:', loginRes.code)
-            
-            try {
-              const cloudResult = await wx.cloud.callFunction({
-                name: 'login',
-                data: { userInfo: userInfo }
-              })
-              
-              console.log('[Login] 云函数调用结果:', cloudResult)
-              
-              let userData
-              if (cloudResult && cloudResult.result && cloudResult.result.success) {
-                const cloudUser = cloudResult.result.data
-                userData = {
-                  ...userInfo,
-                  openId: cloudUser.openId,
-                  userId: cloudUser.userId,
-                  code: loginRes.code,
-                  level: cloudUser.level || 1,
-                  title: '牧羊人',
-                  totalScore: cloudUser.totalScore || 0,
-                  experience: cloudUser.experience || 0,
-                  inkJades: 100,
-                  authTime: Date.now()
-                }
-              } else {
-                userData = {
-                  ...userInfo,
-                  code: loginRes.code,
-                  level: 1,
-                  title: '牧羊人',
-                  inkJades: 100,
-                  authTime: Date.now()
-                }
-              }
-              
-              wx.setStorageSync('userInfo', userData)
-              
-              const hasCompletedOnboarding = wx.getStorageSync('hasCompletedOnboarding') || false
-              
-              this.setData({
-                identityState: 'AUTH_SUCCESS',
-                userProfile: userData,
-                hasGuided: false,
-                guideEnabled: false
-              })
-              
-              wx.hideLoading()
-              
-              wx.showToast({ title: '登录成功', icon: 'success' })
-              
-              setTimeout(() => {
-                const guideComponent = this.selectComponent('#guide-component')
-                if (guideComponent) {
-                  console.log('[Login] Login success, guide component found')
-                } else {
-                  console.error('[Login] Guide component not found!')
-                }
-              }, 500)
-            } catch (cloudErr) {
-              console.error('[Login] 云函数调用失败:', cloudErr)
-              
-              const userData = {
-                ...userInfo,
-                code: loginRes.code,
-                level: 1,
-                title: '牧羊人',
-                inkJades: 100,
-                authTime: Date.now()
-              }
-              
-              wx.setStorageSync('userInfo', userData)
-              
-              this.setData({
-                identityState: 'AUTH_SUCCESS',
-                userProfile: userData,
-                hasGuided: false,
-                guideEnabled: false
-              })
-              
-              wx.hideLoading()
-              wx.showToast({ title: '登录成功(本地模式)', icon: 'success' })
-              
-              setTimeout(() => {
-                const guideComponent = this.selectComponent('#guide-component')
-                if (guideComponent) {
-                  console.log('[Login] Login success, guide component found')
-                }
-              }, 500)
+
+    wx.login({
+      success: async (loginRes) => {
+        console.log('[Login] wx.login success')
+        try {
+          const cloudResult = await wx.cloud.callFunction({
+            name: 'login',
+            data: { userInfo }
+          })
+          console.log('[Login] 云函数调用结果:', cloudResult)
+          let userData
+          if (cloudResult && cloudResult.result && cloudResult.result.success) {
+            const cloudUser = cloudResult.result.data
+            userData = {
+              ...userInfo,
+              openId: cloudUser.openId,
+              userId: cloudUser.userId,
+              level: cloudUser.level || 1,
+              title: '牧羊人',
+              totalScore: cloudUser.totalScore || 0,
+              experience: cloudUser.experience || 0,
+              inkJades: 100,
+              authTime: Date.now()
             }
-          },
-          fail: (err) => {
-            console.error('[Login] wx.login fail:', err)
-            wx.hideLoading()
-            wx.showToast({ title: '登录失败', icon: 'none' })
+          } else {
+            userData = {
+              ...userInfo,
+              level: 1,
+              title: '牧羊人',
+              inkJades: 100,
+              authTime: Date.now()
+            }
           }
-        })
+          wx.setStorageSync('userInfo', userData)
+          this.setData({
+            identityState: 'AUTH_SUCCESS',
+            userProfile: userData,
+            hasGuided: false,
+            guideEnabled: false
+          })
+          wx.hideLoading()
+          wx.showToast({ title: '登录成功', icon: 'success' })
+          setTimeout(() => {
+            const guideComponent = this.selectComponent('#guide-component')
+            if (guideComponent) {
+              console.log('[Login] Login success, guide component found')
+            } else {
+              console.error('[Login] Guide component not found!')
+            }
+          }, 500)
+        } catch (cloudErr) {
+          console.error('[Login] 云函数调用失败:', cloudErr)
+          const userData = {
+            ...userInfo,
+            level: 1,
+            title: '牧羊人',
+            inkJades: 100,
+            authTime: Date.now()
+          }
+          wx.setStorageSync('userInfo', userData)
+          this.setData({
+            identityState: 'AUTH_SUCCESS',
+            userProfile: userData,
+            hasGuided: false,
+            guideEnabled: false
+          })
+          wx.hideLoading()
+          wx.showToast({ title: '登录成功(本地模式)', icon: 'success' })
+          setTimeout(() => {
+            const guideComponent = this.selectComponent('#guide-component')
+            if (guideComponent) {
+              console.log('[Login] Login success, guide component found')
+            }
+          }, 500)
+        }
       },
       fail: (err) => {
-        console.error('[Login] getUserProfile fail:', err)
+        console.error('[Login] wx.login fail:', err)
         wx.hideLoading()
-        wx.showToast({ title: '需要授权才能继续', icon: 'none' })
+        wx.showToast({ title: '登录失败', icon: 'none' })
       }
     })
+  },
+
+  // 跳过登录，以游客身份体验
+  onSkipLogin() {
+    this.setData({
+      identityState: 'AUTH_SUCCESS',
+      userProfile: {
+        nickName: '游客',
+        avatarUrl: '',
+        level: 1,
+        title: '牧羊人',
+        inkJades: 0,
+        isGuest: true
+      },
+      hasGuided: false,
+      guideEnabled: false
+    })
+  },
+
+  onChooseAvatar(e) {
+    this.setData({ loginAvatar: e.detail.avatarUrl })
+  },
+
+  onNicknameInput(e) {
+    this.setData({ loginNickname: e.detail.value })
   },
 
   onIntroVideoEnded() {
@@ -1296,65 +1526,175 @@ Page({
 
   // --- 核心交互区 ---
 
+  getTouchDistance(touches) {
+    if (touches.length < 2) return 0;
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  },
+
+  getTouchCenterY(touches) {
+    if (touches.length < 2) return touches[0].clientY;
+    return (touches[0].clientY + touches[1].clientY) / 2;
+  },
+
+  findStylusTouch(touches) {
+    for (let i = 0; i < touches.length; i++) {
+      const touch = touches[i];
+      if (touch.touchType === 'stylus' || touch.touchType === 'direct') {
+        return touch;
+      }
+    }
+    return null;
+  },
+
+  hasStylusAndFinger(touches) {
+    let hasStylus = false;
+    let hasFinger = false;
+    for (let i = 0; i < touches.length; i++) {
+      const touch = touches[i];
+      if (touch.touchType === 'stylus' || touch.touchType === 'direct') {
+        hasStylus = true;
+      } else if (!touch.force) {
+        hasFinger = true;
+      }
+    }
+    return hasStylus && hasFinger;
+  },
+
   onTouchStart(e) {
-    const touch = e.touches[0]
-    console.log('[Canvas] onTouchStart 触发', touch)
-    
-    // 防止误触：检测触控类型
-    // stylus/ink 手写笔类型才允许书写
-    if (touch.touchType && touch.touchType !== 'stylus' && touch.touchType !== 'direct') {
-      console.log('[Canvas] 忽略非手写笔触控:', touch.touchType)
-      return
+    const touches = e.touches;
+
+    if (touches.length >= 2 && this.data.showTemplate) {
+      if (this.hasStylusAndFinger(touches)) {
+        console.log('[Canvas] 检测到笔和手指同时触摸，优先使用笔');
+        const stylusTouch = this.findStylusTouch(touches);
+        if (stylusTouch) {
+          e.touches = [stylusTouch];
+        }
+      } else {
+        const distance = this.getTouchDistance(touches);
+        const centerY = this.getTouchCenterY(touches);
+        this.data.isPinching = true;
+        this.data.pinchData = {
+          initialDistance: distance,
+          initialScale: this.data.templateSettings.scale,
+          initialOpacity: this.data.templateSettings.opacity,
+          initialCenterY: centerY
+        };
+        console.log('[Canvas] 双指缩放开始', this.data.pinchData);
+        return;
+      }
     }
-    
-    // 如果没有压力感应但有多个触控点，可能是手指误触
-    if (!touch.force && e.touches.length > 1) {
-      console.log('[Canvas] 忽略多点触控(可能是手指)')
-      return
+
+    const touch = touches[0];
+    console.log('[Canvas] onTouchStart 触发', {
+      touchType: touch.touchType,
+      force: touch.force,
+      x: touch.x,
+      y: touch.y
+    });
+
+    if (touch.touchType === 'indirect' || touch.touchType === 'palm') {
+      console.log('[Canvas] 忽略非直接触控:', touch.touchType);
+      return;
     }
-    
-    this.onCanvasStrokeForGuide()
-    
-    const { x, y } = touch
-    
+
+    if (!touch.force && touches.length > 1) {
+      console.log('[Canvas] 忽略多点触控 (可能是手指)');
+      return;
+    }
+
+    this.onCanvasStrokeForGuide();
+
+    const { x, y } = touch;
+    const pressure = touch.force || 0;
+    // iOS 上 force 可能为 1 或 undefined，需要限制
+    let effectivePressure = 0.3;
+    if (pressure > 0 && pressure <= 1) {
+      effectivePressure = pressure;
+    }
+    if (effectivePressure < 0.3) {
+      effectivePressure = 0.3;
+    }
+
     this.setData({
       lastX: x,
       lastY: y,
       lastTime: Date.now(),
-      currentWidth: this.data.baseWidth * 0.8
+      currentWidth: this.data.baseWidth * (0.5 + effectivePressure * 0.6)
     });
-    
+
     if (!this.data.ctx) {
       this.initCanvas();
     }
-    
-    this.data.lastVelocity = 0
-    this.data.currentMomentum = this.data.baseWidth * 0.8
-    this.data.currentStroke = [{ x, y, t: this.data.lastTime, v: 0 }]
-    this.data.lastPoint = { x, y }
-    this.data.lastDirection = undefined
-    
-    // 优化起笔：画一个稍大的圆点，保证起笔圆润
-    this.drawBrushPoint(x, y, this.data.baseWidth * 0.8, 0)
+
+    this.data.lastVelocity = 0;
+    this.data.currentMomentum = this.data.baseWidth * (0.5 + effectivePressure * 0.6);
+    this.data.currentStroke = [{ x, y, t: this.data.lastTime, v: 0 }];
+    this.data.lastPoint = { x, y };
+    this.data.lastDirection = undefined;
+
+    const startRadius = this.data.baseWidth * (0.4 + effectivePressure * 0.5);
+    this.drawBrushPoint(x, y, startRadius, 0);
   },
 
   onTouchMove(e) {
+    if (this.data.isPinching && e.touches.length >= 2) {
+      if (this.hasStylusAndFinger(e.touches)) {
+        console.log('[Canvas] 移动中检测到笔和手指同时触摸，忽略移动');
+        return;
+      }
+
+      const touches = e.touches;
+      const currentDistance = this.getTouchDistance(touches);
+      const currentCenterY = this.getTouchCenterY(touches);
+      const { initialDistance, initialScale, initialOpacity, initialCenterY } = this.data.pinchData;
+
+      if (initialDistance > 0) {
+        const scaleRatio = currentDistance / initialDistance;
+        const newScale = Math.max(0.5, Math.min(2.0, initialScale * scaleRatio));
+
+        const yDelta = currentCenterY - initialCenterY;
+        const opacityDelta = yDelta / 500;
+        const newOpacity = Math.max(0.1, Math.min(1.0, initialOpacity + opacityDelta));
+
+        this.setData({
+          'templateSettings.scale': newScale,
+          'templateSettings.opacity': newOpacity
+        });
+        console.log('[Canvas] 双指缩放中', { newScale, newOpacity, yDelta });
+      }
+      return;
+    }
+
     if (!this.data.ctx) {
       console.warn('Canvas context lost, attempting to reconnect...');
       this.initCanvas();
       return;
     }
 
-    const touch = e.touches[0]
-    
-    if (touch.touchType && touch.touchType !== 'stylus' && touch.touchType !== 'direct') {
-      return
-    }
-    if (!touch.force && e.touches.length > 1) {
-      return
+    let touches = e.touches;
+
+    if (this.hasStylusAndFinger(touches)) {
+      console.log('[Canvas] 移动中检测到笔和手指同时触摸，优先使用笔');
+      const stylusTouch = this.findStylusTouch(touches);
+      if (stylusTouch) {
+        touches = [stylusTouch];
+      }
     }
 
-    const { x, y } = touch
+    const touch = touches[0];
+
+    if (touch.touchType === 'indirect' || touch.touchType === 'palm') {
+      return;
+    }
+
+    if (!touch.force && touches.length > 1) {
+      return;
+    }
+
+    const { x, y } = touch;
     
     const screenHeight = this.data.canvasHeight || 800;
     const threshold = screenHeight - 150;
@@ -1520,19 +1860,20 @@ Page({
   },
 
   onTouchEnd() {
-    this.setData({ capsuleOpacity: 1 })
+    this.data.isPinching = false;
+    this.setData({ capsuleOpacity: 1 });
     if (this.data.currentStroke.length > 0) {
       const newStrokes = [...this.data.allStrokes, {
         points: this.data.currentStroke,
         color: this.data.currentColor
-      }]
+      }];
       this.setData({
         allStrokes: newStrokes,
         currentStroke: []
-      })
+      });
     }
-    this.data.lastPoint = { x: 0, y: 0 }
-    this.data.lastDirection = undefined
+    this.data.lastPoint = { x: 0, y: 0 };
+    this.data.lastDirection = undefined;
   },
 
   // 简单书写区域初始化
@@ -1574,42 +1915,83 @@ Page({
   },
 
   onSimpleTouchStart(e) {
-    console.log('[SimpleCanvas] 触摸开始', e.touches[0])
+    console.log('[SimpleCanvas] 触摸开始', {
+      touchType: e.touches[0].touchType,
+      force: e.touches[0].force
+    });
+    const touches = e.touches;
+
+    if (touches.length >= 2 && this.data.showTemplate) {
+      if (this.hasStylusAndFinger(touches)) {
+        console.log('[SimpleCanvas] 检测到笔和手指同时触摸，优先使用笔');
+        const stylusTouch = this.findStylusTouch(touches);
+        if (stylusTouch) {
+          touches = [stylusTouch];
+        }
+      } else {
+        const distance = this.getTouchDistance(touches);
+        const centerY = this.getTouchCenterY(touches);
+        this.data.isPinching = true;
+        this.data.pinchData = {
+          initialDistance: distance,
+          initialScale: this.data.templateSettings.scale,
+          initialOpacity: this.data.templateSettings.opacity,
+          initialCenterY: centerY
+        };
+        console.log('[SimpleCanvas] 双指缩放开始', this.data.pinchData);
+        return;
+      }
+    }
+
+    const touch = touches[0];
+
+    if (touch.touchType === 'indirect' || touch.touchType === 'palm') {
+      console.log('[SimpleCanvas] 忽略非直接触控:', touch.touchType);
+      return;
+    }
+
     if (!this.simpleCtx) {
-      this.initSimpleCanvas()
-      return
+      this.initSimpleCanvas();
+      return;
     }
-    const { x, y } = e.touches[0]
-    const pressure = e.touches[0].force || 0.5
-    this.simpleLastX = x
-    this.simpleLastY = y
-    this.simpleLastTime = Date.now()
-    this.simpleLastPressure = pressure
-    this.simpleCurrentStroke = [{ x, y, t: Date.now(), f: pressure }]
-    
-    const baseWidth = this.data.baseWidth || 18
-    const lineWidth = baseWidth * (0.7 + pressure * 0.9)
-    
-    this.simpleCtx.lineCap = 'round'
-    this.simpleCtx.lineJoin = 'round'
-    
-    const color = this.data.currentColor || '#1a1a1a'
-    this.simpleCtx.strokeStyle = color
-    this.simpleCtx.lineWidth = lineWidth
-    
+    const { x, y } = touch;
+    let pressure = touch.force || 0;
+
+    if (pressure === 0 || pressure > 1) {
+      pressure = 0.3;
+    } else if (pressure < 0.3) {
+      pressure = 0.3;
+    }
+
+    this.simpleLastX = x;
+    this.simpleLastY = y;
+    this.simpleLastTime = Date.now();
+    this.simpleLastPressure = pressure;
+    this.simpleCurrentStroke = [{ x, y, t: Date.now(), f: pressure }];
+
+    const baseWidth = this.data.baseWidth || 6;
+    const lineWidth = baseWidth * (0.6 + pressure * 0.8);
+
+    this.simpleCtx.lineCap = 'round';
+    this.simpleCtx.lineJoin = 'round';
+
+    const color = this.data.currentColor || '#1a1a1a';
+    this.simpleCtx.strokeStyle = color;
+    this.simpleCtx.lineWidth = lineWidth;
+
     if (pressure < 0.3) {
-      this.simpleCtx.setLineDash([lineWidth * 0.8, lineWidth * 0.3])
+      this.simpleCtx.setLineDash([lineWidth * 0.8, lineWidth * 0.3]);
     } else {
-      this.simpleCtx.setLineDash([])
+      this.simpleCtx.setLineDash([]);
     }
-    
-    this.simpleCtx.beginPath()
-    this.simpleCtx.moveTo(x, y)
-    this.simpleCtx.lineTo(x + 0.5, y + 0.5)
-    this.simpleCtx.stroke()
-    
+
+    this.simpleCtx.beginPath();
+    this.simpleCtx.moveTo(x, y);
+    this.simpleCtx.lineTo(x + 0.5, y + 0.5);
+    this.simpleCtx.stroke();
+
     if (pressure > 0.4) {
-      this.drawInkSpread(x, y, lineWidth, color, 0.25)
+      this.drawInkSpread(x, y, lineWidth, color, 0.25);
     }
   },
 
@@ -1642,70 +2024,122 @@ Page({
   },
 
   onSimpleTouchMove(e) {
-    if (!this.simpleCtx) return
-    const { x, y } = e.touches[0]
-    const pressure = e.touches[0].force || 0.5
-    const now = Date.now()
-    const dt = now - (this.simpleLastTime || now)
-    const dx = x - this.simpleLastX
-    const dy = y - this.simpleLastY
-    const distance = Math.sqrt(dx * dx + dy * dy)
-    const velocity = distance / (dt || 1)
-    
-    const baseWidth = this.data.baseWidth || 18
-    let lineWidth = baseWidth * (0.7 + pressure * 0.9)
-    
+    if (this.data.isPinching && e.touches.length >= 2) {
+      if (this.hasStylusAndFinger(e.touches)) {
+        console.log('[SimpleCanvas] 移动中检测到笔和手指同时触摸，忽略移动');
+        return;
+      }
+
+      const touches = e.touches;
+      const currentDistance = this.getTouchDistance(touches);
+      const currentCenterY = this.getTouchCenterY(touches);
+      const { initialDistance, initialScale, initialOpacity, initialCenterY } = this.data.pinchData;
+
+      if (initialDistance > 0) {
+        const scaleRatio = currentDistance / initialDistance;
+        const newScale = Math.max(0.5, Math.min(2.0, initialScale * scaleRatio));
+
+        const yDelta = currentCenterY - initialCenterY;
+        const opacityDelta = yDelta / 500;
+        const newOpacity = Math.max(0.1, Math.min(1.0, initialOpacity + opacityDelta));
+
+        this.setData({
+          'templateSettings.scale': newScale,
+          'templateSettings.opacity': newOpacity
+        });
+        console.log('[SimpleCanvas] 双指缩放中', { newScale, newOpacity, yDelta });
+      }
+      return;
+    }
+
+    if (!this.simpleCtx) return;
+
+    let touches = e.touches;
+
+    if (this.hasStylusAndFinger(touches)) {
+      console.log('[SimpleCanvas] 移动中检测到笔和手指同时触摸，优先使用笔');
+      const stylusTouch = this.findStylusTouch(touches);
+      if (stylusTouch) {
+        touches = [stylusTouch];
+      }
+    }
+
+    const touch = touches[0];
+    if (touch.touchType === 'indirect' || touch.touchType === 'palm') {
+      return;
+    }
+
+    const { x, y } = touch;
+    let pressure = touch.force || 0;
+
+    if (pressure === 0 || pressure > 1) {
+      pressure = 0.3;
+    } else if (pressure < 0.3) {
+      pressure = 0.3;
+    }
+
+    const now = Date.now();
+    const dt = now - (this.simpleLastTime || now);
+    const dx = x - this.simpleLastX;
+    const dy = y - this.simpleLastY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    const velocity = distance / (dt || 1);
+
+    const baseWidth = this.data.baseWidth || 6;
+    let lineWidth = baseWidth * (0.6 + pressure * 0.8);
+
     if (velocity > 4) {
-      lineWidth = lineWidth * 0.65
+      lineWidth = lineWidth * 0.65;
     } else if (velocity < 0.5) {
-      lineWidth = lineWidth * 1.4
+      lineWidth = lineWidth * 1.4;
     }
-    
-    const pressureChange = Math.abs(pressure - (this.simpleLastPressure || 0.5))
+
+    const pressureChange = Math.abs(pressure - (this.simpleLastPressure || 0.5));
     if (pressureChange > 0.3) {
-      lineWidth = lineWidth * (1 + pressureChange * 0.6)
+      lineWidth = lineWidth * (1 + pressureChange * 0.6);
     }
-    
-    this.simpleCurrentStroke.push({ x, y, t: now, f: pressure, v: velocity })
-    
-    this.simpleCtx.lineCap = 'round'
-    this.simpleCtx.lineJoin = 'round'
-    this.simpleCtx.strokeStyle = this.data.currentColor || '#1a1a1a'
-    this.simpleCtx.lineWidth = lineWidth
-    
+
+    this.simpleCurrentStroke.push({ x, y, t: now, f: pressure, v: velocity });
+
+    this.simpleCtx.lineCap = 'round';
+    this.simpleCtx.lineJoin = 'round';
+    this.simpleCtx.strokeStyle = this.data.currentColor || '#1a1a1a';
+    this.simpleCtx.lineWidth = lineWidth;
+
     if (velocity > 3 && pressure < 0.4) {
-      this.simpleCtx.setLineDash([lineWidth * 0.6, lineWidth * 0.4])
+      this.simpleCtx.setLineDash([lineWidth * 0.6, lineWidth * 0.4]);
     } else if (velocity > 2) {
-      this.simpleCtx.setLineDash([lineWidth * 0.3, lineWidth * 0.15])
+      this.simpleCtx.setLineDash([lineWidth * 0.3, lineWidth * 0.15]);
     } else {
-      this.simpleCtx.setLineDash([])
+      this.simpleCtx.setLineDash([]);
     }
-    
-    this.simpleCtx.beginPath()
-    this.simpleCtx.moveTo(this.simpleLastX, this.simpleLastY)
-    this.simpleCtx.lineTo(x, y)
-    this.simpleCtx.stroke()
-    
+
+    this.simpleCtx.beginPath();
+    this.simpleCtx.moveTo(this.simpleLastX, this.simpleLastY);
+    this.simpleCtx.lineTo(x, y);
+    this.simpleCtx.stroke();
+
     if (pressure > 0.35 && velocity < 1.5) {
-      this.drawInkSpread(x, y, lineWidth * 0.6, this.data.currentColor || '#1a1a1a', 0.2)
+      this.drawInkSpread(x, y, lineWidth * 0.6, this.data.currentColor || '#1a1a1a', 0.2);
     }
-    
-    this.simpleLastX = x
-    this.simpleLastY = y
-    this.simpleLastTime = now
-    this.simpleLastPressure = pressure
+
+    this.simpleLastX = x;
+    this.simpleLastY = y;
+    this.simpleLastTime = now;
+    this.simpleLastPressure = pressure;
   },
 
   onSimpleTouchEnd(e) {
-    console.log('[SimpleCanvas] 触摸结束')
+    console.log('[SimpleCanvas] 触摸结束');
+    this.data.isPinching = false;
     if (this.simpleCurrentStroke.length > 0) {
       const newStrokes = [...(this.data.allStrokes || []), {
         points: this.simpleCurrentStroke,
         color: this.data.currentColor || '#1a1a1a'
-      }]
-      this.setData({ allStrokes: newStrokes })
-      console.log('[SimpleCanvas] 保存笔画，当前共', newStrokes.length, '笔')
-      this.simpleCurrentStroke = []
+      }];
+      this.setData({ allStrokes: newStrokes });
+      console.log('[SimpleCanvas] 保存笔画，当前共', newStrokes.length, '笔');
+      this.simpleCurrentStroke = [];
     }
   },
 
@@ -2307,18 +2741,6 @@ Page({
     });
   },
 
-  onChangeScale(e) {
-    this.setData({
-      'templateSettings.scale': e.detail.value
-    })
-  },
-
-  onChangeOpacity(e) {
-    this.setData({
-      'templateSettings.opacity': e.detail.value
-    })
-  },
-
   changeLesson(lessonId) {
      const newLesson = LESSON_DATA[lessonId];
      if (!newLesson) {
@@ -2503,57 +2925,6 @@ Page({
     }
     
     this.isSwiping = false;
-  },
-
-  // 悬浮球触摸开始
-  onBallTouchStart(e) {
-    this.ballTouchStartX = e.touches[0].clientX;
-    this.ballTouchStartY = e.touches[0].clientY;
-    this.ballStartPosition = {
-      x: this.data.ballPosition.x,
-      y: this.data.ballPosition.y
-    };
-    this.isBallDragging = true;
-  },
-
-  // 悬浮球触摸移动
-  onBallTouchMove(e) {
-    if (!this.isBallDragging) return;
-    
-    const currentX = e.touches[0].clientX;
-    const currentY = e.touches[0].clientY;
-    const deltaX = currentX - this.ballTouchStartX;
-    const deltaY = currentY - this.ballTouchStartY;
-    
-    // 计算新的位置
-    const newX = this.ballStartPosition.x + deltaX;
-    const newY = this.ballStartPosition.y + deltaY;
-    
-    // 限制在屏幕范围内
-    const screenWidth = wx.getSystemInfoSync().windowWidth;
-    const screenHeight = wx.getSystemInfoSync().windowHeight;
-    
-    const clampedX = Math.max(0, Math.min(newX, screenWidth - 80));
-    const clampedY = Math.max(0, Math.min(newY, screenHeight - 80));
-    
-    this.setData({
-      ballPosition: {
-        x: clampedX,
-        y: clampedY
-      }
-    });
-  },
-
-  // 悬浮球触摸结束
-  onBallTouchEnd(e) {
-    this.isBallDragging = false;
-  },
-
-  // 切换悬浮球面板
-  onToggleBallPanel() {
-    this.setData({
-      isBallExpanded: !this.data.isBallExpanded
-    });
   },
 
   // 清空字帖（暂不临摹）
@@ -5468,9 +5839,7 @@ Page({
     const tabs = [...this.data.tabs]
     tabs.splice(3, 0, {
       id: 4,
-      name: '璇嗗埆',
-      icon: '馃摫',
-      activeIcon: '馃摫',
+      name: '识别',
       pagePath: '/pages/scan/scan'
     })
     this.setData({ tabs })
@@ -6068,7 +6437,7 @@ Page({
   // 生命周期：分享
   onShareAppMessage() {
     return {
-      title: '蒙格穿梭 - 智能蒙古文书法练习',
+      title: '智墨穿梭 - 智能蒙古文书法练习',
       path: '/pages/index/index',
       imageUrl: '/images/share-cover.png'
     };
@@ -6115,9 +6484,465 @@ Page({
   // 生命周期：页面分享回调
   onShareTimeline() {
     return {
-      title: '蒙格穿梭 - 智能蒙古文书法练习',
+      title: '智墨穿梭 - 智能蒙古文书法练习',
       query: 'from=timeline',
       imageUrl: '/images/share-cover.png'
     };
+  }
+  ,
+
+  async onOpenCollectionRecords() {
+    const pending = (wx.getStorageSync('pendingTrajectorySamples') || []).map((item) => this.mapPendingCollectionRecord(item))
+    this.setData({
+      showCollectionRecords: true,
+      isLoadingCollectionRecords: true,
+      allCollectionRecords: pending,
+      collectionRecords: pending
+    })
+    try {
+      const response = await wx.cloud.callFunction({
+        name: 'trajectory-collection',
+        data: {
+          action: 'listMySamples',
+          limit: this.data.isAdminMode ? 80 : 30,
+          adminCode: this.data.adminCodeVerified ? '123456' : ''
+        }
+      })
+      const cloudSamples = response?.result?.success ? (response.result.data?.samples || []) : []
+      this.applyCollectionRecordFilters([...pending, ...cloudSamples])
+    } catch (error) {
+      console.error('[Collection] load records failed:', error)
+      this.applyCollectionRecordFilters(pending)
+    } finally {
+      this.setData({ isLoadingCollectionRecords: false })
+    }
+  },
+
+  onSelectCollectionRecordFilter(e) {
+    const value = e.currentTarget.dataset.value || 'all'
+    this.setData({ collectionRecordFilter: value }, () => this.applyCollectionRecordFilters())
+  },
+
+  onSelectCollectionScriptFilter(e) {
+    const value = e.currentTarget.dataset.value || 'all'
+    this.setData({ collectionRecordScriptFilter: value }, () => this.applyCollectionRecordFilters())
+  },
+
+  onSelectCollectionRoleFilter(e) {
+    const value = e.currentTarget.dataset.value || 'all'
+    this.setData({ collectionRecordRoleFilter: value }, () => this.applyCollectionRecordFilters())
+  },
+
+  onToggleCollectionAdvancedFilters() {
+    this.setData({
+      showCollectionAdvancedFilters: !this.data.showCollectionAdvancedFilters
+    })
+  },
+
+  async onToggleAdminMode() {
+    if (this.data.isAdminMode) {
+      this.setData({
+        isAdminMode: false,
+        adminCodeVerified: false
+      })
+      wx.showToast({
+        title: '已退出管理员模式',
+        icon: 'none'
+      })
+      this.onOpenCollectionRecords()
+      return
+    }
+
+    const ok = await this.ensureAdminMode()
+    if (ok) {
+      this.onOpenCollectionRecords()
+    }
+  },
+
+  async onOpenCollectionRecordDetail(e) {
+    const record = e.currentTarget.dataset.record || {}
+    this.setData({
+      selectedCollectionRecord: record,
+      selectedCollectionRecordRawPayload: record.rawPayload || null,
+      selectedCollectionRecordPreviewSrc: '',
+      showCollectionRecordDetail: true,
+      isLoadingSelectedCollectionRecord: true
+    })
+
+    try {
+      let detail = record
+      if (String(record.id || '').startsWith('pending-')) {
+        detail = {
+          ...record,
+          strokes: record.rawPayload?.strokes || [],
+          device: record.rawPayload?.device || {},
+          summary: record.rawPayload?.sample?.summary || {},
+          participantSnapshot: record.rawPayload?.participant || {},
+          clientExportVersion: record.rawPayload?.version || 'research-sample.v1'
+        }
+      } else {
+        const response = await wx.cloud.callFunction({
+          name: 'trajectory-collection',
+          data: {
+            action: 'getSampleDetail',
+            sampleId: record.id,
+            adminCode: this.data.adminCodeVerified ? '123456' : ''
+          }
+        })
+        if (!response?.result?.success) {
+          throw new Error(response?.result?.error || 'getSampleDetail failed')
+        }
+        detail = {
+          ...(response.result.data || {}),
+          scriptTypeKey: response.result.data?.scriptType,
+          roleKey: response.result.data?.role
+        }
+      }
+
+      const rawPayload = this.buildCollectionPayloadFromRecord(detail)
+      const previewSrc = await this.renderStrokePreview(rawPayload.strokes || [], {
+        updateState: false,
+        strokeColor: '#111111',
+        backgroundColor: '#ffffff'
+      }).catch(() => '')
+
+      this.setData({
+        selectedCollectionRecord: detail,
+        selectedCollectionRecordRawPayload: rawPayload,
+        selectedCollectionRecordPreviewSrc: previewSrc
+      })
+    } catch (error) {
+      console.error('[Collection] open detail failed:', error)
+      wx.showToast({ title: '记录详情加载失败', icon: 'none' })
+    } finally {
+      this.setData({ isLoadingSelectedCollectionRecord: false })
+    }
+  },
+
+  onCloseCollectionRecordDetail() {
+    this.setData({
+      showCollectionRecordDetail: false,
+      selectedCollectionRecord: {},
+      selectedCollectionRecordRawPayload: null,
+      selectedCollectionRecordPreviewSrc: '',
+      isLoadingSelectedCollectionRecord: false
+    })
+  },
+
+  onExportSelectedCollectionRecord() {
+    const payload = this.data.selectedCollectionRecordRawPayload
+    if (!payload) {
+      wx.showToast({ title: '样本还未加载完成', icon: 'none' })
+      return
+    }
+    this.setData({
+      coordinateData: payload,
+      coordinateJson: JSON.stringify(payload, null, 2),
+      coordinateStats: payload?.sample?.summary || { strokeCount: 0, pointCount: 0 },
+      collectionSubmitResult: {
+        sampleId: this.data.selectedCollectionRecord?.id || '',
+        sessionId: this.data.selectedCollectionRecord?.sessionId || ''
+      },
+      showCoordinateModal: true
+    })
+  },
+
+  onReplaySelectedCollectionRecord() {
+    const payload = this.data.selectedCollectionRecordRawPayload
+    if (!payload?.strokes?.length) {
+      wx.showToast({ title: '当前样本无轨迹', icon: 'none' })
+      return
+    }
+    this.setData({
+      allStrokes: payload.strokes,
+      showCollectionRecordDetail: false,
+      showCollectionRecords: false,
+      replayDisplayMode: 'trajectory'
+    }, () => {
+      this.refreshPlaybackPreview()
+      if (!this.data.show3DView) {
+        this.onToggleMemoryBox()
+      }
+    })
+  },
+
+  async onUpdateCollectionReviewStatus(e) {
+    const reviewStatus = e.currentTarget.dataset.status
+    const sampleId = this.data.selectedCollectionRecord?.id
+    if (!sampleId || !reviewStatus) return
+
+    if (!this.data.adminCodeVerified) {
+      const ok = await this.ensureAdminMode()
+      if (!ok) return
+    }
+
+    if (String(sampleId).startsWith('pending-')) {
+      wx.showToast({
+        title: '离线样本请先同步',
+        icon: 'none'
+      })
+      return
+    }
+
+    wx.showLoading({ title: '更新状态中...', mask: true })
+    try {
+      const response = await wx.cloud.callFunction({
+        name: 'trajectory-collection',
+        data: {
+          action: 'updateReviewStatus',
+          sampleId,
+          reviewStatus,
+          adminCode: '123456'
+        }
+      })
+
+      if (!response?.result?.success) {
+        throw new Error(response?.result?.error || 'updateReviewStatus failed')
+      }
+
+      const nextRecord = {
+        ...this.data.selectedCollectionRecord,
+        reviewStatus
+      }
+
+      const nextRecords = (this.data.allCollectionRecords || []).map((item) => (
+        item.id === sampleId ? { ...item, reviewStatus } : item
+      ))
+
+      this.setData({ selectedCollectionRecord: nextRecord })
+      this.applyCollectionRecordFilters(nextRecords)
+
+      wx.showToast({
+        title: '状态已更新',
+        icon: 'success'
+      })
+    } catch (error) {
+      console.error('[Collection] update review status failed:', error)
+      wx.showToast({
+        title: '状态更新失败',
+        icon: 'none'
+      })
+    } finally {
+      wx.hideLoading()
+    }
+  },
+
+  async onBatchApproveCollectionRecords() {
+    if (!this.data.adminCodeVerified) {
+      const ok = await this.ensureAdminMode()
+      if (!ok) return
+    }
+
+    const sampleIds = (this.data.collectionRecords || [])
+      .filter((item) => !String(item.id || '').startsWith('pending-'))
+      .filter((item) => item.reviewStatus === 'pending')
+      .map((item) => item.id)
+
+    if (!sampleIds.length) {
+      wx.showToast({
+        title: '当前筛选下无待审核样本',
+        icon: 'none'
+      })
+      return
+    }
+
+    wx.showLoading({ title: '批量审核中...', mask: true })
+    try {
+      const response = await wx.cloud.callFunction({
+        name: 'trajectory-collection',
+        data: {
+          action: 'batchReview',
+          adminCode: '123456',
+          sampleIds,
+          reviewStatus: 'approved'
+        }
+      })
+
+      if (!response?.result?.success) {
+        throw new Error(response?.result?.error || 'batchReview failed')
+      }
+
+      wx.showToast({
+        title: `已通过 ${sampleIds.length} 条`,
+        icon: 'success'
+      })
+      this.onOpenCollectionRecords()
+    } catch (error) {
+      console.error('[Collection] batch review failed:', error)
+      wx.showToast({
+        title: '批量审核失败',
+        icon: 'none'
+      })
+    } finally {
+      wx.hideLoading()
+    }
+  },
+
+  update3DView(progress) {
+    const { allStrokes, playbackCanvas, playbackCtx, currentLesson, viewAngle, replayDisplayMode } = this.data
+    const frameUrl = currentLesson ? currentLesson.bgImage : LESSON_DATA.songshu.bgImage
+    let playbackSpeed = '0.0'
+    let playbackPressure = '0.0'
+    let playbackTime = '0'
+    let playbackStatus = 'Waiting...'
+    let cursorX = 0
+    let cursorY = 0
+    let cursorVisible = false
+
+    if (!allStrokes.length || !playbackCtx) {
+      this.setData({ currentFrameUrl: frameUrl, playbackSpeed, playbackPressure, playbackTime, playbackStatus, cursorVisible: false })
+      return
+    }
+
+    const dpr = wx.getSystemInfoSync().pixelRatio || 1
+    const width = playbackCanvas?.width ? playbackCanvas.width / dpr : 300
+    const height = playbackCanvas?.height ? playbackCanvas.height / dpr : 400
+    playbackCtx.clearRect(0, 0, width, height)
+
+    let totalPoints = 0
+    let minX = Infinity
+    let minY = Infinity
+    let maxX = -Infinity
+    let maxY = -Infinity
+    allStrokes.forEach((stroke) => {
+      const points = stroke.points || stroke
+      totalPoints += points.length
+      points.forEach((point) => {
+        minX = Math.min(minX, point.x)
+        minY = Math.min(minY, point.y)
+        maxX = Math.max(maxX, point.x)
+        maxY = Math.max(maxY, point.y)
+      })
+    })
+
+    const safeTop = 42
+    const safeBottom = replayDisplayMode === 'result' ? 250 : 338
+    const safeSide = 78
+    const lift = 22
+    const availableWidth = Math.max(120, width - safeSide * 2)
+    const availableHeight = Math.max(180, height - safeTop - safeBottom)
+    const bboxWidth = Math.max(1, maxX - minX)
+    const bboxHeight = Math.max(1, maxY - minY)
+    const scale = Math.max(0.32, Math.min(availableWidth / bboxWidth, availableHeight / bboxHeight) * 0.92)
+    const offsetX = (width - bboxWidth * scale) / 2 - minX * scale
+    const offsetY = safeTop + (availableHeight - bboxHeight * scale) / 2 - minY * scale - lift
+    const centerX = width / 2
+
+    const transformPlaybackPoint = (x, y) => {
+      let tx = x * scale + offsetX
+      let ty = y * scale + offsetY
+      if (viewAngle === 4) {
+        const angle = (this.data.rotationAngle || 0) * Math.PI / 180
+        const dx = tx - centerX
+        const depthScale = 0.08 + 0.92 * Math.abs(Math.cos(angle))
+        const swing = Math.sin(angle)
+        tx = centerX + dx * depthScale + swing * Math.max(56, bboxWidth * scale * 0.2)
+        ty = ty - (1 - depthScale) * 28
+      }
+      return { x: tx, y: ty }
+    }
+
+    const progressRatio = Math.min(Math.max(progress / 100, 0), 1)
+    const drawLimit = Math.floor(totalPoints * progressRatio)
+    let drawnPoints = 0
+
+    playbackCtx.save()
+    for (const stroke of allStrokes) {
+      if (drawnPoints >= drawLimit) break
+      const points = stroke.points || stroke
+      const drawableCount = Math.min(points.length, Math.max(0, drawLimit - drawnPoints))
+      if (drawableCount <= 0) break
+      for (let i = 1; i < drawableCount; i += 1) {
+        const prev = points[i - 1]
+        const curr = points[i]
+        const p1 = transformPlaybackPoint(prev.x, prev.y)
+        const p2 = transformPlaybackPoint(curr.x, curr.y)
+        const force = Number(curr.f || curr.pressure || 0.55)
+        const angle = (this.data.rotationAngle || 0) * Math.PI / 180
+        const depthLine = viewAngle === 4
+          ? Math.max(4, Math.min(16, (5 + force * 7) * (0.45 + 0.55 * Math.abs(Math.cos(angle)))))
+          : Math.max(4, Math.min(14, 5 + force * 7))
+        playbackCtx.beginPath()
+        playbackCtx.moveTo(p1.x, p1.y)
+        playbackCtx.lineTo(p2.x, p2.y)
+        playbackCtx.lineWidth = depthLine
+        if (viewAngle === 4) {
+          const hue = (this.data.rotationAngle || 0) % 360
+          playbackCtx.strokeStyle = `hsl(${hue}, 100%, 56%)`
+          playbackCtx.shadowColor = `hsla(${hue}, 100%, 58%, 0.95)`
+          playbackCtx.shadowBlur = 24
+        } else {
+          playbackCtx.strokeStyle = '#00f6ff'
+          playbackCtx.shadowColor = 'rgba(0, 246, 255, 0.92)'
+          playbackCtx.shadowBlur = 18
+        }
+        playbackCtx.stroke()
+      }
+      drawnPoints += drawableCount
+    }
+    playbackCtx.restore()
+
+    const flatPoints = allStrokes.flatMap((stroke) => stroke.points || stroke)
+    const activeIndex = Math.max(0, Math.min(flatPoints.length - 1, drawLimit - 1))
+    const activePoint = flatPoints[activeIndex]
+    if (activePoint) {
+      const transformed = transformPlaybackPoint(activePoint.x, activePoint.y)
+      cursorX = (transformed.x / width) * 100
+      cursorY = (transformed.y / height) * 100
+      cursorVisible = replayDisplayMode === 'trajectory'
+      playbackPressure = Number(activePoint.f || activePoint.pressure || 0.5).toFixed(1)
+      playbackTime = String(activePoint.t || 0)
+      const prevPoint = flatPoints[Math.max(0, activeIndex - 1)] || activePoint
+      const dt = Math.max(1, (activePoint.t || 0) - (prevPoint.t || 0))
+      const dist = Math.hypot((activePoint.x || 0) - (prevPoint.x || 0), (activePoint.y || 0) - (prevPoint.y || 0))
+      playbackSpeed = (dist / dt * 10).toFixed(1)
+      playbackStatus = drawLimit >= totalPoints ? 'Complete' : 'PLAYING...'
+    }
+
+    this.setData({
+      currentFrameUrl: frameUrl,
+      playbackSpeed,
+      playbackPressure,
+      playbackTime,
+      playbackStatus,
+      cursorX,
+      cursorY,
+      cursorVisible
+    })
+  }
+  ,
+
+  onOpenMengbaoPanel() {
+    this.setData({
+      showMengbaoActionSheet: true
+    })
+  },
+
+  onCloseMengbaoActionSheet() {
+    this.setData({
+      showMengbaoActionSheet: false
+    })
+  },
+
+  onSelectMengbaoAction(e) {
+    const action = e.currentTarget.dataset.action
+    this.setData({
+      showMengbaoActionSheet: false
+    }, () => {
+      if (action === 'chat') {
+        this.onOpenMengbaoChat()
+        return
+      }
+
+      if (!this.data.allStrokes || !this.data.allStrokes.length) {
+        wx.showToast({
+          title: '请先书写一些内容',
+          icon: 'none'
+        })
+        return
+      }
+
+      this.onSubmitForScoring()
+    })
   }
 })

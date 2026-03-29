@@ -13,11 +13,21 @@ App({
     logs.unshift(Date.now())
     wx.setStorageSync('logs', logs)
 
-    // 登录
-    wx.login({
-      success: res => {
-        // 发送 res.code 到后台换取 openId, sessionKey, unionId
-      }
+    // 隐私协议弹窗处理（微信 2023-09 起强制要求）
+    wx.onNeedPrivacyAuthorization((resolve) => {
+      wx.showModal({
+        title: '隐私保护提示',
+        content: '蒙格穿梭需要收集你的头像、昵称用于创建书法档案，收集手写轨迹用于书法识别与评分。详见《隐私政策》。',
+        confirmText: '同意',
+        cancelText: '拒绝',
+        success: (res) => {
+          if (res.confirm) {
+            resolve({ event: 'agree' })
+          } else {
+            resolve({ event: 'disagree' })
+          }
+        }
+      })
     })
   },
   globalData: {
@@ -26,24 +36,34 @@ App({
     bgMusicEnabled: true,
     currentMusicIndex: 0,
     musicList: [
-      { name: '轻快', src: 'assets/audio/Kinetic_Bloom.mp3', epname: 'Kinetic Bloom' },
-      { name: '悲壮', src: 'assets/audio/Echoes_of_the_Ancient_Star.mp3', epname: 'Echoes of the Ancient Star' }
+      { name: '轻快', src: 'cloud://cloud1-6g6qzrswbfeff910.636c-cloud1-6g6qzrswbfeff910-1404694297/Kinetic_Bloom.mp3', epname: 'Kinetic Bloom' },
+      { name: '悲壮', src: 'cloud://cloud1-6g6qzrswbfeff910.636c-cloud1-6g6qzrswbfeff910-1404694297/Echoes_of_the_Ancient_Star.mp3', epname: 'Echoes of the Ancient Star' }
     ]
   },
-  playBgMusic(musicIndex) {
+  async _resolveAudioSrc(src) {
+    if (!src.startsWith('cloud://')) return src;
+    try {
+      const res = await wx.cloud.getTempFileURL({ fileList: [src] });
+      return res.fileList[0].tempFileURL;
+    } catch (e) {
+      console.error('[BgMusic] getTempFileURL failed:', e);
+      return src;
+    }
+  },
+  async playBgMusic(musicIndex) {
     const app = this;
     const idx = musicIndex !== undefined ? musicIndex : app.globalData.currentMusicIndex;
     const music = app.globalData.musicList[idx];
-    
+
     console.log('[BgMusic] playBgMusic called, enabled:', app.globalData.bgMusicEnabled, 'music:', music.name);
-    
+
     if (app.globalData.bgMusicEnabled && music) {
       app.globalData.currentMusicIndex = idx;
       wx.setStorageSync('currentMusicIndex', idx);
-      
+
       if (!app.globalData.bgMusicManager) {
         app.globalData.bgMusicManager = wx.getBackgroundAudioManager();
-        
+
         app.globalData.bgMusicManager.onPlay(() => {
           console.log('[BgMusic] Playing...');
         });
@@ -51,26 +71,27 @@ App({
           console.error('[BgMusic] Error:', err);
         });
       }
-      
+
+      const resolvedSrc = await app._resolveAudioSrc(music.src);
       app.globalData.bgMusicManager.title = music.name;
       app.globalData.bgMusicManager.epname = music.epname;
-      app.globalData.bgMusicManager.src = music.src;
+      app.globalData.bgMusicManager.src = resolvedSrc;
       app.globalData.bgMusicManager.loop = true;
-      
+
       app.globalData.bgMusicManager.play();
-      console.log('[BgMusic] Starting with src:', music.src);
+      console.log('[BgMusic] Starting with src:', resolvedSrc);
     }
   },
-  playGuideMusic() {
+  async playGuideMusic() {
     const app = this;
     const guideMusic = app.globalData.musicList[1];
-    
+
     console.log('[BgMusic] playGuideMusic called, music:', guideMusic.name);
-    
+
     if (guideMusic) {
       if (!app.globalData.bgMusicManager) {
         app.globalData.bgMusicManager = wx.getBackgroundAudioManager();
-        
+
         app.globalData.bgMusicManager.onPlay(() => {
           console.log('[GuideMusic] Playing...');
         });
@@ -78,14 +99,15 @@ App({
           console.error('[GuideMusic] Error:', err);
         });
       }
-      
+
+      const resolvedSrc = await app._resolveAudioSrc(guideMusic.src);
       app.globalData.bgMusicManager.title = guideMusic.name;
       app.globalData.bgMusicManager.epname = guideMusic.epname;
-      app.globalData.bgMusicManager.src = guideMusic.src;
+      app.globalData.bgMusicManager.src = resolvedSrc;
       app.globalData.bgMusicManager.loop = true;
-      
+
       app.globalData.bgMusicManager.play();
-      console.log('[GuideMusic] Starting with src:', guideMusic.src);
+      console.log('[GuideMusic] Starting with src:', resolvedSrc);
     }
   },
   stopBgMusic() {

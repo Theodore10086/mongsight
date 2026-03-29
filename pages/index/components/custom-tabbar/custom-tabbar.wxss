@@ -7,7 +7,7 @@
   background: #faf7f2;
   display: flex;
   padding-bottom: env(safe-area-inset-bottom);
-  border-top: 1rpx solid rgba(28, 20, 16, 0.1);
+  border-top: 1rpx solid rgba(28, 20, 16, 0.08);
   z-index: 1000;
 }
 
@@ -19,33 +19,91 @@
   justify-content: center;
   gap: 4rpx;
   position: relative;
+  padding: 10rpx 0 16rpx;
 }
 
-.tab-icon {
-  font-size: 40rpx;
-  transition: transform 0.2s ease;
+.tab-item.active {
+  background: rgba(196, 154, 60, 0.08);
 }
 
-.tab-item.active .tab-icon {
-  transform: scale(1.1);
+/* ── SVG Tab Icons — base64 encoded for WeChat component reliability ── */
+
+.tab-icon-wrap {
+  width: 44rpx;
+  height: 44rpx;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  flex-shrink: 0;
+  display: block;
 }
+
+.tab-item.active .tab-icon-wrap {
+  transform: scale(1.12);
+}
+
+/* id 0 — 首页 (home) */
+.tab-icon-id-0 {
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYWFhIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMyA5LjVMMTIgM2w5IDYuNVYyMGExIDEgMCAwIDEtMSAxSDRhMSAxIDAgMCAxLTEtMVY5LjV6Ii8+PHBhdGggZD0iTTkgMjFWMTJoNnY5Ii8+PC9zdmc+");
+}
+.tab-icon-id-0.active {
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYzQ5YTNjIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTMgOS41TDEyIDNsOSA2LjVWMjBhMSAxIDAgMCAxLTEgMUg0YTEgMSAwIDAgMS0xLTFWOS41eiIvPjxwYXRoIGQ9Ik05IDIxVjEyaDZ2OSIvPjwvc3ZnPg==");
+}
+
+/* id 1 — 商城 (shop) */
+.tab-icon-id-1 {
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYWFhIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNNiAyTDMgNnYxNGEyIDIgMCAwIDAgMiAyaDE0YTIgMiAwIDAgMCAyLTJWNmwtMy00eiIvPjxsaW5lIHgxPSIzIiB5MT0iNiIgeDI9IjIxIiB5Mj0iNiIvPjxwYXRoIGQ9Ik0xNiAxMGE0IDQgMCAwIDEtOCAwIi8+PC9zdmc+");
+}
+.tab-icon-id-1.active {
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYzQ5YTNjIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTYgMkwzIDZ2MTRhMiAyIDAgMCAwIDIgMmgxNGEyIDIgMCAwIDAgMi0yVjZsLTMtNHoiLz48bGluZSB4MT0iMyIgeTE9IjYiIHgyPSIyMSIgeTI9IjYiLz48cGF0aCBkPSJNMTYgMTBhNCA0IDAgMCAxLTggMCIvPjwvc3ZnPg==");
+}
+
+/* id 2 — 社区 (community) */
+.tab-icon-id-2 {
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYWFhIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMjEgMTVhMiAyIDAgMCAxLTIgMkg3bC00IDRWNWEyIDIgMCAwIDEgMi0yaDE0YTIgMiAwIDAgMSAyIDJ6Ii8+PC9zdmc+");
+}
+.tab-icon-id-2.active {
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYzQ5YTNjIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTIxIDE1YTIgMiAwIDAgMS0yIDJIN2wtNCA0VjVhMiAyIDAgMCAxIDItMmgxNGEyIDIgMCAwIDEgMiAyeiIvPjwvc3ZnPg==");
+}
+
+/* id 3 — 我 (me/profile) */
+.tab-icon-id-3 {
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYWFhIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMjAgMjF2LTJhNCA0IDAgMCAwLTQtNEg4YTQgNCAwIDAgMC00IDR2MiIvPjxjaXJjbGUgY3g9IjEyIiBjeT0iNyIgcj0iNCIvPjwvc3ZnPg==");
+}
+.tab-icon-id-3.active {
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYzQ5YTNjIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTIwIDIxdi0yYTQgNCAwIDAgMC00LTRIOGE0IDQgMCAwIDAtNCA0djIiLz48Y2lyY2xlIGN4PSIxMiIgY3k9IjciIHI9IjQiLz48L3N2Zz4=");
+}
+
+/* id 4 — 识别 (scan/recognition) */
+.tab-icon-id-4 {
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYWFhIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMjMgMTlhMiAyIDAgMCAxLTIgMkgzYTIgMiAwIDAgMS0yLTJWOGEyIDIgMCAwIDEgMi0yaDRsMi0zaDZsMiAzaDRhMiAyIDAgMCAxIDIgMnoiLz48Y2lyY2xlIGN4PSIxMiIgY3k9IjEzIiByPSI0Ii8+PC9zdmc+");
+}
+.tab-icon-id-4.active {
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYzQ5YTNjIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTIzIDE5YTIgMiAwIDAgMS0yIDJIM2EyIDIgMCAwIDEtMi0yVjhhMiAyIDAgMCAxIDItMmg0bDItM2g2bDIgM2g0YTIgMiAwIDAgMSAyIDJ6Ii8+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMyIgcj0iNCIvPjwvc3ZnPg==");
+}
+
+/* ── Labels ───────────────────────────────────────────────── */
 
 .tab-name {
-  font-size: 22rpx;
+  font-size: 20rpx;
   color: rgba(28, 20, 16, 0.38);
   transition: color 0.2s ease;
+  letter-spacing: 0.5rpx;
 }
 
 .tab-item.active .tab-name {
-  color: #1c1410;
+  color: #c49a3c;
   font-weight: 600;
 }
 
+/* ── Active indicator dot ─────────────────────────────────── */
+
 .tab-indicator {
   position: absolute;
-  bottom: 8rpx;
-  width: 32rpx;
-  height: 3rpx;
-  background: #1c1410;
-  border-radius: 2rpx;
+  bottom: 6rpx;
+  width: 8rpx;
+  height: 8rpx;
+  background: #c49a3c;
+  border-radius: 50%;
 }
