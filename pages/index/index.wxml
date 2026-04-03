@@ -340,6 +340,14 @@
           <view class="action-btn-icon icon-frame"></view>
           <text class="action-btn-text">装裱</text>
         </view>
+        <view class="action-btn-item" catchtap="onImportImage">
+          <view class="action-btn-icon icon-import"></view>
+          <text class="action-btn-text">导入图片</text>
+        </view>
+        <view class="action-btn-item {{collectionConfig.backgroundImage ? '' : 'disabled'}}" catchtap="onExtractTrajectories" wx:if="{{collectionConfig.backgroundImage}}">
+          <view class="action-btn-icon icon-extract"></view>
+          <text class="action-btn-text">提取轨迹</text>
+        </view>
         <view class="action-btn-item" catchtap="onExportCoordinates">
           <view class="action-btn-icon icon-export"></view>
           <text class="action-btn-text">导出数据</text>
@@ -347,10 +355,6 @@
         <view class="action-btn-item" catchtap="onOpenCollectionSetup">
           <view class="action-btn-icon icon-action-set"></view>
           <text class="action-btn-text">采集设置</text>
-        </view>
-        <view class="action-btn-item" catchtap="onSubmitCollectionSample">
-          <view class="action-btn-icon icon-action-upload"></view>
-          <text class="action-btn-text">提交采集</text>
         </view>
         <view class="action-btn-item" catchtap="onOpenCollectionRecords">
           <view class="action-btn-icon icon-action-rec"></view>
@@ -496,12 +500,20 @@
   <view class="scan-line" wx:if="{{isTechMode}}"></view>
   
   <image
-    class="template-layer {{showTemplate ? 'visible' : ''}}" 
-    src="{{currentLesson.bgImage}}" 
+    class="template-layer {{showTemplate ? 'visible' : ''}}"
+    src="{{currentLesson.bgImage}}"
     mode="widthFix"
     style="width: 80%; transform: translate(-50%, -50%) scale({{templateSettings.scale}}); opacity: {{templateSettings.opacity}};"
     binderror="onTemplateImageError"
     wx:if="{{showTemplate}}"
+  ></image>
+
+  <image
+    class="collection-bg-image {{collectionConfig.backgroundImage ? 'visible' : ''}}"
+    src="{{collectionConfig.backgroundImage}}"
+    mode="widthFix"
+    style="width: 80%; transform: translate(-50%, -50%) scale({{collectionBgSettings.scale}}); opacity: {{collectionBgSettings.opacity}};"
+    wx:if="{{currentLesson.id === 'collectionLab' && collectionConfig.backgroundImage}}"
   ></image>
 
 
@@ -641,58 +653,94 @@
       <image class="scoring-avatar" src="/assets/images/mengbao.jpg" mode="aspectFill"></image>
       <view class="scoring-title-wrap">
         <text class="scoring-title">蒙宝AI评分</text>
-        <text class="scoring-subtitle">基于深度学习的书法鉴赏</text>
+        <text class="scoring-subtitle">{{scoringPhase === 'select' ? '选择评分方式' : scoringPhase === 'loading' ? '蒙宝评分中...' : '书法鉴赏报告'}}</text>
       </view>
       <view class="scoring-close" bindtap="onCloseScoringModal">✕</view>
     </view>
-    
-    <view class="scoring-body">
-      <view class="score-circle">
-        <view class="score-circle-inner">
-          <text class="score-value">{{scoringDetail.totalScore}}</text>
-          <text class="score-label">分</text>
+
+    <!-- 阶段一：选择打分方式 -->
+    <view class="scoring-body" wx:if="{{scoringPhase === 'select'}}">
+      <view class="scoring-method-hint">两种方式任意一种达到 <text class="scoring-method-highlight">90分</text> 即可提交</view>
+      <view class="scoring-method-btns">
+        <view class="scoring-method-btn" bindtap="onSelectTrajectoryScoring">
+          <text class="method-icon">✏️</text>
+          <text class="method-name">轨迹打分</text>
+          <text class="method-desc">比对书写轨迹{{'\n'}}笔顺 · 结构 · 流畅</text>
         </view>
-        <view class="score-ring"></view>
-      </view>
-      
-      <view class="score-detail">
-        <view class="score-item">
-          <text class="score-item-label">结构</text>
-          <view class="score-bar-wrap">
-            <view class="score-bar" style="width: {{scoringDetail.structureScore}}%"></view>
-          </view>
-          <text class="score-item-value">{{scoringDetail.structureScore}}</text>
-        </view>
-        <view class="score-item">
-          <text class="score-item-label">流畅</text>
-          <view class="score-bar-wrap">
-            <view class="score-bar fluency" style="width: {{scoringDetail.fluencyScore}}%"></view>
-          </view>
-          <text class="score-item-value">{{scoringDetail.fluencyScore}}</text>
-        </view>
-        <view class="score-item">
-          <text class="score-item-label">笔韵</text>
-          <view class="score-bar-wrap">
-            <view class="score-bar rhythm" style="width: {{scoringDetail.rhythmScore}}%"></view>
-          </view>
-          <text class="score-item-value">{{scoringDetail.rhythmScore}}</text>
+        <view class="scoring-method-btn visual" bindtap="onSelectVisualScoring">
+          <text class="method-icon">👁</text>
+          <text class="method-name">视觉打分</text>
+          <text class="method-desc">对比字形外观{{'\n'}}形态 · 轮廓 · 相似度</text>
         </view>
       </view>
-      
-      <view class="score-feedback">
-        <view class="feedback-icon icon-feedback-chat"></view>
-        <text class="feedback-text">{{scoringDetail.feedback}}</text>
-      </view>
-      
-      <view class="score-stats">
-        <text class="stats-text">笔画数: {{scoringDetail.strokeCount}}</text>
+      <view class="scoring-footer">
+        <button class="scoring-btn secondary" bindtap="onCloseScoringModal">取消</button>
       </view>
     </view>
-    
-    <view class="scoring-footer">
-      <button class="scoring-btn secondary" bindtap="onCloseScoringModal">再练一次</button>
-      <button class="scoring-btn primary" bindtap="onToggleMemoryBox">查看回放</button>
+
+    <!-- 阶段二：加载中 -->
+    <view class="scoring-body scoring-loading-body" wx:if="{{scoringPhase === 'loading'}}">
+      <view class="scoring-loading-ring"></view>
+      <text class="scoring-loading-text">蒙宝正在评分，请稍候...</text>
     </view>
+
+    <!-- 阶段三：评分结果 -->
+    <view wx:if="{{scoringPhase === 'result'}}">
+      <view class="scoring-body">
+        <view class="score-method-tag {{scoringDetail.method === 'visual' ? 'visual' : ''}}">
+          {{scoringDetail.method === 'visual' ? '👁 视觉打分' : '✏️ 轨迹打分'}}
+        </view>
+        <view class="score-circle">
+          <view class="score-circle-inner">
+            <text class="score-value">{{scoringDetail.totalScore}}</text>
+            <text class="score-label">分</text>
+          </view>
+          <view class="score-ring"></view>
+        </view>
+
+        <view class="score-detail">
+          <view class="score-item">
+            <text class="score-item-label">结构</text>
+            <view class="score-bar-wrap">
+              <view class="score-bar" style="width: {{scoringDetail.structureScore}}%"></view>
+            </view>
+            <text class="score-item-value">{{scoringDetail.structureScore}}</text>
+          </view>
+          <view class="score-item">
+            <text class="score-item-label">流畅</text>
+            <view class="score-bar-wrap">
+              <view class="score-bar fluency" style="width: {{scoringDetail.fluencyScore}}%"></view>
+            </view>
+            <text class="score-item-value">{{scoringDetail.fluencyScore}}</text>
+          </view>
+          <view class="score-item">
+            <text class="score-item-label">笔韵</text>
+            <view class="score-bar-wrap">
+              <view class="score-bar rhythm" style="width: {{scoringDetail.rhythmScore}}%"></view>
+            </view>
+            <text class="score-item-value">{{scoringDetail.rhythmScore}}</text>
+          </view>
+        </view>
+
+        <view class="score-feedback">
+          <view class="feedback-icon icon-feedback-chat"></view>
+          <text class="feedback-text">{{scoringDetail.feedback}}</text>
+        </view>
+
+        <view class="score-stats">
+          <text class="stats-text">笔画数: {{scoringDetail.strokeCount}}</text>
+          <text class="stats-text {{lastScoringScore >= 90 ? 'stats-pass' : 'stats-fail'}}">
+            {{lastScoringScore >= 90 ? '✓ 已达提交标准' : '未达90分，可换方式重试'}}
+          </text>
+        </view>
+      </view>
+
+      <view class="scoring-footer">
+        <button class="scoring-btn secondary" bindtap="onBackToScoringSelect">换个方式</button>
+        <button class="scoring-btn primary" bindtap="onToggleMemoryBox">查看回放</button>
+      </view>
+    </view>
+
   </view>
 </view>
 
@@ -927,7 +975,7 @@
         <text class="btn-icon">💾</text>
         <text class="btn-text">保存文件</text>
       </view>
-      <view class="action-btn submit-btn" bindtap="onSubmitCollectionSample">
+      <view class="action-btn submit-btn" bindtap="onSubmitCollectionSampleFromExport">
         <view class="btn-icon icon-action-upload"></view>
         <text class="btn-text">提交采集</text>
       </view>
@@ -1109,12 +1157,20 @@
             <view class="action-icon icon-comment-outline"></view>
             <text class="action-count">{{item.comments}}</text>
           </view>
+          <view class="action-item {{item.isFavorited ? 'favorited' : ''}}" data-id="{{item.id}}" bindtap="onToggleFavorite">
+            <view class="action-icon {{item.isFavorited ? 'icon-favorite-filled' : 'icon-like-outline'}}"></view>
+            <text class="action-count">{{item.isFavorited ? '已收藏' : '收藏'}}</text>
+          </view>
         </view>
         <view class="comment-list" wx:if="{{item.commentsList && item.commentsList.length}}">
           <view class="comment-item inline-comment" wx:for="{{item.commentsList}}" wx:key="id">
-            <text class="comment-nickname">{{item.nickname}}:</text>
+            <text class="comment-nickname">{{item.nickname}}</text>
+            <text class="comment-reply-arrow" wx:if="{{item.replyTo}}"> 回复 </text>
+            <text class="comment-reply-nickname" wx:if="{{item.replyTo}}">{{item.replyTo.nickname}}</text>
+            <text class="comment-colon" wx:if="{{item.replyTo}}">：</text>
+            <text class="comment-text" wx:else>：</text>
             <text class="comment-text">{{item.content}}</text>
-            <text class="comment-reply-btn" data-nickname="{{item.nickname}}" bindtap="onReplyComment">回复</text>
+            <text class="comment-reply-btn" data-nickname="{{item.nickname}}" data-commentid="{{item.id}}" bindtap="onReplyComment">回复</text>
           </view>
         </view>
       </view>
@@ -1135,18 +1191,28 @@
           <text class="comment-avatar" wx:else>{{item.avatarText || item.avatar}}</text>
           <view class="comment-body">
             <text class="comment-nickname">{{item.nickname}}</text>
+            <view class="comment-reply-info" wx:if="{{item.replyTo}}">
+              <text class="comment-reply-arrow">回复 </text>
+              <text class="comment-reply-nickname">{{item.replyTo.nickname}}</text>
+            </view>
             <text class="comment-text">{{item.content}}</text>
-            <text class="comment-reply-btn" data-nickname="{{item.nickname}}" bindtap="onReplyComment">回复</text>
+            <text class="comment-reply-btn" data-nickname="{{item.nickname}}" data-commentid="{{item.id}}" bindtap="onReplyComment">回复</text>
           </view>
         </view>
         <view class="no-comment" wx:if="{{!currentComments.length}}">暂无评论，快来抢沙发~</view>
       </scroll-view>
       <view class="comment-input-area">
-        <text class="reply-target" wx:if="{{replyTargetNickname}}">回复 {{replyTargetNickname}}</text>
-        <input class="comment-input" 
-               placeholder="{{replyTargetNickname ? ('回复 ' + replyTargetNickname) : '说点什么...'}}" 
+        <view class="reply-indicator" wx:if="{{replyTargetNickname}}">
+          <text class="reply-target">回复 {{replyTargetNickname}}</text>
+          <text class="cancel-reply" bindtap="onCancelReply">取消</text>
+        </view>
+        <input class="comment-input"
+               placeholder="{{replyTargetNickname ? ('回复 ' + replyTargetNickname) : '说点什么...'}}"
                value="{{commentText}}"
-               bindinput="onCommentInput" />
+               bindinput="onCommentInput"
+               focus="{{replyTargetNickname}}"
+               confirm-type="send"
+               bindconfirm="onSendComment" />
         <button class="comment-send-btn" bindtap="onSendComment">发送</button>
       </view>
     </view>
@@ -1227,11 +1293,15 @@
         <text class="stat-num">{{myPostCount || 0}}</text>
         <text class="stat-label">帖子</text>
       </view>
-      <view class="stat-item">
-        <text class="stat-num">{{userProfile.inkJades || 0}}</text>
-        <text class="stat-label">墨玉</text>
+      <view class="stat-item" bindtap="onGoToMyLikes">
+        <text class="stat-num">{{myLikes.length || 0}}</text>
+        <text class="stat-label">点赞</text>
       </view>
-      <view class="stat-item">
+      <view class="stat-item" bindtap="onGoToFollows">
+        <text class="stat-num">{{userProfile.following || 0}}</text>
+        <text class="stat-label">关注</text>
+      </view>
+      <view class="stat-item" bindtap="onGoToFollowers">
         <text class="stat-num">{{userProfile.followers || 0}}</text>
         <text class="stat-label">粉丝</text>
       </view>
@@ -1344,6 +1414,209 @@
            bindinput="onNicknameInput"
            maxlength="12" />
     <button class="edit-modal-btn" bindtap="onConfirmNickname">确定</button>
+  </view>
+</view>
+
+<!-- 我的帖子弹窗 -->
+<view class="my-works-modal {{showMyPostsModal ? 'active' : ''}}" wx:if="{{showMyPostsModal}}">
+  <view class="my-works-mask" bindtap="onCloseMyPostsModal"></view>
+  <view class="my-works-content">
+    <view class="my-works-header">
+      <text class="my-works-title">我的帖子</text>
+      <text class="my-works-close" bindtap="onCloseMyPostsModal">✕</text>
+    </view>
+    <scroll-view scroll-y class="community-feed my-posts-feed" bindscrolltolower="onLoadMoreMyPosts">
+      <view class="feed-loading" wx:if="{{isLoadingMyPosts}}">
+        <text>加载中...</text>
+      </view>
+      <view class="feed-empty" wx:if="{{!isLoadingMyPosts && myPosts.length === 0}}">
+        <text>还没有发帖，快去社区分享吧~</text>
+      </view>
+      <view class="feed-item" wx:for="{{myPosts}}" wx:key="id" style="animation: fadeInUp {{index * 0.05}}s ease-out;">
+        <view class="feed-user">
+          <image class="community-avatar" wx:if="{{item.avatarIsImage}}" src="{{item.avatarUrl}}" mode="aspectFill"></image>
+          <text class="feed-avatar community-avatar-text" wx:else>{{item.avatarText || item.avatar}}</text>
+          <view class="feed-user-info">
+            <text class="feed-nickname">{{item.nickname}}</text>
+            <text class="feed-time" wx:if="{{item.create_time_str}}">{{item.create_time_str}}</text>
+          </view>
+          <view class="feed-delete-btn" data-id="{{item.id}}" bindtap="onDeletePost">删除</view>
+        </view>
+        <view class="feed-content">{{item.content}}</view>
+        <view class="feed-images" wx:if="{{item.images && item.images.length}}">
+          <image class="feed-img" wx:for="{{item.images}}" wx:key="*this" src="{{item}}" mode="aspectFill"></image>
+        </view>
+        <view class="feed-actions">
+          <view class="action-item {{item.liked ? 'liked' : ''}}" data-id="{{item.id}}" bindtap="onLikePost">
+            <view class="action-icon {{item.liked ? 'icon-like-filled' : 'icon-like-outline'}}"></view>
+            <text class="action-count">{{item.likes}}</text>
+          </view>
+          <view class="action-item" data-id="{{item.id}}" bindtap="onOpenComment">
+            <view class="action-icon icon-comment-outline"></view>
+            <text class="action-count">{{item.comments}}</text>
+          </view>
+        </view>
+      </view>
+      <view class="feed-more" wx:if="{{!hasMoreMyPosts && myPosts.length > 0}}">
+        <text>没有更多了</text>
+      </view>
+    </scroll-view>
+  </view>
+</view>
+
+<!-- 我的点赞弹窗 -->
+<view class="my-works-modal {{showMyLikesModal ? 'active' : ''}}" wx:if="{{showMyLikesModal}}">
+  <view class="my-works-mask" bindtap="onCloseMyLikesModal"></view>
+  <view class="my-works-content">
+    <view class="my-works-header">
+      <text class="my-works-title">我的点赞</text>
+      <text class="my-works-close" bindtap="onCloseMyLikesModal">✕</text>
+    </view>
+    <scroll-view scroll-y class="community-feed my-posts-feed" bindscrolltolower="onLoadMoreMyLikes">
+      <view class="feed-loading" wx:if="{{isLoadingMyLikes}}">
+        <text>加载中...</text>
+      </view>
+      <view class="feed-empty" wx:if="{{!isLoadingMyLikes && myLikes.length === 0}}">
+        <text>还没有点赞，快去社区看看吧~</text>
+      </view>
+      <view class="feed-item" wx:for="{{myLikes}}" wx:key="id" style="animation: fadeInUp {{index * 0.05}}s ease-out;">
+        <view class="feed-user">
+          <image class="community-avatar" wx:if="{{item.avatarIsImage}}" src="{{item.avatarUrl}}" mode="aspectFill"></image>
+          <text class="feed-avatar community-avatar-text" wx:else>{{item.avatarText || item.avatar}}</text>
+          <view class="feed-user-info">
+            <text class="feed-nickname">{{item.nickname}}</text>
+            <text class="feed-time" wx:if="{{item.create_time_str}}">{{item.create_time_str}}</text>
+          </view>
+        </view>
+        <view class="feed-content">{{item.content}}</view>
+        <view class="feed-images" wx:if="{{item.images && item.images.length}}">
+          <image class="feed-img" wx:for="{{item.images}}" wx:key="*this" src="{{item}}" mode="aspectFill"></image>
+        </view>
+        <view class="feed-actions">
+          <view class="action-item {{item.liked ? 'liked' : ''}}" data-id="{{item.id}}" bindtap="onLikePost">
+            <view class="action-icon {{item.liked ? 'icon-like-filled' : 'icon-like-outline'}}"></view>
+            <text class="action-count">{{item.likes}}</text>
+          </view>
+          <view class="action-item" data-id="{{item.id}}" bindtap="onOpenComment">
+            <view class="action-icon icon-comment-outline"></view>
+            <text class="action-count">{{item.comments}}</text>
+          </view>
+        </view>
+      </view>
+      <view class="feed-more" wx:if="{{!hasMoreMyLikes && myLikes.length > 0}}">
+        <text>没有更多了</text>
+      </view>
+    </scroll-view>
+  </view>
+</view>
+
+<!-- 我的收藏弹窗 -->
+<view class="my-works-modal {{showMyCollectionsModal ? 'active' : ''}}" wx:if="{{showMyCollectionsModal}}">
+  <view class="my-works-mask" bindtap="onCloseMyCollectionsModal"></view>
+  <view class="my-works-content">
+    <view class="my-works-header">
+      <text class="my-works-title">我的收藏</text>
+      <text class="my-works-close" bindtap="onCloseMyCollectionsModal">✕</text>
+    </view>
+    <scroll-view scroll-y class="community-feed my-posts-feed" bindscrolltolower="onLoadMoreMyCollections">
+      <view class="feed-loading" wx:if="{{isLoadingMyFavorites}}">
+        <text>加载中...</text>
+      </view>
+      <view class="feed-empty" wx:if="{{!isLoadingMyFavorites && myCollections.length === 0}}">
+        <text>还没有收藏，快去社区收藏喜欢的帖子吧~</text>
+      </view>
+      <view class="feed-item" wx:for="{{myCollections}}" wx:key="id" style="animation: fadeInUp {{index * 0.05}}s ease-out;">
+        <view class="feed-user">
+          <image class="community-avatar" wx:if="{{item.avatarIsImage}}" src="{{item.avatarUrl}}" mode="aspectFill"></image>
+          <text class="feed-avatar community-avatar-text" wx:else>{{item.avatarText || item.avatar}}</text>
+          <view class="feed-user-info">
+            <text class="feed-nickname">{{item.nickname}}</text>
+            <text class="feed-time" wx:if="{{item.create_time_str}}">{{item.create_time_str}}</text>
+          </view>
+        </view>
+        <view class="feed-content">{{item.content}}</view>
+        <view class="feed-images" wx:if="{{item.images && item.images.length}}">
+          <image class="feed-img" wx:for="{{item.images}}" wx:key="*this" src="{{item}}" mode="aspectFill"></image>
+        </view>
+        <view class="feed-actions">
+          <view class="action-item {{item.liked ? 'liked' : ''}}" data-id="{{item.id}}" bindtap="onLikePost">
+            <view class="action-icon {{item.liked ? 'icon-like-filled' : 'icon-like-outline'}}"></view>
+            <text class="action-count">{{item.likes}}</text>
+          </view>
+          <view class="action-item" data-id="{{item.id}}" bindtap="onOpenComment">
+            <view class="action-icon icon-comment-outline"></view>
+            <text class="action-count">{{item.comments}}</text>
+          </view>
+          <view class="action-item favorited" data-id="{{item.id}}" bindtap="onToggleFavorite">
+            <view class="action-icon icon-favorite-filled"></view>
+            <text class="action-count">已收藏</text>
+          </view>
+        </view>
+      </view>
+      <view class="feed-more" wx:if="{{!hasMoreMyFavorites && myCollections.length > 0}}">
+        <text>没有更多了</text>
+      </view>
+    </scroll-view>
+  </view>
+</view>
+
+<!-- 我的关注弹窗 -->
+<view class="my-works-modal {{showFollowsModal ? 'active' : ''}}" wx:if="{{showFollowsModal}}">
+  <view class="my-works-mask" bindtap="onCloseFollowsModal"></view>
+  <view class="my-works-content">
+    <view class="my-works-header">
+      <text class="my-works-title">我的关注</text>
+      <text class="my-works-close" bindtap="onCloseFollowsModal">✕</text>
+    </view>
+    <scroll-view scroll-y class="follows-list">
+      <view class="feed-loading" wx:if="{{isLoadingFollows}}">
+        <text>加载中...</text>
+      </view>
+      <view class="feed-empty" wx:if="{{!isLoadingFollows && myFollows.length === 0}}">
+        <text>还没有关注任何人，快去社区关注吧~</text>
+      </view>
+      <view class="follow-item" wx:for="{{myFollows}}" wx:key="id">
+        <image class="follow-avatar" wx:if="{{item.targetAvatar.startsWith('http')}}" src="{{item.targetAvatar}}" mode="aspectFill"></image>
+        <text class="follow-avatar-text" wx:else>{{item.targetAvatar || '👤'}}</text>
+        <view class="follow-info">
+          <text class="follow-nickname">{{item.targetNickname}}</text>
+        </view>
+        <view class="follow-action-btn following" data-openid="{{item.targetOpenId}}" bindtap="onFollowUser">已关注</view>
+      </view>
+      <view class="feed-more" wx:if="{{!hasMoreFollows && myFollows.length > 0}}">
+        <text>没有更多了</text>
+      </view>
+    </scroll-view>
+  </view>
+</view>
+
+<!-- 我的粉丝弹窗 -->
+<view class="my-works-modal {{showFollowersModal ? 'active' : ''}}" wx:if="{{showFollowersModal}}">
+  <view class="my-works-mask" bindtap="onCloseFollowersModal"></view>
+  <view class="my-works-content">
+    <view class="my-works-header">
+      <text class="my-works-title">我的粉丝</text>
+      <text class="my-works-close" bindtap="onCloseFollowersModal">✕</text>
+    </view>
+    <scroll-view scroll-y class="follows-list">
+      <view class="feed-loading" wx:if="{{isLoadingFollowers}}">
+        <text>加载中...</text>
+      </view>
+      <view class="feed-empty" wx:if="{{!isLoadingFollowers && myFollowers.length === 0}}">
+        <text>还没有粉丝，继续努力吧~</text>
+      </view>
+      <view class="follow-item" wx:for="{{myFollowers}}" wx:key="id">
+        <image class="follow-avatar" wx:if="{{item.avatar.startsWith('http')}}" src="{{item.avatar}}" mode="aspectFill"></image>
+        <text class="follow-avatar-text" wx:else>{{item.avatar || '👤'}}</text>
+        <view class="follow-info">
+          <text class="follow-nickname">{{item.nickname}}</text>
+        </view>
+        <view class="follow-action-btn" data-openid="{{item.openId}}" bindtap="onFollowUser">关注</view>
+      </view>
+      <view class="feed-more" wx:if="{{!hasMoreFollowers && myFollowers.length > 0}}">
+        <text>没有更多了</text>
+      </view>
+    </scroll-view>
   </view>
 </view>
 

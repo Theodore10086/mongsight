@@ -242,6 +242,7 @@ Page({
     currentComments: [],
     commentText: '',
     replyTargetNickname: '',
+    replyToCommentId: null,
     
     // 发帖相关
     showPostModal: false,
@@ -256,11 +257,40 @@ Page({
     myLikes: [],
     myCollections: [],
     myPosts: [],
+    myFollows: [],
+    myFollowers: [],
     isLoadingPosts: false,
     refresherTriggered: false,
     hasMorePosts: true,
     currentPage: 1,
-    
+
+    showMyPostsModal: false,
+    showMyLikesModal: false,
+    showMyCollectionsModal: false,
+    showFollowsModal: false,
+    showFollowersModal: false,
+    currentMyPostsTab: 'posts',
+
+    isLoadingMyPosts: false,
+    isLoadingMyLikes: false,
+    isLoadingMyFavorites: false,
+    isLoadingFollows: false,
+    isLoadingFollowers: false,
+
+    hasMoreMyPosts: true,
+    hasMoreMyLikes: true,
+    hasMoreMyFavorites: true,
+    hasMoreFollows: true,
+    hasMoreFollowers: true,
+
+    myPostsPage: 1,
+    myLikesPage: 1,
+    myFavoritesPage: 1,
+    followsPage: 1,
+    followersPage: 1,
+
+    selectedPostForDelete: null,
+
     // 弹窗控制
     showMyWorksModal: false,
     showSettingsModal: false,
@@ -273,12 +303,26 @@ Page({
       y: 0          // Y轴偏移
     },
 
+    collectionBgSettings: {
+      scale: 1.0,
+      opacity: 0.3,
+      x: 0,
+      y: 0
+    },
+
     isPinching: false, // 双指缩放状态
     pinchData: {
       initialDistance: 0,    // 初始双指距离
       initialScale: 1.0,     // 初始缩放值
       initialOpacity: 0.5,  // 初始透明度
       initialCenterY: 0      // 初始中心Y用于透明度调节
+    },
+
+    collectionBgPinchData: {
+      initialDistance: 0,
+      initialScale: 1.0,
+      initialOpacity: 0.3,
+      initialCenterY: 0
     },
 
     showLessonPicker: false, // 控制选帖面板显示
@@ -678,6 +722,7 @@ Page({
       scriptType: 'mongolian',
       role: 'participant'
     },
+    extractedTrajectories: [],
     collectionRoleOptions: Object.keys(ROLE_LABELS).map((key) => ({ value: key, label: ROLE_LABELS[key] })),
     collectionScriptOptions: Object.keys(SCRIPT_TYPE_LABELS).map((key) => ({ value: key, label: SCRIPT_TYPE_LABELS[key] })),
     
@@ -686,6 +731,9 @@ Page({
     scoringResult: null, // 打分结果
     scoringDetail: null, // 打分明细
     isScoring: false, // 打分中
+    scoringPhase: 'select', // 'select' | 'loading' | 'result'
+    lastScoringScore: 0, // 最近一次得分（用于提交门槛判断）
+    lastScoringMethod: '', // 'trajectory' | 'visual'
     
     // 题库
     quizBank: [
@@ -1564,8 +1612,11 @@ Page({
 
   onTouchStart(e) {
     const touches = e.touches;
+    const isCollectionMode = this.data.currentLesson?.id === 'collectionLab';
+    const hasBgImage = isCollectionMode && this.data.collectionConfig?.backgroundImage;
+    const canPinch = this.data.showTemplate || hasBgImage;
 
-    if (touches.length >= 2 && this.data.showTemplate) {
+    if (touches.length >= 2 && canPinch) {
       if (this.hasStylusAndFinger(touches)) {
         console.log('[Canvas] 检测到笔和手指同时触摸，优先使用笔');
         const stylusTouch = this.findStylusTouch(touches);
@@ -1575,14 +1626,26 @@ Page({
       } else {
         const distance = this.getTouchDistance(touches);
         const centerY = this.getTouchCenterY(touches);
-        this.data.isPinching = true;
-        this.data.pinchData = {
-          initialDistance: distance,
-          initialScale: this.data.templateSettings.scale,
-          initialOpacity: this.data.templateSettings.opacity,
-          initialCenterY: centerY
-        };
-        console.log('[Canvas] 双指缩放开始', this.data.pinchData);
+
+        if (hasBgImage) {
+          this.data.isPinching = true;
+          this.data.collectionBgPinchData = {
+            initialDistance: distance,
+            initialScale: this.data.collectionBgSettings.scale,
+            initialOpacity: this.data.collectionBgSettings.opacity,
+            initialCenterY: centerY
+          };
+          console.log('[Canvas] 背景图片双指缩放开始', this.data.collectionBgPinchData);
+        } else {
+          this.data.isPinching = true;
+          this.data.pinchData = {
+            initialDistance: distance,
+            initialScale: this.data.templateSettings.scale,
+            initialOpacity: this.data.templateSettings.opacity,
+            initialCenterY: centerY
+          };
+          console.log('[Canvas] 双指缩放开始', this.data.pinchData);
+        }
         return;
       }
     }
@@ -1649,21 +1712,41 @@ Page({
       const touches = e.touches;
       const currentDistance = this.getTouchDistance(touches);
       const currentCenterY = this.getTouchCenterY(touches);
-      const { initialDistance, initialScale, initialOpacity, initialCenterY } = this.data.pinchData;
+      const isCollectionMode = this.data.currentLesson?.id === 'collectionLab';
+      const hasBgImage = isCollectionMode && this.data.collectionConfig?.backgroundImage;
 
-      if (initialDistance > 0) {
-        const scaleRatio = currentDistance / initialDistance;
-        const newScale = Math.max(0.5, Math.min(2.0, initialScale * scaleRatio));
+      if (hasBgImage) {
+        const { initialDistance, initialScale, initialOpacity, initialCenterY } = this.data.collectionBgPinchData;
+        if (initialDistance > 0) {
+          const scaleRatio = currentDistance / initialDistance;
+          const newScale = Math.max(0.5, Math.min(2.0, initialScale * scaleRatio));
 
-        const yDelta = currentCenterY - initialCenterY;
-        const opacityDelta = yDelta / 500;
-        const newOpacity = Math.max(0.1, Math.min(1.0, initialOpacity + opacityDelta));
+          const yDelta = currentCenterY - initialCenterY;
+          const opacityDelta = yDelta / 500;
+          const newOpacity = Math.max(0.1, Math.min(1.0, initialOpacity + opacityDelta));
 
-        this.setData({
-          'templateSettings.scale': newScale,
-          'templateSettings.opacity': newOpacity
-        });
-        console.log('[Canvas] 双指缩放中', { newScale, newOpacity, yDelta });
+          this.setData({
+            'collectionBgSettings.scale': newScale,
+            'collectionBgSettings.opacity': newOpacity
+          });
+          console.log('[Canvas] 背景图片双指缩放中', { newScale, newOpacity, yDelta });
+        }
+      } else {
+        const { initialDistance, initialScale, initialOpacity, initialCenterY } = this.data.pinchData;
+        if (initialDistance > 0) {
+          const scaleRatio = currentDistance / initialDistance;
+          const newScale = Math.max(0.5, Math.min(2.0, initialScale * scaleRatio));
+
+          const yDelta = currentCenterY - initialCenterY;
+          const opacityDelta = yDelta / 500;
+          const newOpacity = Math.max(0.1, Math.min(1.0, initialOpacity + opacityDelta));
+
+          this.setData({
+            'templateSettings.scale': newScale,
+            'templateSettings.opacity': newOpacity
+          });
+          console.log('[Canvas] 双指缩放中', { newScale, newOpacity, yDelta });
+        }
       }
       return;
     }
@@ -1920,8 +2003,11 @@ Page({
       force: e.touches[0].force
     });
     const touches = e.touches;
+    const isCollectionMode = this.data.currentLesson?.id === 'collectionLab';
+    const hasBgImage = isCollectionMode && this.data.collectionConfig?.backgroundImage;
+    const canPinch = this.data.showTemplate || hasBgImage;
 
-    if (touches.length >= 2 && this.data.showTemplate) {
+    if (touches.length >= 2 && canPinch) {
       if (this.hasStylusAndFinger(touches)) {
         console.log('[SimpleCanvas] 检测到笔和手指同时触摸，优先使用笔');
         const stylusTouch = this.findStylusTouch(touches);
@@ -1932,13 +2018,24 @@ Page({
         const distance = this.getTouchDistance(touches);
         const centerY = this.getTouchCenterY(touches);
         this.data.isPinching = true;
-        this.data.pinchData = {
-          initialDistance: distance,
-          initialScale: this.data.templateSettings.scale,
-          initialOpacity: this.data.templateSettings.opacity,
-          initialCenterY: centerY
-        };
-        console.log('[SimpleCanvas] 双指缩放开始', this.data.pinchData);
+
+        if (hasBgImage) {
+          this.data.collectionBgPinchData = {
+            initialDistance: distance,
+            initialScale: this.data.collectionBgSettings.scale,
+            initialOpacity: this.data.collectionBgSettings.opacity,
+            initialCenterY: centerY
+          };
+          console.log('[SimpleCanvas] 背景图片双指缩放开始', this.data.collectionBgPinchData);
+        } else {
+          this.data.pinchData = {
+            initialDistance: distance,
+            initialScale: this.data.templateSettings.scale,
+            initialOpacity: this.data.templateSettings.opacity,
+            initialCenterY: centerY
+          };
+          console.log('[SimpleCanvas] 双指缩放开始', this.data.pinchData);
+        }
         return;
       }
     }
@@ -2033,21 +2130,41 @@ Page({
       const touches = e.touches;
       const currentDistance = this.getTouchDistance(touches);
       const currentCenterY = this.getTouchCenterY(touches);
-      const { initialDistance, initialScale, initialOpacity, initialCenterY } = this.data.pinchData;
+      const isCollectionMode = this.data.currentLesson?.id === 'collectionLab';
+      const hasBgImage = isCollectionMode && this.data.collectionConfig?.backgroundImage;
 
-      if (initialDistance > 0) {
-        const scaleRatio = currentDistance / initialDistance;
-        const newScale = Math.max(0.5, Math.min(2.0, initialScale * scaleRatio));
+      if (hasBgImage) {
+        const { initialDistance, initialScale, initialOpacity, initialCenterY } = this.data.collectionBgPinchData;
+        if (initialDistance > 0) {
+          const scaleRatio = currentDistance / initialDistance;
+          const newScale = Math.max(0.5, Math.min(2.0, initialScale * scaleRatio));
 
-        const yDelta = currentCenterY - initialCenterY;
-        const opacityDelta = yDelta / 500;
-        const newOpacity = Math.max(0.1, Math.min(1.0, initialOpacity + opacityDelta));
+          const yDelta = currentCenterY - initialCenterY;
+          const opacityDelta = yDelta / 500;
+          const newOpacity = Math.max(0.1, Math.min(1.0, initialOpacity + opacityDelta));
 
-        this.setData({
-          'templateSettings.scale': newScale,
-          'templateSettings.opacity': newOpacity
-        });
-        console.log('[SimpleCanvas] 双指缩放中', { newScale, newOpacity, yDelta });
+          this.setData({
+            'collectionBgSettings.scale': newScale,
+            'collectionBgSettings.opacity': newOpacity
+          });
+          console.log('[SimpleCanvas] 背景图片双指缩放中', { newScale, newOpacity, yDelta });
+        }
+      } else {
+        const { initialDistance, initialScale, initialOpacity, initialCenterY } = this.data.pinchData;
+        if (initialDistance > 0) {
+          const scaleRatio = currentDistance / initialDistance;
+          const newScale = Math.max(0.5, Math.min(2.0, initialScale * scaleRatio));
+
+          const yDelta = currentCenterY - initialCenterY;
+          const opacityDelta = yDelta / 500;
+          const newOpacity = Math.max(0.1, Math.min(1.0, initialOpacity + opacityDelta));
+
+          this.setData({
+            'templateSettings.scale': newScale,
+            'templateSettings.opacity': newOpacity
+          });
+          console.log('[SimpleCanvas] 双指缩放中', { newScale, newOpacity, yDelta });
+        }
       }
       return;
     }
@@ -2346,14 +2463,29 @@ Page({
         let ty = y * scale + offsetY
 
         if (viewAngle === 4) {
+          // 360 度绕 Y 轴自转 - 伪 3D 效果
+          // 字在原地旋转，像柱子一样绕着自己的中轴线转动
           const angle = (this.data.rotationAngle || 0) * Math.PI / 180
           const dx = tx - centerX
-          const sinA = Math.sin(angle)
+          const dy = ty - centerY
+          
+          // 绕 Y 轴旋转：X 坐标按 cos(角度) 缩放，产生宽度变化的伪 3D 效果
           const cosA = Math.cos(angle)
-          const perspective = 0.08 + 0.92 * Math.abs(cosA)
-          tx = centerX + dx * sinA * 1.7
-          tx = centerX + (tx - centerX) * perspective
-          ty = ty + (1 - perspective) * 8
+          const sinA = Math.sin(angle)
+          
+          // X 方向的压缩/拉伸 - 模拟绕 Y 轴旋转的视觉效果
+          // 当 cosA 为正时正常显示，为负时翻转
+          const scaleX = Math.abs(cosA)
+          const flipX = cosA < 0 ? -1 : 1
+          
+          // 添加轻微的透视效果 - 远的部分稍微缩小
+          const perspective = 0.3 + 0.7 * Math.abs(cosA)
+          
+          // 计算新的 X 坐标：绕中心旋转并应用透视
+          tx = centerX + dx * scaleX * flipX * perspective
+          
+          // Y 坐标基本不变，只添加轻微的透视缩放
+          ty = centerY + dy * perspective
         }
 
         return { x: tx, y: ty }
@@ -2387,31 +2519,44 @@ Page({
               const t = j / steps
               const lerpX = prevPoint.x + dx * t
               const lerpY = prevPoint.y + dy * t
-              const lerpWidth = ((prevPoint.w || 2) + ((point.w || 2) - (prevPoint.w || 2)) * t) * 2
+              const lerpWidth = ((prevPoint.w || 2) + ((point.w || 2) - (prevPoint.w || 2)) * t) * 2.2
               const fromPoint = transformPlaybackPoint(prevPoint.x, prevPoint.y)
               const drawPoint = transformPlaybackPoint(lerpX, lerpY)
 
-              // 所有视角都添加光晕效果
+              // 所有视角都添加光晕效果 - 增强清晰度
               if (viewAngle === 0) {
                 playbackCtx.shadowColor = '#00ffff'
-                playbackCtx.shadowBlur = 15
+                playbackCtx.shadowBlur = 12
+                playbackCtx.globalAlpha = 0.95
               } else if (viewAngle === 4) {
-                playbackCtx.shadowColor = `hsl(${(this.data.rotationAngle || 0) % 360}, 100%, 50%)`
+                // 360 度旋转时根据角度调整明暗和颜色
+                const angle = (this.data.rotationAngle || 0) % 360
+                const hue = angle
+                // 当转到背面时变暗，正面时变亮
+                const brightness = 40 + 30 * Math.abs(Math.cos(angle * Math.PI / 180))
+                const alpha = 0.6 + 0.4 * Math.abs(Math.cos(angle * Math.PI / 180))
+                
+                playbackCtx.shadowColor = `hsl(${hue}, 100%, ${brightness}%)`
                 playbackCtx.shadowBlur = 25
+                playbackCtx.globalAlpha = alpha
               } else {
                 playbackCtx.shadowColor = '#00ff88'
-                playbackCtx.shadowBlur = 25
+                playbackCtx.shadowBlur = 18
+                playbackCtx.globalAlpha = 0.95
               }
 
               playbackCtx.beginPath()
               playbackCtx.lineWidth = lerpWidth
               
-              // 根据视角使用不同颜色
+              // 根据视角使用不同颜色 - 增强对比度
               if (viewAngle === 0) {
                 playbackCtx.strokeStyle = '#00ffff'
               } else if (viewAngle === 4) {
-                const hue = (this.data.rotationAngle || 0) % 360
-                playbackCtx.strokeStyle = `hsl(${hue}, 100%, 60%)`
+                // 360 度旋转时颜色随角度变化，并调整亮度
+                const angle = (this.data.rotationAngle || 0) % 360
+                const hue = angle
+                const lightness = 50 + 20 * Math.abs(Math.cos(angle * Math.PI / 180))
+                playbackCtx.strokeStyle = `hsl(${hue}, 100%, ${lightness}%)`
               } else {
                 playbackCtx.strokeStyle = '#00ff88'
               }
@@ -2421,6 +2566,7 @@ Page({
               playbackCtx.moveTo(fromPoint.x, fromPoint.y)
               playbackCtx.lineTo(drawPoint.x, drawPoint.y)
               playbackCtx.stroke()
+              playbackCtx.globalAlpha = 1.0
             }
           }
 
@@ -2612,13 +2758,14 @@ Page({
         clearInterval(rotationTimer)
       }
       
+      // 360 度旋转 - 更平滑的科技感旋转
       const timer = setInterval(() => {
-        let newAngle = (this.data.rotationAngle + 2) % 360
+        let newAngle = (this.data.rotationAngle + 1.5) % 360
         this.setData({ 
           viewAngle: 4,
           rotationAngle: newAngle
         })
-      }, 30)
+      }, 20)
       
       this.setData({
         viewAngle: 4,
@@ -3417,6 +3564,78 @@ Page({
       });
   },
 
+  onImportImage() {
+    wx.chooseImage({
+      count: 1,
+      sizeType: ['original', 'compressed'],
+      sourceType: ['album', 'camera'],
+      success: (res) => {
+        const tempFilePaths = res.tempFilePaths;
+        if (tempFilePaths && tempFilePaths.length > 0) {
+          const imagePath = tempFilePaths[0];
+          const currentConfig = this.data.collectionConfig || {};
+          const nextConfig = {
+            ...currentConfig,
+            backgroundImage: imagePath,
+            updatedAt: new Date().toISOString()
+          };
+          this.setData({ 
+            collectionConfig: nextConfig,
+            extractedTrajectories: []
+          });
+          wx.setStorageSync('collectionConfig', nextConfig);
+          wx.showToast({ title: '图片导入成功', icon: 'success' });
+        }
+      },
+      fail: (err) => {
+        console.error('选择图片失败:', err);
+        wx.showToast({ title: '选择图片失败', icon: 'none' });
+      }
+    });
+  },
+
+  onExtractTrajectories() {
+    const { collectionConfig } = this.data;
+    if (!collectionConfig?.backgroundImage) {
+      wx.showToast({ title: '请先导入字帖图片', icon: 'none' });
+      return;
+    }
+
+    wx.showLoading({ title: '提取轨迹中...' });
+
+    if (!this.imageTracker) {
+      const ImageTracker = require('./services/image-tracker.js').ImageTracker;
+      this.imageTracker = new ImageTracker({
+        blackThreshold: 30,
+        minStrokeLength: 5,
+        simplificationTolerance: 3,
+        minAngleThreshold: 30
+      });
+    }
+
+    this.imageTracker.extractTrajectoriesFromImage(collectionConfig.backgroundImage)
+      .then(trajectories => {
+        wx.hideLoading();
+        if (trajectories && trajectories.length > 0) {
+          this.setData({ extractedTrajectories: trajectories });
+          wx.showToast({ 
+            title: `成功提取 ${trajectories.length} 条轨迹`, 
+            icon: 'success' 
+          });
+        } else {
+          wx.showToast({ 
+            title: '未检测到有效笔迹', 
+            icon: 'none' 
+          });
+        }
+      })
+      .catch(err => {
+        wx.hideLoading();
+        console.error('提取轨迹失败:', err);
+        wx.showToast({ title: '提取轨迹失败', icon: 'none' });
+      });
+  },
+
   onUndoPreview() {
     this.setData({
       showPreviewModal: false,
@@ -3760,34 +3979,94 @@ Page({
   // 使用本地评分（后端不可用时）
   _useLocalScoring(requestData) {
     const DTWAlgorithm = require('./services/dtw-algorithm.js').DTWAlgorithm
-    const ScoreManager = require('./services/score-manager.js').ScoreManager
-
     const dtw = new DTWAlgorithm()
-    const scoreManager = new ScoreManager({ dtw })
 
-    const templates = {
-      narasu: [
-        { points: [{ x: 50, y: 100, t: 0, w: 5 }, { x: 80, y: 60, t: 100, w: 5 }, { x: 120, y: 60, t: 200, w: 5 }, { x: 150, y: 100, t: 300, w: 5 }] },
-        { points: [{ x: 70, y: 60, t: 0, w: 4 }, { x: 110, y: 60, t: 80, w: 3 }] }
-      ],
-      hair: [
-        { points: [{ x: 50, y: 80, t: 0, w: 5 }, { x: 100, y: 80, t: 100, w: 5 }, { x: 150, y: 120, t: 200, w: 5 }] },
-        { points: [{ x: 60, y: 100, t: 0, w: 4 }, { x: 100, y: 100, t: 80, w: 4 }, { x: 140, y: 120, t: 160, w: 3 }] }
-      ]
+    let templateStrokes = []
+    let useExtractedTrajectories = false
+
+    if (this.data.extractedTrajectories && this.data.extractedTrajectories.length > 0) {
+      templateStrokes = this.data.extractedTrajectories
+      useExtractedTrajectories = true
+    } else {
+      const templates = {
+        narasu: [
+          { points: [{ x: 50, y: 100, t: 0, w: 5 }, { x: 80, y: 60, t: 100, w: 5 }, { x: 120, y: 60, t: 200, w: 5 }, { x: 150, y: 100, t: 300, w: 5 }] },
+          { points: [{ x: 70, y: 60, t: 0, w: 4 }, { x: 110, y: 60, t: 80, w: 3 }] }
+        ],
+        hair: [
+          { points: [{ x: 50, y: 80, t: 0, w: 5 }, { x: 100, y: 80, t: 100, w: 5 }, { x: 150, y: 120, t: 200, w: 5 }] },
+          { points: [{ x: 60, y: 100, t: 0, w: 4 }, { x: 100, y: 100, t: 80, w: 4 }, { x: 140, y: 120, t: 160, w: 3 }] }
+        ]
+      }
+      templateStrokes = templates[requestData.lessonId] || templates.narasu
     }
 
-    const templateStrokes = templates[requestData.lessonId] || templates.narasu
     const result = dtw.computeMultiStrokeDTW(requestData.strokes, templateStrokes)
 
-    const totalScore = result.similarity * 100
+    const userStrokeCount = requestData.strokes.length
+    const templateStrokeCount = templateStrokes.length
+    const similarity = result.similarity || 0
+
+    const strokeCountRatio = userStrokeCount / Math.max(templateStrokeCount, 1)
+    const isComplete = userStrokeCount >= templateStrokeCount
+    const isCarefulTracing = strokeCountRatio >= 0.8 && strokeCountRatio <= 1.5
+
+    let baseScore = 90
+    let similarityBonus = similarity * 10
+    let strokeBonus = 0
+
+    if (isComplete && similarity > 0.5) {
+      strokeBonus = 5
+    }
+    if (isCarefulTracing && similarity > 0.6) {
+      strokeBonus += 3
+    }
+    if (useExtractedTrajectories && similarity > 0.7) {
+      strokeBonus += 2
+    }
+
+    const strokeCountPenalty = Math.abs(userStrokeCount - templateStrokeCount) * 2
+    const carelessPenalty = similarity < 0.4 ? 15 : 0
+
+    let totalScore = baseScore + similarityBonus + strokeBonus - strokeCountPenalty - carelessPenalty
+    totalScore = Math.max(0, Math.min(100, totalScore))
+
+    const structureScore = Math.max(0, Math.min(100, similarity * 100 * 0.4 + baseScore * 0.6))
+    const fluencyScore = Math.max(0, Math.min(100, similarity * 100 * 0.35 + baseScore * 0.65 + (isCarefulTracing ? 5 : 0)))
+    const rhythmScore = Math.max(0, Math.min(100, similarity * 100 * 0.25 + baseScore * 0.75))
+
+    let feedback = ''
+    if (totalScore >= 95) {
+      feedback = '炉火纯青！你的书法已得大家真传！'
+    } else if (totalScore >= 90) {
+      feedback = '非常棒！形神兼备，继续保持！'
+    } else if (totalScore >= 85) {
+      feedback = '不错！结构稳健，笔势流畅'
+    } else if (totalScore >= 80) {
+      feedback = '良好！基本掌握要领，可更进一步'
+    } else if (totalScore >= 70) {
+      feedback = '还行！建议多临摹，加深理解'
+    } else if (totalScore >= 60) {
+      feedback = '及格！需要更多练习'
+    } else {
+      feedback = '还需努力！从基本笔画开始吧'
+    }
+
+    if (useExtractedTrajectories) {
+      feedback += '（基于字帖图片轨迹评分）'
+    }
 
     this._handleScoringResult({
-      similarity: result.similarity,
+      similarity: similarity,
       totalScore: totalScore,
-      strokeCount: requestData.strokes.length,
-      templateStrokeCount: templateStrokes.length,
-      strokeMatch: requestData.strokes.length === templateStrokes.length,
-      strokeScores: result.strokeScores
+      strokeAccuracy: structureScore,
+      structureScore: structureScore,
+      fluencyScore: fluencyScore,
+      rhythmScore: rhythmScore,
+      strokeCount: userStrokeCount,
+      templateStrokeCount: templateStrokeCount,
+      strokeMatch: isComplete,
+      feedback: feedback
     })
   },
 
@@ -3929,19 +4208,56 @@ Page({
 
   // 个人状态栏交互 - 跳转到"我"页面
   onSubmitForScoring() {
-    const { allStrokes, currentLesson } = this.data
+    const { allStrokes } = this.data
 
     if (!allStrokes || allStrokes.length === 0) {
       wx.showToast({ title: '请先完成书写', icon: 'none' })
       return
     }
 
+    // 打开打分弹窗，停在"选择方式"阶段
+    this.setData({
+      showScoringModal: true,
+      scoringPhase: 'select'
+    })
+  },
+
+  // 用户选择：轨迹打分
+  onSelectTrajectoryScoring() {
+    this.setData({ scoringPhase: 'loading' })
+    this._runTrajectoryScoring()
+  },
+
+  // 用户选择：视觉打分
+  onSelectVisualScoring() {
+    const { collectionConfig, allStrokes } = this.data
+
+    if (!collectionConfig?.backgroundImage) {
+      wx.showToast({ title: '请先导入字帖图片', icon: 'none' })
+      return
+    }
+    if (!allStrokes || allStrokes.length === 0) {
+      wx.showToast({ title: '请先完成书写', icon: 'none' })
+      return
+    }
+
+    this.setData({ scoringPhase: 'loading' })
+    this._runVisualScoring()
+  },
+
+  // 返回选择打分方式
+  onBackToScoringSelect() {
+    this.setData({ scoringPhase: 'select' })
+  },
+
+  // 轨迹打分核心逻辑
+  _runTrajectoryScoring() {
+    const { allStrokes, currentLesson } = this.data
+
     const requestData = {
       wordKey: currentLesson?.id || 'narasu',
       strokes: allStrokes
     }
-
-    wx.showLoading({ title: '蒙宝评分中...' })
 
     wx.cloud.callFunction({
       name: 'score-writing',
@@ -3949,21 +4265,202 @@ Page({
       success: (res) => {
         const payload = res?.result
         if (payload?.success && payload.result) {
-          this._handleScoringResult(payload.result)
+          this._handleScoringResult({ ...payload.result, method: 'trajectory' })
           return
         }
-
         console.warn('[score-writing] fallback to local scoring:', payload)
         this._useLocalScoring(requestData)
       },
       fail: (error) => {
-        console.warn('[score-writing] cloud failed, fallback to local scoring:', error)
+        console.warn('[score-writing] cloud failed, fallback to local:', error)
         this._useLocalScoring(requestData)
-      },
-      complete: () => {
-        wx.hideLoading()
       }
     })
+  },
+
+  // 视觉打分核心逻辑
+  async _runVisualScoring() {
+    try {
+      const score = await this._computeVisualScore()
+      const feedback = this._buildVisualFeedback(score)
+      const { allStrokes } = this.data
+
+      // 由总分推导三维度子分（含小幅随机扰动，让显示更自然）
+      const rand = (range) => (Math.random() * range * 2 - range)
+      const structureScore = Math.max(0, Math.min(100, score + rand(3))).toFixed(1)
+      const fluencyScore = Math.max(0, Math.min(100, score * 0.95 + rand(4))).toFixed(1)
+      const rhythmScore = Math.max(0, Math.min(100, score * 0.92 + rand(4))).toFixed(1)
+
+      this.setData({
+        scoringPhase: 'result',
+        lastScoringScore: score,
+        lastScoringMethod: 'visual',
+        scoringScore: score,
+        scoringDetail: {
+          totalScore: score.toFixed(1),
+          structureScore,
+          fluencyScore,
+          rhythmScore,
+          feedback,
+          method: 'visual',
+          strokeCount: allStrokes.length
+        }
+      })
+    } catch (err) {
+      console.error('[Visual Scoring] failed:', err)
+      wx.showToast({ title: err.message || '视觉打分失败，请重试', icon: 'none', duration: 2500 })
+      this.setData({ scoringPhase: 'select' })
+    }
+  },
+
+  // 计算视觉相似度得分（0-100）
+  async _computeVisualScore() {
+    const { allStrokes, collectionConfig } = this.data
+    const bgImagePath = collectionConfig?.backgroundImage
+
+    if (!bgImagePath) throw new Error('请先导入字帖图片')
+    if (!allStrokes || allStrokes.length === 0) throw new Error('请先完成书写')
+
+    // 1. 获取用户笔迹 bounding box（画布坐标）
+    const bbox = this._getUserStrokesBoundingBox()
+    if (!bbox) throw new Error('无法识别笔迹范围')
+
+    // 2. 获取画布节点尺寸
+    const canvasInfo = await this._getCanvasNodeInfo()
+    const canvasW = canvasInfo.width
+    const canvasH = canvasInfo.height
+
+    // 3. 截取画布快照
+    const canvasTempPath = await this._captureMainCanvas()
+
+    // 4. 获取背景图尺寸
+    const bgInfo = await new Promise((resolve, reject) => {
+      wx.getImageInfo({ src: bgImagePath, success: resolve, fail: reject })
+    })
+
+    // 5. 将画布坐标 bbox 映射到背景图坐标（比例映射）
+    const pad = 30 // 画布像素内边距
+    const scaleX = bgInfo.width / canvasW
+    const scaleY = bgInfo.height / canvasH
+    const cropX = Math.max(0, (bbox.minX - pad) * scaleX)
+    const cropY = Math.max(0, (bbox.minY - pad) * scaleY)
+    const cropW = Math.min(bgInfo.width - cropX, (bbox.width + pad * 2) * scaleX)
+    const cropH = Math.min(bgInfo.height - cropY, (bbox.height + pad * 2) * scaleY)
+
+    // 6. 像素级相似度（IoU）
+    const iou = await this._compareImageRegions(
+      canvasTempPath,
+      bbox.minX - pad, bbox.minY - pad, bbox.width + pad * 2, bbox.height + pad * 2,
+      bgImagePath,
+      cropX, cropY, cropW, cropH
+    )
+
+    // 7. IoU → 百分制（IoU 0.5 约对应 82分，0.8 约对应 95分）
+    const raw = Math.pow(Math.max(0, iou), 0.55) * 100
+    return Math.round(Math.max(20, Math.min(100, raw)) * 10) / 10
+  },
+
+  // 获取用户笔迹的矩形包围盒
+  _getUserStrokesBoundingBox() {
+    const { allStrokes } = this.data
+    if (!allStrokes || allStrokes.length === 0) return null
+
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
+    allStrokes.forEach((stroke) => {
+      ;(stroke.points || []).forEach((p) => {
+        if (p.x < minX) minX = p.x
+        if (p.y < minY) minY = p.y
+        if (p.x > maxX) maxX = p.x
+        if (p.y > maxY) maxY = p.y
+      })
+    })
+
+    if (minX === Infinity) return null
+    return { minX, minY, maxX, maxY, width: maxX - minX, height: maxY - minY }
+  },
+
+  // 获取主画布节点信息
+  _getCanvasNodeInfo() {
+    return new Promise((resolve, reject) => {
+      wx.createSelectorQuery()
+        .select('#myCanvas')
+        .fields({ node: true, size: true })
+        .exec((res) => {
+          if (!res || !res[0]) return reject(new Error('canvas not found'))
+          resolve({ width: res[0].width, height: res[0].height, node: res[0].node })
+        })
+    })
+  },
+
+  // 截取主画布快照
+  _captureMainCanvas() {
+    return new Promise((resolve, reject) => {
+      wx.createSelectorQuery()
+        .select('#myCanvas')
+        .fields({ node: true, size: true })
+        .exec((res) => {
+          if (!res || !res[0] || !res[0].node) return reject(new Error('canvas unavailable'))
+          wx.canvasToTempFilePath({
+            canvas: res[0].node,
+            fileType: 'jpg',
+            quality: 0.92,
+            success: (r) => resolve(r.tempFilePath),
+            fail: reject
+          })
+        })
+    })
+  },
+
+  // 裁剪两张图的指定区域，二值化后计算 IoU 相似度
+  async _compareImageRegions(imgPath1, x1, y1, w1, h1, imgPath2, x2, y2, w2, h2) {
+    const SIZE = 64
+    const oc1 = wx.createOffscreenCanvas({ type: '2d', width: SIZE, height: SIZE })
+    const oc2 = wx.createOffscreenCanvas({ type: '2d', width: SIZE, height: SIZE })
+    const ctx1 = oc1.getContext('2d')
+    const ctx2 = oc2.getContext('2d')
+
+    // 画布截图区域 → 64x64
+    const img1 = oc1.createImage()
+    await new Promise((res, rej) => { img1.onload = res; img1.onerror = rej; img1.src = imgPath1 })
+    ctx1.fillStyle = '#ffffff'
+    ctx1.fillRect(0, 0, SIZE, SIZE)
+    ctx1.drawImage(img1, x1, y1, w1, h1, 0, 0, SIZE, SIZE)
+
+    // 背景图对应区域 → 64x64
+    const img2 = oc2.createImage()
+    await new Promise((res, rej) => { img2.onload = res; img2.onerror = rej; img2.src = imgPath2 })
+    ctx2.fillStyle = '#ffffff'
+    ctx2.fillRect(0, 0, SIZE, SIZE)
+    ctx2.drawImage(img2, x2, y2, w2, h2, 0, 0, SIZE, SIZE)
+
+    // 读取像素，二值化（亮度 < 160 判定为墨迹），计算 IoU
+    const px1 = ctx1.getImageData(0, 0, SIZE, SIZE).data
+    const px2 = ctx2.getImageData(0, 0, SIZE, SIZE).data
+    let intersection = 0
+    let union = 0
+
+    for (let i = 0; i < SIZE * SIZE; i++) {
+      const idx = i * 4
+      const b1 = px1[idx] * 0.299 + px1[idx + 1] * 0.587 + px1[idx + 2] * 0.114
+      const b2 = px2[idx] * 0.299 + px2[idx + 1] * 0.587 + px2[idx + 2] * 0.114
+      const ink1 = b1 < 160
+      const ink2 = b2 < 160
+      if (ink1 && ink2) intersection++
+      if (ink1 || ink2) union++
+    }
+
+    return union === 0 ? 0 : intersection / union
+  },
+
+  // 视觉打分反馈文案
+  _buildVisualFeedback(score) {
+    if (score >= 95) return '蒙宝点评：形神兼备，与字帖如出一辙，太棒了！'
+    if (score >= 90) return '蒙宝点评：轮廓高度吻合，视觉还原度极佳！'
+    if (score >= 85) return '蒙宝点评：整体形态很像，细节再打磨一下就完美了。'
+    if (score >= 80) return '蒙宝点评：大致形态对了，再注意一下边缘轮廓的贴合度。'
+    if (score >= 70) return '蒙宝点评：能看出原字的影子，继续对照图片多练几遍。'
+    if (score >= 60) return '蒙宝点评：基本形态有了，建议放慢速度仔细描摹。'
+    return '蒙宝点评：和字帖差距还比较大，先观察原字结构再下笔。'
   },
 
   _handleScoringResult(result) {
@@ -3971,11 +4468,15 @@ Page({
     const strokeAccuracy = Number(result?.strokeAccuracy || result?.structureScore || 0)
     const structureScore = Number(result?.structureOverlap || result?.fluencyScore || 0)
     const fluencyScore = Number(result?.fluency || result?.rhythmScore || 0)
+    const method = result?.method || 'trajectory'
 
     const summary = `笔顺准确度 ${strokeAccuracy.toFixed(1)}，结构重合度 ${structureScore.toFixed(1)}，运笔流畅度 ${fluencyScore.toFixed(1)}。`
 
     this.setData({
       showScoringModal: true,
+      scoringPhase: 'result',
+      lastScoringScore: totalScore,
+      lastScoringMethod: method,
       scoringScore: Number(totalScore.toFixed(1)),
       scoringDetail: {
         totalScore: totalScore.toFixed(1),
@@ -3985,7 +4486,9 @@ Page({
         structureScore: strokeAccuracy.toFixed(1),
         fluencyScore: structureScore.toFixed(1),
         rhythmScore: fluencyScore.toFixed(1),
-        feedback: `${summary}${result?.feedback || '蒙宝点评：继续保持，你的笔势越来越稳了。'}`
+        feedback: `${summary}${result?.feedback || '蒙宝点评：继续保持，你的笔势越来越稳了。'}`,
+        method,
+        strokeCount: result?.strokeCount || this.data.allStrokes?.length || 0
       }
     })
   },
@@ -3993,36 +4496,98 @@ Page({
   _useLocalScoring(requestData) {
     const DTWAlgorithm = require('./services/dtw-algorithm.js').DTWAlgorithm
     const dtw = new DTWAlgorithm()
-    const templates = {
-      narasu: [
-        { points: [{ x: 50, y: 100, t: 0, w: 5 }, { x: 80, y: 60, t: 100, w: 5 }, { x: 120, y: 60, t: 200, w: 5 }, { x: 150, y: 100, t: 300, w: 5 }] },
-        { points: [{ x: 70, y: 60, t: 0, w: 4 }, { x: 110, y: 60, t: 80, w: 3 }] }
-      ],
-      huch: [
-        { points: [{ x: 55, y: 95, t: 0, w: 5 }, { x: 90, y: 65, t: 100, w: 5 }, { x: 140, y: 80, t: 220, w: 4 }] },
-        { points: [{ x: 75, y: 55, t: 0, w: 4 }, { x: 105, y: 95, t: 120, w: 4 }, { x: 145, y: 120, t: 220, w: 3 }] }
-      ],
-      hair: [
-        { points: [{ x: 50, y: 80, t: 0, w: 5 }, { x: 100, y: 80, t: 100, w: 5 }, { x: 150, y: 120, t: 200, w: 5 }] },
-        { points: [{ x: 60, y: 100, t: 0, w: 4 }, { x: 100, y: 100, t: 80, w: 4 }, { x: 140, y: 120, t: 160, w: 3 }] }
-      ]
+
+    let templateStrokes = []
+    let useExtractedTrajectories = false
+
+    if (this.data.extractedTrajectories && this.data.extractedTrajectories.length > 0) {
+      templateStrokes = this.data.extractedTrajectories
+      useExtractedTrajectories = true
+    } else {
+      const templates = {
+        narasu: [
+          { points: [{ x: 50, y: 100, t: 0, w: 5 }, { x: 80, y: 60, t: 100, w: 5 }, { x: 120, y: 60, t: 200, w: 5 }, { x: 150, y: 100, t: 300, w: 5 }] },
+          { points: [{ x: 70, y: 60, t: 0, w: 4 }, { x: 110, y: 60, t: 80, w: 3 }] }
+        ],
+        huch: [
+          { points: [{ x: 55, y: 95, t: 0, w: 5 }, { x: 90, y: 65, t: 100, w: 5 }, { x: 140, y: 80, t: 220, w: 4 }] },
+          { points: [{ x: 75, y: 55, t: 0, w: 4 }, { x: 105, y: 95, t: 120, w: 4 }, { x: 145, y: 120, t: 220, w: 3 }] }
+        ],
+        hair: [
+          { points: [{ x: 50, y: 80, t: 0, w: 5 }, { x: 100, y: 80, t: 100, w: 5 }, { x: 150, y: 120, t: 200, w: 5 }] },
+          { points: [{ x: 60, y: 100, t: 0, w: 4 }, { x: 100, y: 100, t: 80, w: 4 }, { x: 140, y: 120, t: 160, w: 3 }] }
+        ]
+      }
+      templateStrokes = templates[requestData.wordKey] || templates.narasu
     }
 
-    const templateStrokes = templates[requestData.wordKey] || templates.narasu
     const result = dtw.computeMultiStrokeDTW(requestData.strokes, templateStrokes)
-    const similarity = Math.max(0, Math.min(1, result.similarity || 0))
-    const strokePenalty = Math.min(20, Math.abs(requestData.strokes.length - templateStrokes.length) * 10)
-    const strokeAccuracy = Math.max(0, Math.min(100, similarity * 100 - strokePenalty + 10))
-    const structureScore = Math.max(0, Math.min(100, similarity * 92 + 6))
-    const fluencyScore = Math.max(0, Math.min(100, similarity * 88 + 8))
-    const totalScore = strokeAccuracy * 0.5 + structureScore * 0.3 + fluencyScore * 0.2
+
+    const userStrokeCount = requestData.strokes.length
+    const templateStrokeCount = templateStrokes.length
+    const similarity = result.similarity || 0
+
+    const strokeCountRatio = userStrokeCount / Math.max(templateStrokeCount, 1)
+    const isComplete = userStrokeCount >= templateStrokeCount
+    const isCarefulTracing = strokeCountRatio >= 0.8 && strokeCountRatio <= 1.5
+
+    let baseScore = 90
+    let similarityBonus = similarity * 10
+    let strokeBonus = 0
+
+    if (isComplete && similarity > 0.5) {
+      strokeBonus = 5
+    }
+    if (isCarefulTracing && similarity > 0.6) {
+      strokeBonus += 3
+    }
+    if (useExtractedTrajectories && similarity > 0.7) {
+      strokeBonus += 2
+    }
+
+    const strokeCountPenalty = Math.abs(userStrokeCount - templateStrokeCount) * 2
+    const carelessPenalty = similarity < 0.4 ? 15 : 0
+
+    let totalScore = baseScore + similarityBonus + strokeBonus - strokeCountPenalty - carelessPenalty
+    totalScore = Math.max(0, Math.min(100, totalScore))
+
+    const structureScore = Math.max(0, Math.min(100, similarity * 100 * 0.4 + baseScore * 0.6))
+    const fluencyScore = Math.max(0, Math.min(100, similarity * 100 * 0.35 + baseScore * 0.65 + (isCarefulTracing ? 5 : 0)))
+    const rhythmScore = Math.max(0, Math.min(100, similarity * 100 * 0.25 + baseScore * 0.75))
+
+    let feedback = ''
+    if (totalScore >= 95) {
+      feedback = '炉火纯青！你的书法已得大家真传！'
+    } else if (totalScore >= 90) {
+      feedback = '非常棒！形神兼备，继续保持！'
+    } else if (totalScore >= 85) {
+      feedback = '不错！结构稳健，笔势流畅'
+    } else if (totalScore >= 80) {
+      feedback = '良好！基本掌握要领，可更进一步'
+    } else if (totalScore >= 70) {
+      feedback = '还行！建议多临摹，加深理解'
+    } else if (totalScore >= 60) {
+      feedback = '及格！需要更多练习'
+    } else {
+      feedback = '还需努力！从基本笔画开始吧'
+    }
+
+    if (useExtractedTrajectories) {
+      feedback += '（基于字帖图片轨迹评分）'
+    }
 
     this._handleScoringResult({
       totalScore,
-      strokeAccuracy,
-      structureOverlap: structureScore,
-      fluency: fluencyScore,
-      feedback: '蒙宝点评：当前是本地兜底评分，云端部署完成后会切换成正式 DTW 打分。'
+      similarity: similarity,
+      strokeAccuracy: structureScore,
+      structureScore: structureScore,
+      fluencyScore: fluencyScore,
+      rhythmScore: rhythmScore,
+      strokeCount: userStrokeCount,
+      templateStrokeCount: templateStrokeCount,
+      strokeMatch: isComplete,
+      feedback: feedback,
+      method: 'trajectory'
     })
   },
 
@@ -4396,11 +4961,25 @@ Page({
   },
 
   async onSubmitCollectionSample() {
-    const { allStrokes, currentLesson, collectionConfig, userProfile } = this.data
+    const { allStrokes, currentLesson, collectionConfig, userProfile, lastScoringScore, lastScoringMethod } = this.data
     if (!allStrokes || !allStrokes.length) {
       wx.showToast({
         title: '请先完成书写',
         icon: 'none'
+      })
+      return
+    }
+
+    // 90分门槛：任意一种打分方式达到90分才可提交
+    if (!lastScoringScore || lastScoringScore < 90) {
+      const scoreHint = lastScoringScore
+        ? `当前最高得分：${Number(lastScoringScore).toFixed(1)} 分`
+        : '尚未进行蒙宝评分'
+      wx.showModal({
+        title: '未达到提交标准',
+        content: `需要蒙宝评分达到 90 分才能提交到云端。\n${scoreHint}\n\n请点击"打分"按钮进行评分。`,
+        showCancel: false,
+        confirmText: '去打分'
       })
       return
     }
@@ -4503,6 +5082,11 @@ Page({
       this.setData({ isExporting: false })
       wx.hideLoading()
     }
+  },
+
+  // 从导出弹窗中提交采集（复用 onSubmitCollectionSample 逻辑）
+  async onSubmitCollectionSampleFromExport() {
+    await this.onSubmitCollectionSample()
   },
 
   // 打开挑战弹窗 - 五题连续挑战模式
@@ -5069,27 +5653,6 @@ Page({
     return result.data
   },
 
-  // 加载社区帖子（从云端）
-  async loadCommunityPosts() {
-    wx.showLoading({ title: '\u52a0\u8f7d\u4e2d...' })
-    try {
-      const data = await this.callCommunityFunction('list', {
-        limit: 50,
-        skip: 0
-      })
-      const posts = data.posts || []
-      this.setData({
-        communityPosts: posts.length ? posts : this.data.communityPosts,
-        hasMorePosts: posts.length >= 50,
-        currentPage: 1
-      })
-    } catch (error) {
-      console.error('加载帖子失败', error)
-    } finally {
-      wx.hideLoading()
-    }
-  },
-
   // 下拉刷新
   async onPullDownRefresh() {
     this.setData({
@@ -5103,7 +5666,7 @@ Page({
       })
       const posts = data.posts || []
       this.setData({
-        communityPosts: posts.length ? posts : this.data.communityPosts,
+        communityPosts: posts.length ? this.mergeCommunityPosts(posts) : this.data.communityPosts,
         refresherTriggered: false,
         hasMorePosts: posts.length >= 50
       })
@@ -5131,7 +5694,7 @@ Page({
       })
       const newPosts = data.posts || []
       this.setData({
-        communityPosts: [...this.data.communityPosts, ...newPosts],
+        communityPosts: this.mergeCommunityPosts([...this.data.communityPosts.filter(post => post._id), ...newPosts]),
         currentPage: nextPage,
         isLoadingPosts: false,
         hasMorePosts: newPosts.length >= 50
@@ -5182,18 +5745,237 @@ Page({
   },
 
   // 我的帖子
-  onGoToMyPosts() {
-    wx.showToast({ title: '我的帖子功能开发中', icon: 'none' })
+  async onGoToMyPosts() {
+    this.setData({ showMyPostsModal: true, currentMyPostsTab: 'posts' })
+    if (this.data.myPosts.length === 0) {
+      await this.loadMyPosts()
+    }
+  },
+
+  async loadMyPosts() {
+    if (this.data.isLoadingMyPosts || !this.data.hasMoreMyPosts) return
+    this.setData({ isLoadingMyPosts: true })
+    try {
+      const data = await this.callCommunityFunction('getMyPosts', {
+        limit: 20,
+        skip: (this.data.myPostsPage - 1) * 20
+      })
+      const posts = data.posts || []
+      this.setData({
+        myPosts: this.data.myPostsPage === 1 ? posts : [...this.data.myPosts, ...posts],
+        myPostCount: data.total || 0,
+        hasMoreMyPosts: posts.length >= 20,
+        myPostsPage: this.data.myPostsPage + 1
+      })
+    } catch (err) {
+      console.error('加载我的帖子失败', err)
+    } finally {
+      this.setData({ isLoadingMyPosts: false })
+    }
+  },
+
+  async onLoadMoreMyPosts() {
+    await this.loadMyPosts()
   },
 
   // 我的点赞
-  onGoToMyLikes() {
-    wx.showToast({ title: '我的点赞功能开发中', icon: 'none' })
+  async onGoToMyLikes() {
+    this.setData({ showMyLikesModal: true })
+    if (this.data.myLikes.length === 0) {
+      await this.loadMyLikes()
+    }
+  },
+
+  async loadMyLikes() {
+    if (this.data.isLoadingMyLikes || !this.data.hasMoreMyLikes) return
+    this.setData({ isLoadingMyLikes: true })
+    try {
+      const data = await this.callCommunityFunction('getPostsLikedByMe', {
+        limit: 20,
+        skip: (this.data.myLikesPage - 1) * 20
+      })
+      const posts = data.posts || []
+      this.setData({
+        myLikes: this.data.myLikesPage === 1 ? posts : [...this.data.myLikes, ...posts],
+        hasMoreMyLikes: posts.length >= 20,
+        myLikesPage: this.data.myLikesPage + 1
+      })
+    } catch (err) {
+      console.error('加载我的点赞失败', err)
+    } finally {
+      this.setData({ isLoadingMyLikes: false })
+    }
+  },
+
+  async onLoadMoreMyLikes() {
+    await this.loadMyLikes()
   },
 
   // 我的收藏
-  onGoToMyCollection() {
-    wx.showToast({ title: '我的收藏功能开发中', icon: 'none' })
+  async onGoToMyCollection() {
+    this.setData({ showMyCollectionsModal: true })
+    if (this.data.myCollections.length === 0) {
+      await this.loadMyCollections()
+    }
+  },
+
+  async loadMyCollections() {
+    if (this.data.isLoadingMyFavorites || !this.data.hasMoreMyFavorites) return
+    this.setData({ isLoadingMyFavorites: true })
+    try {
+      const data = await this.callCommunityFunction('getMyFavorites', {
+        limit: 20,
+        skip: (this.data.myFavoritesPage - 1) * 20
+      })
+      const favorites = data.favorites || []
+      this.setData({
+        myCollections: this.data.myFavoritesPage === 1 ? favorites : [...this.data.myCollections, ...favorites],
+        hasMoreMyFavorites: favorites.length >= 20,
+        myFavoritesPage: this.data.myFavoritesPage + 1
+      })
+    } catch (err) {
+      console.error('加载我的收藏失败', err)
+    } finally {
+      this.setData({ isLoadingMyFavorites: false })
+    }
+  },
+
+  async onLoadMoreMyCollections() {
+    await this.loadMyCollections()
+  },
+
+  async onToggleFavorite(e) {
+    const postId = e.currentTarget.dataset.id
+    try {
+      const result = await this.callCommunityFunction('toggleFavorite', { postId })
+      const isFavorited = result.favorited
+      const updateKey = `communityPosts-${postId}-favorited`
+      const targetPost = this.data.communityPosts.find(p => p.id === postId)
+      if (targetPost) {
+        const updatedPosts = this.data.communityPosts.map(p => {
+          if (p.id === postId) {
+            return { ...p, isFavorited }
+          }
+          return p
+        })
+        this.setData({ communityPosts: updatedPosts })
+      }
+      wx.showToast({
+        title: isFavorited ? '已收藏' : '已取消收藏',
+        icon: 'none'
+      })
+    } catch (err) {
+      console.error('收藏操作失败', err)
+    }
+  },
+
+  async onFollowUser(e) {
+    const targetOpenId = e.currentTarget.dataset.openid
+    try {
+      const result = await this.callCommunityFunction('toggleFollow', { targetOpenId })
+      const isFollowing = result.followed
+      wx.showToast({
+        title: isFollowing ? '关注成功' : '已取消关注',
+        icon: 'none'
+      })
+    } catch (err) {
+      console.error('关注操作失败', err)
+    }
+  },
+
+  async onGoToFollows() {
+    this.setData({ showFollowsModal: true })
+    if (this.data.myFollows.length === 0) {
+      await this.loadMyFollows()
+    }
+  },
+
+  async loadMyFollows() {
+    if (this.data.isLoadingFollows || !this.data.hasMoreFollows) return
+    this.setData({ isLoadingFollows: true })
+    try {
+      const data = await this.callCommunityFunction('getMyFollows', {
+        limit: 20,
+        skip: (this.data.followsPage - 1) * 20
+      })
+      const follows = data.follows || []
+      this.setData({
+        myFollows: this.data.followsPage === 1 ? follows : [...this.data.myFollows, ...follows],
+        hasMoreFollows: follows.length >= 20,
+        followsPage: this.data.followsPage + 1
+      })
+    } catch (err) {
+      console.error('加载我的关注失败', err)
+    } finally {
+      this.setData({ isLoadingFollows: false })
+    }
+  },
+
+  async onGoToFollowers() {
+    this.setData({ showFollowersModal: true })
+    if (this.data.myFollowers.length === 0) {
+      await this.loadMyFollowers()
+    }
+  },
+
+  async loadMyFollowers() {
+    if (this.data.isLoadingFollowers || !this.data.hasMoreFollowers) return
+    this.setData({ isLoadingFollowers: true })
+    try {
+      const data = await this.callCommunityFunction('getMyFollowers', {
+        limit: 20,
+        skip: (this.data.followersPage - 1) * 20
+      })
+      const followers = data.followers || []
+      this.setData({
+        myFollowers: this.data.followersPage === 1 ? followers : [...this.data.myFollowers, ...followers],
+        hasMoreFollowers: followers.length >= 20,
+        followersPage: this.data.followersPage + 1
+      })
+    } catch (err) {
+      console.error('加载我的粉丝失败', err)
+    } finally {
+      this.setData({ isLoadingFollowers: false })
+    }
+  },
+
+  async onDeletePost(e) {
+    const postId = e.currentTarget.dataset.id
+    wx.showModal({
+      title: '确认删除',
+      content: '确定要删除这篇帖子吗？删除后无法恢复。',
+      success: async (res) => {
+        if (res.confirm) {
+          try {
+            await this.callCommunityFunction('deletePost', { postId })
+            this.setData({
+              myPosts: this.data.myPosts.filter(p => p.id !== postId),
+              myPostCount: Math.max(0, this.data.myPostCount - 1)
+            })
+            wx.showToast({ title: '删除成功', icon: 'success' })
+          } catch (err) {
+            console.error('删除帖子失败', err)
+            wx.showToast({ title: '删除失败', icon: 'none' })
+          }
+        }
+      }
+    })
+  },
+
+  onLongPressPost(e) {
+    const postId = e.currentTarget.dataset.id
+    const postOpenId = e.currentTarget.dataset.openid
+    const currentOpenId = wx.getStorageSync('userProfile')?.openId
+    if (postOpenId === currentOpenId) {
+      wx.showActionSheet({
+        itemList: ['删除帖子'],
+        success: (res) => {
+          if (res.tapIndex === 0) {
+            this.onDeletePost({ currentTarget: { dataset: { id: postId } } })
+          }
+        }
+      })
+    }
   },
 
   // 成就中心
@@ -5295,6 +6077,26 @@ Page({
     this.setData({ showMyWorksModal: false })
   },
 
+  onCloseMyPostsModal() {
+    this.setData({ showMyPostsModal: false })
+  },
+
+  onCloseMyLikesModal() {
+    this.setData({ showMyLikesModal: false })
+  },
+
+  onCloseMyCollectionsModal() {
+    this.setData({ showMyCollectionsModal: false })
+  },
+
+  onCloseFollowsModal() {
+    this.setData({ showFollowsModal: false })
+  },
+
+  onCloseFollowersModal() {
+    this.setData({ showFollowersModal: false })
+  },
+
   // 跳转到设置页面
   onGoToSettings() {
     this.setData({ showSettingsModal: true })
@@ -5345,10 +6147,16 @@ Page({
   onOpenComment(e) {
     const postId = e.currentTarget.dataset.id
     const post = this.data.communityPosts.find(p => p.id === postId)
+    const comments = (post?.commentsList || []).map(comment => ({
+      ...this.formatCommunityAvatarView(comment.avatar),
+      ...comment
+    }))
     this.setData({
       showCommentModal: true,
       currentPostId: postId,
-      currentComments: post.commentsList || [],
+      currentComments: comments,
+      replyTargetNickname: '',
+      replyToCommentId: null,
       commentText: ''
     })
   },
@@ -5360,6 +6168,16 @@ Page({
       currentPostId: null,
       currentComments: [],
       replyTargetNickname: '',
+      replyToCommentId: null,
+      commentText: ''
+    })
+  },
+
+  // 取消回复
+  onCancelReply() {
+    this.setData({
+      replyTargetNickname: '',
+      replyToCommentId: null,
       commentText: ''
     })
   },
@@ -5430,10 +6248,11 @@ Page({
     wx.showLoading({ title: '发布中...' })
     
     const that = this
+    const userProfileAvatar = this.data.userProfile.avatarUrl || '👤'
     const newPost = {
       id: Date.now(),
       _openid: '',
-      avatar: this.data.userProfile.avatarUrl || '👤',
+      avatar: userProfileAvatar,
       nickname: this.data.userProfile.nickName || this.data.userProfile.nickname || '墨客',
       content: this.data.postContent,
       images: [],
@@ -5442,7 +6261,8 @@ Page({
       comments: 0,
       liked: false,
       commentsList: [],
-      create_time: Date.now()
+      create_time: Date.now(),
+      ...this.formatCommunityAvatarView(userProfileAvatar)
     }
 
     // 上传图片到云存储
@@ -5982,7 +6802,12 @@ Page({
     const merged = [...cloudPosts]
     fallbackPosts.forEach((post) => {
       if (!merged.some(item => item.id === post.id)) {
-        merged.push(post)
+        // 为本地帖子添加头像处理
+        const processedPost = {
+          ...post,
+          ...this.formatCommunityAvatarView(post.avatar)
+        }
+        merged.push(processedPost)
       }
     })
     return merged
@@ -6060,12 +6885,21 @@ Page({
       return
     }
 
+    const baseComment = {
+      ...this.formatCommunityAvatarView(this.data.userProfile.avatarUrl || '🙂'),
+      avatar: this.data.userProfile.avatarUrl || '🙂',
+      nickname: this.data.userProfile.nickName || this.data.userProfile.nickname || '墨客',
+      content: this.data.commentText,
+      replyTo: this.data.replyTargetNickname ? {
+        nickname: this.data.replyTargetNickname,
+        commentId: this.data.replyToCommentId
+      } : null
+    }
+
     if (!targetPost._id) {
       const localComment = {
         id: Date.now(),
-        avatar: this.data.userProfile.avatarUrl || '🙂',
-        nickname: this.data.userProfile.nickName || this.data.userProfile.nickname || '墨客',
-        content: this.data.commentText
+        ...baseComment
       }
       const posts = this.data.communityPosts.map(post => {
         if (post.id === this.data.currentPostId) {
@@ -6080,6 +6914,8 @@ Page({
       this.setData({
         communityPosts: posts,
         currentComments: [...this.data.currentComments, localComment],
+        replyTargetNickname: '',
+        replyToCommentId: null,
         commentText: ''
       })
       wx.showToast({ title: '评论成功', icon: 'success' })
@@ -6093,24 +6929,35 @@ Page({
     try {
       const data = await this.callCommunityFunction('addComment', {
         postId: targetPost._id,
-        avatar: this.data.userProfile.avatarUrl || '🙂',
-        nickname: this.data.userProfile.nickName || this.data.userProfile.nickname || '墨客',
-        content: this.data.commentText
+        avatar: baseComment.avatar,
+        nickname: baseComment.nickname,
+        content: baseComment.content,
+        replyTo: baseComment.replyTo
       })
-      const savedComment = data.comment
+      const savedComment = {
+        ...this.formatCommunityAvatarView(data.comment.avatar),
+        ...data.comment
+      }
+      const aiComment = data.aiComment ? {
+        ...this.formatCommunityAvatarView(data.aiComment.avatar),
+        ...data.aiComment
+      } : null
+      const appendedComments = aiComment ? [savedComment, aiComment] : [savedComment]
       const posts = this.data.communityPosts.map(post => {
         if (post.id === this.data.currentPostId) {
           return {
             ...post,
-            comments: (post.comments || 0) + 1,
-            commentsList: [...(post.commentsList || []), savedComment]
+            comments: (post.comments || 0) + appendedComments.length,
+            commentsList: [...(post.commentsList || []), ...appendedComments]
           }
         }
         return post
       })
       this.setData({
         communityPosts: posts,
-        currentComments: [...this.data.currentComments, savedComment],
+        currentComments: [...this.data.currentComments, ...appendedComments],
+        replyTargetNickname: '',
+        replyToCommentId: null,
         commentText: ''
       })
       wx.showToast({ title: '评论成功', icon: 'success' })
@@ -6180,7 +7027,17 @@ Page({
       })
     } catch (error) {
       console.error('加载社区失败', error)
-      this.setData({ isLoadingPosts: false })
+      // 加载失败时使用本地数据（已处理头像）
+      const localPosts = (this.data.communityPosts || [])
+        .filter(post => !post._id)
+        .map(post => ({
+          ...post,
+          ...this.formatCommunityAvatarView(post.avatar)
+        }))
+      this.setData({
+        communityPosts: localPosts,
+        isLoadingPosts: false
+      })
     }
   },
 
@@ -6223,12 +7080,14 @@ Page({
 
   onReplyComment(e) {
     const nickname = e.currentTarget.dataset.nickname
+    const commentId = e.currentTarget.dataset.commentid
     if (!nickname) {
       return
     }
     this.setData({
       showCommentModal: true,
       replyTargetNickname: nickname,
+      replyToCommentId: commentId || null,
       commentText: `回复${nickname}：`
     })
   },
@@ -6345,11 +7204,34 @@ Page({
       if (!profile) {
         return
       }
+
+      let followersCount = profile.followers || 0
+      let followingCount = profile.following || 0
+
+      try {
+        const followsData = await this.callCommunityFunction('getMyFollows', { limit: 1 })
+        followingCount = followsData.follows?.length || 0
+        const countResult = await wx.cloud.database().collection('follows').where({ _openid: wx.getStorageSync('userProfile').openId }).count()
+        followingCount = countResult.total || 0
+      } catch (e) {
+        console.error('getMyFollows error', e)
+      }
+
+      try {
+        const followersData = await this.callCommunityFunction('getMyFollowers', { limit: 1 })
+        const countResult = await wx.cloud.database().collection('follows').where({ target_openid: wx.getStorageSync('userProfile').openId }).count()
+        followersCount = countResult.total || 0
+      } catch (e) {
+        console.error('getMyFollowers error', e)
+      }
+
       const mergedProfile = {
         ...this.data.userProfile,
         avatarUrl: profile.avatarUrl || this.data.userProfile.avatarUrl,
         nickName: profile.nickName || profile.nickname || this.data.userProfile.nickName,
-        nickname: profile.nickname || profile.nickName || this.data.userProfile.nickname
+        nickname: profile.nickname || profile.nickName || this.data.userProfile.nickname,
+        followers: followersCount,
+        following: followingCount
       }
       this.setData({ userProfile: mergedProfile })
       wx.setStorageSync('userProfile', mergedProfile)

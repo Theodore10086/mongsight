@@ -89,6 +89,14 @@
   background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'/><polyline points='17 8 12 3 7 8'/><line x1='12' y1='3' x2='12' y2='15'/></svg>");
 }
 
+.icon-import {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'/><polyline points='7 10 12 15 17 10'/><line x1='12' y1='15' x2='12' y2='3'/></svg>");
+}
+
+.icon-extract {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><circle cx='11' cy='11' r='8'/><line x1='21' y1='21' x2='16.65' y2='16.65'/><line x1='8' y1='11' x2='14' y2='11'/></svg>");
+}
+
 /* ── 采集操作图标 SET / UP / REC ─────────────────────────── */
 
 /* SET — 采集设置：滑杆/调节图标 */
@@ -316,6 +324,15 @@
   background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231c1410' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' opacity='0.45'><path d='M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z'/></svg>");
 }
 
+.icon-favorite-filled {
+  width: 32rpx;
+  height: 32rpx;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ff4d4f' stroke='%23ff4d4f' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'><path d='M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z'/></svg>");
+}
+
 /* Community — comment bubble */
 .icon-comment-outline {
   width: 32rpx;
@@ -531,6 +548,23 @@ page {
 .template-layer.visible {
   opacity: 0.5;
   filter: blur(0.5px);
+}
+
+.collection-bg-image {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: auto;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.collection-bg-image.visible {
+  opacity: 0.3;
 }
 
 .main-canvas {
@@ -1873,8 +1907,36 @@ page {
   font-weight: 500;
 }
 
+.comment-list .comment-reply-arrow {
+  color: #999;
+}
+
+.comment-list .comment-reply-nickname {
+  color: #4a90d9;
+  font-weight: 500;
+}
+
+.comment-list .comment-colon {
+  color: #666;
+}
+
 .comment-list .comment-text {
   color: #666;
+}
+
+.comment-reply-info {
+  display: inline;
+}
+
+.comment-reply-info .comment-reply-arrow {
+  color: #999;
+  font-size: 24rpx;
+}
+
+.comment-reply-info .comment-reply-nickname {
+  color: #4a90d9;
+  font-weight: 500;
+  font-size: 24rpx;
 }
 
 /* 评论弹窗 */
@@ -2001,6 +2063,24 @@ page {
   margin-right: 8rpx;
 }
 
+.comment-body .comment-reply-info {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+  margin: 4rpx 0;
+}
+
+.comment-body .comment-reply-arrow {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.comment-body .comment-reply-nickname {
+  font-size: 24rpx;
+  color: #4a90d9;
+  font-weight: 500;
+}
+
 .comment-body .comment-text {
   font-size: 26rpx;
   color: #666;
@@ -2059,9 +2139,38 @@ page {
 }
 
 .inline-comment {
-  align-items: center;
+  align-items: flex-start;
   flex-wrap: wrap;
-  gap: 8rpx;
+  gap: 4rpx;
+  line-height: 1.6;
+}
+
+.inline-comment .comment-nickname {
+  color: #1c1410;
+  font-weight: 600;
+  font-size: 24rpx;
+}
+
+.inline-comment .comment-reply-arrow {
+  color: #999;
+  font-size: 24rpx;
+}
+
+.inline-comment .comment-reply-nickname {
+  color: #4a90d9;
+  font-weight: 500;
+  font-size: 24rpx;
+}
+
+.inline-comment .comment-colon {
+  color: #666;
+  font-size: 24rpx;
+}
+
+.inline-comment .comment-text {
+  color: #666;
+  font-size: 24rpx;
+  word-break: break-all;
 }
 
 .modal-comment {
@@ -2072,6 +2181,32 @@ page {
   width: 100%;
   font-size: 22rpx;
   color: #1c1410;
+}
+
+.reply-indicator {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+  margin-bottom: 8rpx;
+}
+
+.reply-indicator .reply-target {
+  color: #666;
+  font-size: 24rpx;
+}
+
+.cancel-reply {
+  font-size: 22rpx;
+  color: #999;
+  padding: 4rpx 12rpx;
+  background: #f5f5f5;
+  border-radius: 16rpx;
+}
+
+.cancel-reply:active {
+  background: #e8e8e8;
 }
 
 /* 发帖弹窗样式 */
@@ -3768,6 +3903,135 @@ page {
 .score-stats {
   font-size: 24rpx;
   color: rgba(255, 255, 255, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.stats-pass {
+  color: #4caf50;
+  font-weight: 600;
+}
+
+.stats-fail {
+  color: rgba(255, 160, 80, 0.85);
+}
+
+/* 打分方式选择 */
+.scoring-method-hint {
+  font-size: 26rpx;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  margin-bottom: 40rpx;
+  line-height: 1.5;
+}
+
+.scoring-method-highlight {
+  color: #f4d03f;
+  font-weight: 700;
+}
+
+.scoring-method-btns {
+  display: flex;
+  gap: 24rpx;
+  width: 100%;
+  margin-bottom: 20rpx;
+}
+
+.scoring-method-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 36rpx 20rpx;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2rpx solid rgba(212, 175, 55, 0.3);
+  border-radius: 24rpx;
+  transition: all 0.2s ease;
+}
+
+.scoring-method-btn:active {
+  background: rgba(212, 175, 55, 0.12);
+  border-color: #c49a3c;
+  transform: scale(0.97);
+}
+
+.scoring-method-btn.visual {
+  border-color: rgba(100, 200, 255, 0.35);
+}
+
+.scoring-method-btn.visual:active {
+  background: rgba(100, 200, 255, 0.1);
+  border-color: #64c8ff;
+}
+
+.method-icon {
+  font-size: 56rpx;
+  margin-bottom: 16rpx;
+}
+
+.method-name {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #c49a3c;
+  margin-bottom: 12rpx;
+}
+
+.scoring-method-btn.visual .method-name {
+  color: #64c8ff;
+}
+
+.method-desc {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+/* 打分加载状态 */
+.scoring-loading-body {
+  justify-content: center;
+  min-height: 280rpx;
+  gap: 30rpx;
+}
+
+.scoring-loading-ring {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  border: 6rpx solid rgba(212, 175, 55, 0.2);
+  border-top-color: #c49a3c;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.scoring-loading-text {
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+/* 打分结果方式标签 */
+.score-method-tag {
+  display: inline-block;
+  padding: 8rpx 24rpx;
+  border-radius: 40rpx;
+  font-size: 22rpx;
+  font-weight: 600;
+  background: rgba(212, 175, 55, 0.15);
+  color: #c49a3c;
+  border: 1rpx solid rgba(212, 175, 55, 0.3);
+  margin-bottom: 24rpx;
+}
+
+.score-method-tag.visual {
+  background: rgba(100, 200, 255, 0.12);
+  color: #64c8ff;
+  border-color: rgba(100, 200, 255, 0.3);
 }
 
 .scoring-footer {
@@ -4498,10 +4762,35 @@ page {
   right: 0;
   bottom: 0;
   background: 
-    radial-gradient(ellipse at 20% 30%, rgba(0, 255, 136, 0.1) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 70%, rgba(0, 200, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at 20% 30%, rgba(0, 255, 136, 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 70%, rgba(0, 200, 255, 0.12) 0%, transparent 50%),
     radial-gradient(ellipse at 50% 50%, rgba(28, 20, 16, 0.05) 0%, transparent 60%);
   pointer-events: none;
+}
+
+.memory-box-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    linear-gradient(rgba(0, 255, 136, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 136, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  background-position: 0 0;
+  animation: gridMove 20s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes gridMove {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 60px 60px;
+  }
 }
 
 .blueprint-bg {
@@ -4511,8 +4800,8 @@ page {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.25;
-  filter: blur(2px);
+  opacity: 0.2;
+  filter: blur(1px);
 }
 
 .playback-canvas {
@@ -4522,16 +4811,18 @@ page {
   transform: translate(-50%, -50%);
   width: 80%;
   height: 75%;
+  filter: none;
 }
 
 .flow-cursor {
   position: absolute;
-  width: 80px;
-  height: 80px;
+  width: 90px;
+  height: 90px;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.3s ease;
   z-index: 100;
+  filter: blur(0.5px);
 }
 
 .flow-cursor.active {
@@ -4544,12 +4835,12 @@ page {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 80px;
-  height: 80px;
+  width: 90px;
+  height: 90px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(0, 255, 255, 0.9) 0%, rgba(0, 220, 255, 0.6) 15%, rgba(0, 150, 255, 0.3) 40%, transparent 70%);
+  background: radial-gradient(circle, rgba(0, 255, 255, 0.95) 0%, rgba(0, 220, 255, 0.7) 20%, rgba(0, 150, 255, 0.4) 45%, transparent 75%);
   animation: glowPulse 1s ease-in-out infinite, glowRotate 3s linear infinite;
-  box-shadow: 0 0 30px rgba(0, 255, 255, 0.6), 0 0 60px rgba(0, 200, 255, 0.4), 0 0 100px rgba(0, 150, 255, 0.2);
+  box-shadow: 0 0 35px rgba(0, 255, 255, 0.7), 0 0 70px rgba(0, 200, 255, 0.5), 0 0 110px rgba(0, 150, 255, 0.3);
 }
 
 .cursor-core {
@@ -4557,11 +4848,11 @@ page {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, #ffffff 0%, #88ffff 40%, #00ffff 70%, #0088ff 100%);
-  box-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff, 0 0 60px rgba(0, 255, 255, 0.7), 0 0 100px rgba(0, 200, 255, 0.4);
+  background: radial-gradient(circle at 30% 30%, #ffffff 0%, #88ffff 45%, #00ffff 75%, #0088ff 100%);
+  box-shadow: 0 0 25px #00ffff, 0 0 50px #00ffff, 0 0 75px rgba(0, 255, 255, 0.8), 0 0 120px rgba(0, 200, 255, 0.5);
   animation: corePulse 0.6s ease-in-out infinite;
 }
 
@@ -4570,11 +4861,11 @@ page {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: #ffffff;
-  box-shadow: 0 0 15px #ffffff, 0 0 30px #00ffff, 0 0 50px rgba(0, 255, 255, 0.8);
+  box-shadow: 0 0 18px #ffffff, 0 0 35px #00ffff, 0 0 60px rgba(0, 255, 255, 0.9);
 }
 
 .cursor-ring {
@@ -4582,9 +4873,9 @@ page {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 50px;
-  height: 50px;
-  border: 2px solid rgba(0, 255, 255, 0.6);
+  width: 55px;
+  height: 55px;
+  border: 2.5px solid rgba(0, 255, 255, 0.7);
   border-radius: 50%;
   animation: ringExpand 1.5s ease-out infinite;
 }
@@ -4593,8 +4884,8 @@ page {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 80px;
-  height: 80px;
+  width: 90px;
+  height: 90px;
   transform: translate(-50%, -50%);
 }
 
@@ -4602,18 +4893,18 @@ page {
 .cursor-particles::after {
   content: '';
   position: absolute;
-  width: 4px;
-  height: 4px;
+  width: 5px;
+  height: 5px;
   background: #00ffff;
   border-radius: 50%;
-  box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
+  box-shadow: 0 0 12px #00ffff, 0 0 25px #00ffff;
   animation: particleOrbit 2s linear infinite;
 }
 
 .cursor-particles::after {
   animation-delay: -1s;
-  width: 3px;
-  height: 3px;
+  width: 4px;
+  height: 4px;
 }
 
 @keyframes cursorPulse {
@@ -4796,10 +5087,10 @@ page {
   flex: 1;
   padding: 20rpx;
   border-radius: 24rpx;
-  background: rgba(9, 19, 35, 0.84);
-  border: 1rpx solid rgba(212, 175, 55, 0.16);
-  backdrop-filter: blur(24px);
-  box-shadow: 0 16rpx 44rpx rgba(0, 0, 0, 0.24);
+  background: rgba(9, 19, 35, 0.88);
+  border: 1rpx solid rgba(212, 175, 55, 0.2);
+  backdrop-filter: blur(28px);
+  box-shadow: 0 18rpx 48rpx rgba(0, 0, 0, 0.28);
 }
 
 .replay-card-header {
@@ -4813,11 +5104,12 @@ page {
   font-size: 26rpx;
   color: #f5d77f;
   font-weight: 600;
+  text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.3);
 }
 
 .replay-card-subtitle {
   font-size: 20rpx;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .replay-card-meta {
@@ -4825,7 +5117,7 @@ page {
   flex-direction: column;
   gap: 8rpx;
   font-size: 20rpx;
-  color: rgba(255, 255, 255, 0.74);
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .final-result-card {
@@ -4939,10 +5231,11 @@ page {
   display: flex;
   gap: 8rpx;
   padding: 10rpx 14rpx;
-  background: rgba(10, 22, 40, 0.88);
+  background: rgba(10, 22, 40, 0.92);
   border-radius: 999rpx;
-  border: 1rpx solid rgba(0, 200, 255, 0.18);
-  backdrop-filter: blur(16px);
+  border: 1rpx solid rgba(0, 200, 255, 0.22);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.3);
 }
 
 .replay-mode-selector .angle-btn {
@@ -4953,25 +5246,25 @@ page {
 .angle-btn {
   padding: 8rpx 14rpx;
   font-size: 20rpx;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.75);
   background: transparent;
-  border: 1rpx solid rgba(255, 255, 255, 0.1);
+  border: 1rpx solid rgba(255, 255, 255, 0.12);
   border-radius: 16rpx;
   transition: all 0.3s ease;
 }
 
 .angle-btn.active {
   color: #00c8ff;
-  background: rgba(0, 200, 255, 0.2);
-  border-color: rgba(0, 200, 255, 0.6);
-  box-shadow: 0 0 12rpx rgba(0, 200, 255, 0.4);
+  background: rgba(0, 200, 255, 0.24);
+  border-color: rgba(0, 200, 255, 0.7);
+  box-shadow: 0 0 16rpx rgba(0, 200, 255, 0.5);
 }
 
 .angle-btn:nth-child(5).active {
-  color: #ff00ff;
-  background: rgba(255, 0, 255, 0.2);
-  border-color: rgba(255, 0, 255, 0.8);
-  box-shadow: 0 0 20rpx rgba(255, 0, 255, 0.6);
+  color: #00ffff;
+  background: rgba(0, 255, 255, 0.24);
+  border-color: rgba(0, 255, 255, 0.8);
+  box-shadow: 0 0 24rpx rgba(0, 255, 255, 0.6);
   animation: rainbow-glow 1s linear infinite;
 }
 
@@ -7213,6 +7506,11 @@ page {
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
 }
 
+.action-btn-item.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
 .action-btn-item:active {
   transform: scale(0.95);
   background: rgba(28, 20, 16, 0.1);
@@ -7688,4 +7986,100 @@ page {
 .guide-choice-start:active {
   transform: scale(0.95);
   box-shadow: 0 3rpx 12rpx rgba(212, 175, 55, 0.4);
+}
+
+/* 我的帖子样式 */
+.my-posts-feed {
+  height: calc(75vh - 120rpx);
+}
+
+.feed-delete-btn {
+  margin-left: auto;
+  padding: 8rpx 20rpx;
+  background: #ff4d4f;
+  color: #fff;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+}
+
+.feed-empty {
+  text-align: center;
+  padding: 100rpx 40rpx;
+  color: #999;
+  font-size: 28rpx;
+}
+
+.feed-more {
+  text-align: center;
+  padding: 30rpx;
+  color: #999;
+  font-size: 24rpx;
+}
+
+/* 关注列表样式 */
+.follows-list {
+  flex: 1;
+  padding: 20rpx;
+  overflow-y: auto;
+}
+
+.follow-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx;
+  background: #fff;
+  border-radius: 16rpx;
+  margin-bottom: 16rpx;
+  gap: 20rpx;
+}
+
+.follow-avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  background: #f0f0f0;
+}
+
+.follow-avatar-text {
+  font-size: 48rpx;
+  width: 80rpx;
+  height: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  border-radius: 50%;
+}
+
+.follow-info {
+  flex: 1;
+}
+
+.follow-nickname {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.follow-action-btn {
+  padding: 12rpx 28rpx;
+  border-radius: 32rpx;
+  font-size: 26rpx;
+  background: #667eea;
+  color: #fff;
+}
+
+.follow-action-btn.following {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.feed-loading {
+  text-align: center;
+  padding: 40rpx;
+  color: #999;
+}
+
+.action-item.favorited {
+  color: #ff4d4f;
 }
