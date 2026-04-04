@@ -338,12 +338,18 @@ async function buildPostView(post, openId, comments) {
     liked: likedOpenIds.includes(openId),
     commentsList: comments
       .filter((comment) => comment.post_id === post._id)
-      .map((comment) => ({
-        ...comment,
-        ...buildAvatarView(comment.avatar),
-        id: comment._id,
-        create_time_str: formatTime(comment.create_time)
-      })),
+      .map((comment) => {
+        const commentView = {
+          ...comment,
+          ...buildAvatarView(comment.avatar),
+          id: comment._id,
+          create_time_str: formatTime(comment.create_time)
+        };
+        if (comment.reply_to) {
+          commentView.replyTo = comment.reply_to;
+        }
+        return commentView;
+      }),
     create_time_str: formatTime(post.create_time)
   };
 }
@@ -440,6 +446,7 @@ async function addComment(openId, event) {
     throw new Error('missing comment params');
   }
 
+  const replyTo = event.replyTo;
   const comment = {
     post_id: postId,
     _openid: openId,
@@ -447,6 +454,7 @@ async function addComment(openId, event) {
     nickname: event.nickname || '用户',
     content,
     is_ai: false,
+    reply_to: replyTo || null,
     create_time: db.serverDate()
   };
 
@@ -573,6 +581,321 @@ async function updateProfile(openId, event) {
   };
 }
 
+async function deletePost(openId, event) {
+  requireOpenId(openId);
+  const postId = event.postId;
+  if (!postId) {
+    throw new Error('missing postId');
+  }
+
+  const postResult = await db.collection('posts').doc(postId).get();
+  const post = postResult.data;
+
+  if (!post) {
+    throw new Error('post not found');
+  }
+
+  if (post._openid !== openId) {
+    throw new Error('not authorized to delete this post');
+  }
+
+  await db.collection('posts').doc(postId).remove();
+
+  await db.collection('comments').where({ post_id: postId }).remove();
+
+  return { success: true, postId };
+}
+
+async function getMyPosts(openId, event) {
+  requireOpenId(openId);
+  const limit = Math.min(Number(event.limit) || 20, 50);
+  const skip = Number(event.skip) || 0;
+
+  const postsResult = await db.collection('posts')
+    .where({ _openid: openId })
+    .orderBy('create_time', 'desc')
+    .skip(skip)
+    .limit(limit)
+    .get();
+
+  const posts = postsResult.data || [];
+  if (!posts.length) {
+    return { posts: [], total: 0 };
+  }
+
+  const postIds = posts.map((post) => post._id);
+  const commentsResult = await db.collection('comments')
+    .where({ post_id: _.in(postIds) })
+    .orderBy('create_time', 'asc')
+    .get();
+  const comments = commentsResult.data || [];
+
+  const countResult = await db.collection('posts')
+    .where({ _openid: openId })
+    .count();
+  const total = countResult.total || 0;
+
+  const hydratedPosts = [];
+  for (const post of posts) {
+    hydratedPosts.push(await buildPostView(post, openId, comments));
+  }
+
+  return { posts: hydratedPosts, total };
+}
+
+async function toggleFavorite(openId, event) {
+  requireOpenId(openId);
+  const postId = event.postId;
+  if (!postId) {
+    throw new Error('missing postId');
+  }
+
+  const favResult = await db.collection('favorites')
+    .where({ _openid: openId, post_id: postId })
+    .limit(1)
+    .get();
+
+  const alreadyFavorited = favResult.data && favResult.data.length > 0;
+
+  if (alreadyFavorited) {
+    await db.collection('favorites').doc(favResult.data[0]._id).remove();
+    return { favorited: false };
+  } else {
+    const postResult = await db.collection('posts').doc(postId).get();
+    const post = postResult.data;
+    await db.collection('favorites').add({
+      data: {
+        _openid: openId,
+        post_id: postId,
+        post_content: post.content,
+        post_nickname: post.nickname,
+        post_avatar: post.avatar,
+        create_time: db.serverDate()
+      }
+    });
+    return { favorited: true };
+  }
+}
+
+async function getMyFavorites(openId, event) {
+  requireOpenId(openId);
+  const limit = Math.min(Number(event.limit) || 20, 50);
+  const skip = Number(event.skip) || 0;
+
+  const favResult = await db.collection('favorites')
+    .where({ _openid: openId })
+    .orderBy('create_time', 'desc')
+    .skip(skip)
+    .limit(limit)
+    .get();
+
+  const favorites = favResult.data || [];
+  if (!favorites.length) {
+    return { favorites: [] };
+  }
+
+  const postIds = favorites.map((fav) => fav.post_id);
+  const postsResult = await db.collection('posts')
+    .where({ _id: _.in(postIds) })
+    .get();
+
+  const postsMap = {};
+  (postsResult.data || []).forEach((post) => {
+    postsMap[post._id] = post;
+  });
+
+  const hydratedFavorites = [];
+  for (const fav of favorites) {
+    const post = postsMap[fav.post_id];
+    if (post) {
+      hydratedFavorites.push(await buildPostView(post, openId, []));
+    }
+  }
+
+  return { favorites: hydratedFavorites };
+}
+
+async function toggleFollow(openId, event) {
+  requireOpenId(openId);
+  const targetOpenId = event.targetOpenId;
+  if (!targetOpenId) {
+    throw new Error('missing targetOpenId');
+  }
+  if (targetOpenId === openId) {
+    throw new Error('cannot follow yourself');
+  }
+
+  const followResult = await db.collection('follows')
+    .where({ _openid: openId, target_openid: targetOpenId })
+    .limit(1)
+    .get();
+
+  const alreadyFollowed = followResult.data && followResult.data.length > 0;
+
+  if (alreadyFollowed) {
+    await db.collection('follows').doc(followResult.data[0]._id).remove();
+    await db.collection('user_profiles').where({ _openid: targetOpenId }).update({
+      data: { followers: _.inc(-1) }
+    });
+    await db.collection('user_profiles').where({ _openid: openId }).update({
+      data: { following: _.inc(-1) }
+    });
+    return { followed: false };
+  } else {
+    const targetUserResult = await db.collection('user_profiles').where({ _openid: targetOpenId }).limit(1).get();
+    const targetUser = targetUserResult.data && targetUserResult.data[0];
+
+    await db.collection('follows').add({
+      data: {
+        _openid: openId,
+        target_openid: targetOpenId,
+        target_nickname: targetUser ? targetUser.nickName || targetUser.nickname : '用户',
+        target_avatar: targetUser ? targetUser.avatarUrl || targetUser.avatar : '👤',
+        create_time: db.serverDate()
+      }
+    });
+
+    await db.collection('user_profiles').where({ _openid: targetOpenId }).update({
+      data: { followers: _.inc(1) }
+    });
+    await db.collection('user_profiles').where({ _openid: openId }).update({
+      data: { following: _.inc(1) }
+    });
+
+    return { followed: true };
+  }
+}
+
+async function getMyFollows(openId, event) {
+  requireOpenId(openId);
+  const limit = Math.min(Number(event.limit) || 20, 50);
+  const skip = Number(event.skip) || 0;
+
+  const followResult = await db.collection('follows')
+    .where({ _openid: openId })
+    .orderBy('create_time', 'desc')
+    .skip(skip)
+    .limit(limit)
+    .get();
+
+  const follows = followResult.data || [];
+  return {
+    follows: follows.map((item) => ({
+      id: item._id,
+      targetOpenId: item.target_openid,
+      targetNickname: item.target_nickname,
+      targetAvatar: item.target_avatar,
+      createTime: item.create_time
+    }))
+  };
+}
+
+async function getMyFollowers(openId, event) {
+  requireOpenId(openId);
+  const limit = Math.min(Number(event.limit) || 20, 50);
+  const skip = Number(event.skip) || 0;
+
+  const followerResult = await db.collection('follows')
+    .where({ target_openid: openId })
+    .orderBy('create_time', 'desc')
+    .skip(skip)
+    .limit(limit)
+    .get();
+
+  const followers = followerResult.data || [];
+  return {
+    followers: followers.map((item) => ({
+      id: item._id,
+      openId: item._openid,
+      nickname: item.target_nickname,
+      avatar: item.target_avatar,
+      createTime: item.create_time
+    }))
+  };
+}
+
+async function getUserInfo(openId, event) {
+  const targetOpenId = event.targetOpenId;
+  if (!targetOpenId) {
+    throw new Error('missing targetOpenId');
+  }
+
+  const profileResult = await db.collection('user_profiles').where({ _openid: targetOpenId }).limit(1).get();
+  const profile = profileResult.data && profileResult.data[0];
+
+  const postsCountResult = await db.collection('posts').where({ _openid: targetOpenId }).count();
+  const postsCount = postsCountResult.total || 0;
+
+  const followersCountResult = await db.collection('follows').where({ target_openid: targetOpenId }).count();
+  const followersCount = followersCountResult.total || 0;
+
+  const followingCountResult = await db.collection('follows').where({ _openid: targetOpenId }).count();
+  const followingCount = followingCountResult.total || 0;
+
+  let isFollowing = false;
+  if (openId) {
+    const followCheck = await db.collection('follows')
+      .where({ _openid: openId, target_openid: targetOpenId })
+      .limit(1)
+      .get();
+    isFollowing = followCheck.data && followCheck.data.length > 0;
+  }
+
+  return {
+    profile: profile ? {
+      openId: profile._openid,
+      nickName: profile.nickName || profile.nickname || '墨客',
+      avatarUrl: profile.avatarUrl || profile.avatar || '👤',
+      level: profile.level || 1,
+      title: profile.title || '牧羊人'
+    } : {
+      openId: targetOpenId,
+      nickName: '墨客',
+      avatarUrl: '👤',
+      level: 1,
+      title: '牧羊人'
+    },
+    stats: {
+      postsCount,
+      followersCount,
+      followingCount
+    },
+    isFollowing
+  };
+}
+
+async function getPostsLikedByMe(openId, event) {
+  requireOpenId(openId);
+  const limit = Math.min(Number(event.limit) || 20, 50);
+  const skip = Number(event.skip) || 0;
+
+  const postsResult = await db.collection('posts')
+    .where({ likedOpenIds: _.in([openId]) })
+    .orderBy('create_time', 'desc')
+    .skip(skip)
+    .limit(limit)
+    .get();
+
+  const posts = postsResult.data || [];
+  if (!posts.length) {
+    return { posts: [] };
+  }
+
+  const postIds = posts.map((post) => post._id);
+  const commentsResult = await db.collection('comments')
+    .where({ post_id: _.in(postIds) })
+    .orderBy('create_time', 'asc')
+    .get();
+  const comments = commentsResult.data || [];
+
+  const hydratedPosts = [];
+  for (const post of posts) {
+    hydratedPosts.push(await buildPostView(post, openId, comments));
+  }
+
+  return { posts: hydratedPosts };
+}
+
 exports.main = async (event) => {
   const action = event.action;
   const wxContext = cloud.getWXContext();
@@ -592,6 +915,24 @@ exports.main = async (event) => {
         return { success: true, data: await getProfile(openId) };
       case 'updateProfile':
         return { success: true, data: await updateProfile(openId, event) };
+      case 'deletePost':
+        return { success: true, data: await deletePost(openId, event) };
+      case 'getMyPosts':
+        return { success: true, data: await getMyPosts(openId, event) };
+      case 'toggleFavorite':
+        return { success: true, data: await toggleFavorite(openId, event) };
+      case 'getMyFavorites':
+        return { success: true, data: await getMyFavorites(openId, event) };
+      case 'toggleFollow':
+        return { success: true, data: await toggleFollow(openId, event) };
+      case 'getMyFollows':
+        return { success: true, data: await getMyFollows(openId, event) };
+      case 'getMyFollowers':
+        return { success: true, data: await getMyFollowers(openId, event) };
+      case 'getUserInfo':
+        return { success: true, data: await getUserInfo(openId, event) };
+      case 'getPostsLikedByMe':
+        return { success: true, data: await getPostsLikedByMe(openId, event) };
       default:
         return { success: false, message: 'unsupported action' };
     }
