@@ -4468,7 +4468,7 @@ Page({
     })
 
     // 5. 将画布坐标 bbox 映射到背景图坐标（比例映射）
-    const pad = 30 // 画布像素内边距
+    const pad = 30 // 画布CSS像素内边距
     const scaleX = bgInfo.width / canvasW
     const scaleY = bgInfo.height / canvasH
     const cropX = Math.max(0, (bbox.minX - pad) * scaleX)
@@ -4476,10 +4476,15 @@ Page({
     const cropW = Math.min(bgInfo.width - cropX, (bbox.width + pad * 2) * scaleX)
     const cropH = Math.min(bgInfo.height - cropY, (bbox.height + pad * 2) * scaleY)
 
+    // 5b. 获取设备 DPR：canvasToTempFilePath 截图是物理像素，笔迹坐标是CSS像素
+    //     裁剪画布截图时需要乘以 DPR 才能对准正确区域
+    const dpr = this.data.dpr || wx.getWindowInfo?.()?.pixelRatio || 2
+
     // 6. 像素级相似度（IoU）
     const iou = await this._compareImageRegions(
       canvasTempPath,
-      bbox.minX - pad, bbox.minY - pad, bbox.width + pad * 2, bbox.height + pad * 2,
+      (bbox.minX - pad) * dpr, (bbox.minY - pad) * dpr,
+      (bbox.width + pad * 2) * dpr, (bbox.height + pad * 2) * dpr,
       bgImagePath,
       cropX, cropY, cropW, cropH
     )
@@ -4655,29 +4660,20 @@ Page({
 
     const userStrokeCount = requestData.strokes.length
 
-    // ── A. 全局形状DTW ──────────────────────────────────────────────────
-    // 把所有笔画点合并为一条轨迹，消除笔画顺序和数量差异对评分的影响
-    const userGlobal = [{ points: requestData.strokes.flatMap((s) => s.points || []) }]
-    const templateGlobal = [{ points: templateStrokes.flatMap((s) => s.points || []) }]
-    const globalResult = dtw.computeMultiStrokeDTW(userGlobal, templateGlobal)
-    const globalSimilarity = Math.max(0, Math.min(1, globalResult.similarity || 0))
+    // ── A. 逐笔DTW（保留原有方式，避免笔画拼接引入跳跃噪点）────────────────
+    const result = dtw.computeMultiStrokeDTW(requestData.strokes, templateStrokes)
+    const similarity = Math.max(0, Math.min(1, result.similarity || 0))
 
-    // ── B. 逐笔DTW（用于流畅度子分参考）──────────────────────────────────
-    const perStrokeResult = dtw.computeMultiStrokeDTW(requestData.strokes, templateStrokes)
-    const perStrokeSimilarity = Math.max(0, Math.min(1, perStrokeResult.similarity || 0))
+    // ── B. 新评分公式（√曲线，无笔画数惩罚）────────────────────────────────
+    // 目标：sim=0.5→82，sim=0.6→87，sim=0.7→91，sim=0.8→94
+    const totalScore = Math.round(Math.max(30, Math.min(100, 40 + 60 * Math.sqrt(similarity))) * 10) / 10
 
-    // ── C. 综合相似度 & 新评分公式 ────────────────────────────────────────
-    // 全局形状占 70%，逐笔流畅占 30%
-    // 曲线：sim=0.5→78，sim=0.6→84，sim=0.7→90，sim=0.8→95
-    const shapeSim = globalSimilarity * 0.7 + perStrokeSimilarity * 0.3
-    const totalScore = Math.round(Math.max(30, Math.min(100, 40 + 60 * Math.pow(shapeSim, 0.6))) * 10) / 10
-
-    // ── D. 三维子分 ────────────────────────────────────────────────────
-    const structureScore = Math.round(Math.max(30, Math.min(100, 38 + 62 * Math.pow(globalSimilarity, 0.6))) * 10) / 10
-    const fluencyScore = Math.round(Math.max(30, Math.min(100, 42 + 58 * Math.pow(perStrokeSimilarity, 0.6))) * 10) / 10
+    // ── C. 三维子分 ────────────────────────────────────────────────────
+    const structureScore = Math.round(Math.max(30, Math.min(100, 38 + 62 * Math.sqrt(similarity))) * 10) / 10
+    const fluencyScore = Math.round(Math.max(30, Math.min(100, 42 + 58 * Math.sqrt(similarity))) * 10) / 10
     const rhythmScore = Math.round(Math.max(30, Math.min(100, (structureScore + fluencyScore) / 2 + (Math.random() * 4 - 2))) * 10) / 10
 
-    // ── E. 蒙宝反馈文案 ────────────────────────────────────────────────
+    // ── D. 蒙宝反馈文案 ────────────────────────────────────────────────
     let feedback = ''
     if (totalScore >= 95) feedback = '蒙宝点评：炉火纯青！字形与字帖高度吻合，已得精髓。'
     else if (totalScore >= 90) feedback = '蒙宝点评：形神兼备，整体走势与原字非常贴近！'
@@ -4691,7 +4687,7 @@ Page({
 
     this._handleScoringResult({
       totalScore,
-      similarity: shapeSim,
+      similarity,
       strokeAccuracy: structureScore,
       structureScore,
       fluencyScore,
