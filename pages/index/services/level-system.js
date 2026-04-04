@@ -239,9 +239,9 @@ class LevelSystem {
   }
 
   calculateScore(similarity, isComplete = true) {
-    let baseScore = Math.round(similarity * 50)
-    const completionBonus = isComplete ? 20 : 0
-    const streakBonus = Math.min(this.streak * 2, 20)
+    let baseScore = Math.round(similarity * 70)
+    const completionBonus = isComplete ? 15 : 0
+    const streakBonus = Math.min(this.streak * 1.5, 15)
     const totalScore = baseScore + completionBonus + streakBonus
     return Math.min(100, totalScore)
   }

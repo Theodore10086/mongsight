@@ -211,15 +211,17 @@ class DTWAlgorithm {
   computeSimilarityScore(userStrokes, templateStrokes) {
     const result = this.computeMultiStrokeDTW(userStrokes, templateStrokes)
 
-    const baseScore = result.similarity * 100
+    const baseScore = 100 * Math.exp(-2.0 * result.normalizedDistance)
 
-    const strokeBonus = result.strokeScores.length > 0
-      ? result.strokeScores.reduce((sum, s) => sum + s.similarity, 0) / result.strokeScores.length * 20
+    const avgStrokeSimilarity = result.strokeScores.length > 0
+      ? result.strokeScores.reduce((sum, s) => sum + s.similarity, 0) / result.strokeScores.length
       : 0
+    const strokeBonus = avgStrokeSimilarity * 10
 
-    const completenessBonus = result.totalUserStrokes >= result.totalTemplateStrokes ? 10 : 0
+    const strokeDiff = Math.abs(result.totalUserStrokes - result.totalTemplateStrokes)
+    const completenessBonus = strokeDiff === 0 ? 10 : Math.max(0, 10 - strokeDiff * 2)
 
-    const finalScore = Math.round(baseScore + strokeBonus + completenessBonus)
+    const finalScore = baseScore + strokeBonus + completenessBonus
 
     return {
       score: Math.min(100, Math.max(0, finalScore)),
