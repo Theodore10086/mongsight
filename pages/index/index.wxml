@@ -938,6 +938,51 @@
   </view>
 </view>
 
+<!-- 轨迹质量检测报告弹窗 -->
+<view class="tq-modal" wx:if="{{showTrajectoryQualityModal}}">
+  <view class="tq-overlay"></view>
+  <view class="tq-content">
+
+    <!-- 标题 -->
+    <view class="tq-header">
+      <text class="tq-icon">🔍</text>
+      <text class="tq-title">轨迹质量检测报告</text>
+    </view>
+
+    <!-- 总评级 -->
+    <view class="tq-grade-row">
+      <text class="tq-grade-label">总体评级</text>
+      <view class="tq-grade-badge {{trajectoryQuality.grade}}">
+        <text>{{trajectoryQuality.grade === 'good' ? '✅ 优质' : trajectoryQuality.grade === 'ok' ? '⚠️ 可用' : '❌ 较差'}}</text>
+      </view>
+    </view>
+
+    <!-- 检测项列表 -->
+    <view class="tq-items">
+      <view class="tq-item" wx:for="{{trajectoryQuality.items}}" wx:key="index">
+        <text class="tq-item-icon">{{item.pass === 'good' ? '✅' : item.pass === 'ok' ? '⚠️' : '❌'}}</text>
+        <text class="tq-item-text">{{item.text}}</text>
+      </view>
+    </view>
+
+    <!-- 蒙宝总结 -->
+    <view class="tq-summary">
+      <text class="tq-summary-label">蒙宝提示</text>
+      <text class="tq-summary-text">{{trajectoryQuality.summary}}</text>
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="tq-footer">
+      <button class="tq-btn re-extract" bindtap="onReExtractTrajectory">重新提取</button>
+      <button
+        class="tq-btn confirm {{trajectoryQuality.grade === 'bad' ? 'disabled' : ''}}"
+        bindtap="{{trajectoryQuality.grade !== 'bad' ? 'onConfirmUseTrajectory' : ''}}"
+      >继续使用</button>
+    </view>
+
+  </view>
+</view>
+
 <!-- 坐标数据导出弹窗 -->
 <view class="coordinate-modal" wx:if="{{showCoordinateModal}}">
   <view class="coordinate-overlay" bindtap="onCloseCoordinateModal"></view>

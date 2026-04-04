@@ -723,6 +723,9 @@ Page({
       role: 'participant'
     },
     extractedTrajectories: [],
+    // 轨迹质量检测报告
+    showTrajectoryQualityModal: false,
+    trajectoryQuality: null, // { grade: 'good'|'ok'|'bad', items: [], summary: '', totalPoints: 0, strokeCount: 0 }
     collectionRoleOptions: Object.keys(ROLE_LABELS).map((key) => ({ value: key, label: ROLE_LABELS[key] })),
     collectionScriptOptions: Object.keys(SCRIPT_TYPE_LABELS).map((key) => ({ value: key, label: SCRIPT_TYPE_LABELS[key] })),
     
@@ -3616,16 +3619,24 @@ Page({
     this.imageTracker.extractTrajectoriesFromImage(collectionConfig.backgroundImage)
       .then(trajectories => {
         wx.hideLoading();
-        if (trajectories && trajectories.length > 0) {
-          this.setData({ extractedTrajectories: trajectories });
-          wx.showToast({ 
-            title: `成功提取 ${trajectories.length} 条轨迹`, 
-            icon: 'success' 
-          });
+        if (!trajectories || trajectories.length === 0) {
+          wx.showToast({ title: '未检测到有效笔迹', icon: 'none' });
+          return;
+        }
+
+        // 先存储，再做质量检测
+        this.setData({ extractedTrajectories: trajectories });
+
+        const quality = this._checkTrajectoryQuality(trajectories);
+
+        if (quality.grade === 'good') {
+          // 优质：只用 Toast，不打断流程
+          wx.showToast({ title: `✅ 提取优质，共 ${trajectories.length} 条轨迹`, icon: 'none', duration: 2000 });
         } else {
-          wx.showToast({ 
-            title: '未检测到有效笔迹', 
-            icon: 'none' 
+          // 可用或差：弹出质量报告让用户决定
+          this.setData({
+            showTrajectoryQualityModal: true,
+            trajectoryQuality: quality
           });
         }
       })
@@ -3634,6 +3645,124 @@ Page({
         console.error('提取轨迹失败:', err);
         wx.showToast({ title: '提取轨迹失败', icon: 'none' });
       });
+  },
+
+  // 关闭质量报告弹窗（用户选择"继续使用"）
+  onConfirmUseTrajectory() {
+    this.setData({ showTrajectoryQualityModal: false });
+    const { trajectoryQuality } = this.data;
+    wx.showToast({
+      title: `已使用（${trajectoryQuality?.strokeCount || 0}条轨迹）`,
+      icon: 'none',
+      duration: 1500
+    });
+  },
+
+  // 用户选择"重新提取"：清空旧轨迹，关闭弹窗
+  onReExtractTrajectory() {
+    this.setData({
+      showTrajectoryQualityModal: false,
+      extractedTrajectories: [],
+      trajectoryQuality: null
+    });
+    wx.showToast({ title: '已清除，请重新提取', icon: 'none', duration: 1500 });
+  },
+
+  // 三层质量检测，返回质量报告对象
+  _checkTrajectoryQuality(trajectories) {
+    const items = [];
+    let score = 0; // 累计得分，满分 3 分
+
+    // —— 第一层：数量检查 ——
+    const totalPoints = trajectories.reduce((sum, s) => sum + (s.points?.length || 0), 0);
+    const strokeCount = trajectories.length;
+
+    // 点数检查
+    if (totalPoints >= 150) {
+      items.push({ pass: 'good', text: `点数充足（${totalPoints} 个点）` });
+      score += 1;
+    } else if (totalPoints >= 40) {
+      items.push({ pass: 'ok', text: `点数偏少（${totalPoints} 个点，建议 150+）` });
+      score += 0.5;
+    } else {
+      items.push({ pass: 'bad', text: `点数过少（${totalPoints} 个点），图片可能太模糊` });
+    }
+
+    // 笔画数检查
+    if (strokeCount >= 1 && strokeCount <= 14) {
+      items.push({ pass: 'good', text: `笔画数合理（${strokeCount} 条）` });
+      score += 1;
+    } else if (strokeCount >= 15 && strokeCount <= 25) {
+      items.push({ pass: 'ok', text: `笔画略碎（${strokeCount} 条），可能含噪点` });
+      score += 0.5;
+    } else if (strokeCount > 25) {
+      items.push({ pass: 'bad', text: `笔画过碎（${strokeCount} 条），背景干扰严重` });
+    } else {
+      items.push({ pass: 'bad', text: '未检测到有效笔画' });
+    }
+
+    // —— 第二层：空间聚合度 ——
+    const allPoints = trajectories.flatMap(s => s.points || []);
+    if (allPoints.length > 0) {
+      const cx = allPoints.reduce((s, p) => s + p.x, 0) / allPoints.length;
+      const cy = allPoints.reduce((s, p) => s + p.y, 0) / allPoints.length;
+      const avgDist = allPoints.reduce((s, p) => {
+        const dx = p.x - cx, dy = p.y - cy;
+        return s + Math.sqrt(dx * dx + dy * dy);
+      }, 0) / allPoints.length;
+
+      // 点坐标已归一化到 [0,1]，avgDist > 0.38 视为过于分散
+      if (avgDist <= 0.25) {
+        items.push({ pass: 'good', text: '空间分布集中，字形聚焦' });
+        score += 1;
+      } else if (avgDist <= 0.38) {
+        items.push({ pass: 'ok', text: '空间分布略分散，可能含边缘噪点' });
+        score += 0.5;
+      } else {
+        items.push({ pass: 'bad', text: '点分布过于分散，未能聚焦文字区域' });
+      }
+    }
+
+    // —— 第三层：笔画连贯性 ——
+    const coherenceScores = trajectories.map(stroke => {
+      const pts = stroke.points || [];
+      if (pts.length < 2) return 0;
+      const dists = [];
+      for (let i = 1; i < pts.length; i++) {
+        const dx = pts[i].x - pts[i - 1].x;
+        const dy = pts[i].y - pts[i - 1].y;
+        dists.push(Math.sqrt(dx * dx + dy * dy));
+      }
+      const mean = dists.reduce((a, b) => a + b, 0) / dists.length;
+      const variance = dists.reduce((s, d) => s + Math.pow(d - mean, 2), 0) / dists.length;
+      // 变异系数（CV）= 标准差/均值，越小越连贯
+      return mean > 0 ? Math.sqrt(variance) / mean : 99;
+    });
+    const avgCV = coherenceScores.reduce((a, b) => a + b, 0) / (coherenceScores.length || 1);
+
+    if (avgCV <= 1.0) {
+      items.push({ pass: 'good', text: '笔画连贯性好，走势流畅' });
+      score += 1; // 额外加分，但评级只看前三层
+    } else if (avgCV <= 1.8) {
+      items.push({ pass: 'ok', text: '笔画连贯性一般，部分段落跳跃' });
+    } else {
+      items.push({ pass: 'bad', text: '笔画连贯性差，疑似噪点连线' });
+    }
+
+    // —— 综合评级 ——
+    let grade, summary;
+    if (score >= 2.5) {
+      grade = 'good';
+      summary = '轨迹质量优质，可直接用于打分。';
+    } else if (score >= 1.5) {
+      grade = 'ok';
+      summary = '轨迹基本可用，但可能影响打分精度，建议用更清晰的图片重试。';
+    } else {
+      grade = 'bad';
+      summary = '轨迹质量较差，建议换一张对比度更高的图片重新提取。';
+    }
+
+    return { grade, items, summary, totalPoints, strokeCount };
   },
 
   onUndoPreview() {
