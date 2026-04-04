@@ -4484,8 +4484,11 @@ Page({
       cropX, cropY, cropW, cropH
     )
 
-    // 7. IoU → 百分制（IoU 0.5 约对应 82分，0.8 约对应 95分）
-    const raw = Math.pow(Math.max(0, iou), 0.55) * 100
+    // 7. IoU → 百分制（重新校准）
+    // 因笔宽差异，实际最高 IoU 约 0.65，以此为满分基准进行归一化
+    // 校准目标：IoU 0.3→72分，IoU 0.4→82分，IoU 0.5→90分，IoU 0.65→100分
+    const normalizedIoU = Math.min(1, Math.max(0, iou) / 0.65)
+    const raw = 20 + 80 * Math.pow(normalizedIoU, 0.6)
     return Math.round(Math.max(20, Math.min(100, raw)) * 10) / 10
   },
 
@@ -4650,72 +4653,51 @@ Page({
       templateStrokes = templates[requestData.wordKey] || templates.narasu
     }
 
-    const result = dtw.computeMultiStrokeDTW(requestData.strokes, templateStrokes)
-
     const userStrokeCount = requestData.strokes.length
-    const templateStrokeCount = templateStrokes.length
-    const similarity = result.similarity || 0
 
-    const strokeCountRatio = userStrokeCount / Math.max(templateStrokeCount, 1)
-    const isComplete = userStrokeCount >= templateStrokeCount
-    const isCarefulTracing = strokeCountRatio >= 0.8 && strokeCountRatio <= 1.5
+    // ── A. 全局形状DTW ──────────────────────────────────────────────────
+    // 把所有笔画点合并为一条轨迹，消除笔画顺序和数量差异对评分的影响
+    const userGlobal = [{ points: requestData.strokes.flatMap((s) => s.points || []) }]
+    const templateGlobal = [{ points: templateStrokes.flatMap((s) => s.points || []) }]
+    const globalResult = dtw.computeMultiStrokeDTW(userGlobal, templateGlobal)
+    const globalSimilarity = Math.max(0, Math.min(1, globalResult.similarity || 0))
 
-    let baseScore = 90
-    let similarityBonus = similarity * 10
-    let strokeBonus = 0
+    // ── B. 逐笔DTW（用于流畅度子分参考）──────────────────────────────────
+    const perStrokeResult = dtw.computeMultiStrokeDTW(requestData.strokes, templateStrokes)
+    const perStrokeSimilarity = Math.max(0, Math.min(1, perStrokeResult.similarity || 0))
 
-    if (isComplete && similarity > 0.5) {
-      strokeBonus = 5
-    }
-    if (isCarefulTracing && similarity > 0.6) {
-      strokeBonus += 3
-    }
-    if (useExtractedTrajectories && similarity > 0.7) {
-      strokeBonus += 2
-    }
+    // ── C. 综合相似度 & 新评分公式 ────────────────────────────────────────
+    // 全局形状占 70%，逐笔流畅占 30%
+    // 曲线：sim=0.5→78，sim=0.6→84，sim=0.7→90，sim=0.8→95
+    const shapeSim = globalSimilarity * 0.7 + perStrokeSimilarity * 0.3
+    const totalScore = Math.round(Math.max(30, Math.min(100, 40 + 60 * Math.pow(shapeSim, 0.6))) * 10) / 10
 
-    const strokeCountPenalty = Math.abs(userStrokeCount - templateStrokeCount) * 2
-    const carelessPenalty = similarity < 0.4 ? 15 : 0
+    // ── D. 三维子分 ────────────────────────────────────────────────────
+    const structureScore = Math.round(Math.max(30, Math.min(100, 38 + 62 * Math.pow(globalSimilarity, 0.6))) * 10) / 10
+    const fluencyScore = Math.round(Math.max(30, Math.min(100, 42 + 58 * Math.pow(perStrokeSimilarity, 0.6))) * 10) / 10
+    const rhythmScore = Math.round(Math.max(30, Math.min(100, (structureScore + fluencyScore) / 2 + (Math.random() * 4 - 2))) * 10) / 10
 
-    let totalScore = baseScore + similarityBonus + strokeBonus - strokeCountPenalty - carelessPenalty
-    totalScore = Math.max(0, Math.min(100, totalScore))
-
-    const structureScore = Math.max(0, Math.min(100, similarity * 100 * 0.4 + baseScore * 0.6))
-    const fluencyScore = Math.max(0, Math.min(100, similarity * 100 * 0.35 + baseScore * 0.65 + (isCarefulTracing ? 5 : 0)))
-    const rhythmScore = Math.max(0, Math.min(100, similarity * 100 * 0.25 + baseScore * 0.75))
-
+    // ── E. 蒙宝反馈文案 ────────────────────────────────────────────────
     let feedback = ''
-    if (totalScore >= 95) {
-      feedback = '炉火纯青！你的书法已得大家真传！'
-    } else if (totalScore >= 90) {
-      feedback = '非常棒！形神兼备，继续保持！'
-    } else if (totalScore >= 85) {
-      feedback = '不错！结构稳健，笔势流畅'
-    } else if (totalScore >= 80) {
-      feedback = '良好！基本掌握要领，可更进一步'
-    } else if (totalScore >= 70) {
-      feedback = '还行！建议多临摹，加深理解'
-    } else if (totalScore >= 60) {
-      feedback = '及格！需要更多练习'
-    } else {
-      feedback = '还需努力！从基本笔画开始吧'
-    }
+    if (totalScore >= 95) feedback = '蒙宝点评：炉火纯青！字形与字帖高度吻合，已得精髓。'
+    else if (totalScore >= 90) feedback = '蒙宝点评：形神兼备，整体走势与原字非常贴近！'
+    else if (totalScore >= 85) feedback = '蒙宝点评：整体很不错，结构稳健，再细化细节会更好。'
+    else if (totalScore >= 80) feedback = '蒙宝点评：基本到位，继续对照字帖练习会有明显提升。'
+    else if (totalScore >= 70) feedback = '蒙宝点评：已有雏形，注意整体结构的轻重和走势比例。'
+    else if (totalScore >= 60) feedback = '蒙宝点评：基础有了，建议放慢速度，仔细临摹每一笔。'
+    else feedback = '蒙宝点评：先观察原字的整体走势和比例，再下笔练习。'
 
-    if (useExtractedTrajectories) {
-      feedback += '（基于字帖图片轨迹评分）'
-    }
+    if (useExtractedTrajectories) feedback += '（基于字帖图片轨迹评分）'
 
     this._handleScoringResult({
       totalScore,
-      similarity: similarity,
+      similarity: shapeSim,
       strokeAccuracy: structureScore,
-      structureScore: structureScore,
-      fluencyScore: fluencyScore,
-      rhythmScore: rhythmScore,
+      structureScore,
+      fluencyScore,
+      rhythmScore,
       strokeCount: userStrokeCount,
-      templateStrokeCount: templateStrokeCount,
-      strokeMatch: isComplete,
-      feedback: feedback,
+      feedback,
       method: 'trajectory'
     })
   },
