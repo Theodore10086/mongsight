@@ -10,6 +10,7 @@ const {
   buildResearchExportPayload,
   summarizeStrokes
 } = require('../../utils/collection-payload.js')
+const MongolVisualScorer = require('../../utils/mongolVisualScorer')
 
 const calligraphyMap = { 
    // 1. 组员名字专项（确保精准） 
@@ -4414,19 +4415,32 @@ Page({
     })
   },
 
-  // 视觉打分核心逻辑
+  // 视觉打分核心逻辑 - 使用新的漏斗式闯关模型
   async _runVisualScoring() {
     try {
-      const { allStrokes } = this.data
+      const { allStrokes, collectionConfig } = this.data
+      const bgImagePath = collectionConfig?.backgroundImage
 
-      const qualityCheck = this._validateTrajectoryQuality(allStrokes)
-      if (!qualityCheck.valid) {
-        wx.showToast({ title: qualityCheck.errors[0] || '数据质量不通过', icon: 'none' })
-        this.setData({ scoringPhase: 'select' })
-        return
+      if (!bgImagePath) throw new Error('请先导入字帖图片')
+      if (!allStrokes || allStrokes.length === 0) throw new Error('请先完成书写')
+
+      // 创建新的视觉打分器实例
+      const scorer = new MongolVisualScorer(200)
+
+      // 预计算底图包围盒（一次性生成）
+      const templateBounds = await this._getTemplateBounds(bgImagePath)
+      
+      // 加载底图
+      const templateImage = await this._loadTemplateImage(bgImagePath)
+
+      // 使用新的漏斗式算法进行打分
+      const result = await scorer.scoreCalligraphy(allStrokes, templateImage, templateBounds)
+      
+      if (result.error) {
+        throw new Error(result.error)
       }
 
-      const score = await this._computeVisualScore()
+      const score = result.score
       const feedback = this._buildVisualFeedback(score)
 
       // 由总分推导三维度子分（含小幅随机扰动，让显示更自然）
@@ -4447,9 +4461,12 @@ Page({
           rhythmScore,
           feedback,
           method: 'visual',
-          strokeCount: allStrokes.length
+          strokeCount: allStrokes.length,
+          details: result.details // 新增详细评分信息
         }
       })
+
+      console.log('视觉打分详情:', result.details)
     } catch (err) {
       console.error('[Visual Scoring] failed:', err)
       wx.showToast({ title: err.message || '视觉打分失败，请重试', icon: 'none', duration: 2500 })
@@ -4457,60 +4474,34 @@ Page({
     }
   },
 
-  // 计算视觉相似度得分（0-100）
-  async _computeVisualScore() {
-    const { allStrokes, collectionConfig } = this.data
-    const bgImagePath = collectionConfig?.backgroundImage
-
-    if (!bgImagePath) throw new Error('请先导入字帖图片')
-    if (!allStrokes || allStrokes.length === 0) throw new Error('请先完成书写')
-
-    // 1. 获取用户笔迹 bounding box（画布坐标）
-    const bbox = this._getUserStrokesBoundingBox()
-    if (!bbox) throw new Error('无法识别笔迹范围')
-
-    // 2. 获取画布节点尺寸
-    const canvasInfo = await this._getCanvasNodeInfo()
-    const canvasW = canvasInfo.width
-    const canvasH = canvasInfo.height
-
-    // 3. 截取画布快照
-    const canvasTempPath = await this._captureMainCanvas()
-
-    // 4. 获取背景图尺寸
+  // 预计算底图包围盒（一次性生成）
+  async _getTemplateBounds(bgImagePath) {
+    // 这里可以缓存底图包围盒，避免重复计算
     const bgInfo = await new Promise((resolve, reject) => {
       wx.getImageInfo({ src: bgImagePath, success: resolve, fail: reject })
     })
+    
+    // 假设底图是整个画布，返回整个图像的包围盒
+    return {
+      minX: 0,
+      maxX: bgInfo.width,
+      minY: 0,
+      maxY: bgInfo.height,
+      width: bgInfo.width,
+      height: bgInfo.height
+    }
+  },
 
-    // 5. 将画布坐标 bbox 映射到背景图坐标（比例映射）
-    const pad = 30 // 画布CSS像素内边距
-    const scaleX = bgInfo.width / canvasW
-    const scaleY = bgInfo.height / canvasH
-    const cropX = Math.max(0, (bbox.minX - pad) * scaleX)
-    const cropY = Math.max(0, (bbox.minY - pad) * scaleY)
-    const cropW = Math.min(bgInfo.width - cropX, (bbox.width + pad * 2) * scaleX)
-    const cropH = Math.min(bgInfo.height - cropY, (bbox.height + pad * 2) * scaleY)
-
-    // 5b. 获取设备 DPR：canvasToTempFilePath 截图是物理像素，笔迹坐标是CSS像素
-    //     裁剪画布截图时需要乘以 DPR 才能对准正确区域
-    const dpr = this.data.dpr || wx.getWindowInfo?.()?.pixelRatio || 2
-
-    // 6. 像素级相似度（IoU）
-    const iou = await this._compareImageRegions(
-      canvasTempPath,
-      (bbox.minX - pad) * dpr, (bbox.minY - pad) * dpr,
-      (bbox.width + pad * 2) * dpr, (bbox.height + pad * 2) * dpr,
-      bgImagePath,
-      cropX, cropY, cropW, cropH
-    )
-
-    // 7. IoU → 百分制（修复版）
-    // 问题：原基准值 0.65 过高，实际用户书写因笔触差异 IoU 通常只有 0.2-0.45
-    // 修复：调整基准值为 0.45，降低指数衰减，使分数更合理
-    // 校准目标：IoU 0.2→52分，IoU 0.3→72分，IoU 0.4→82分，IoU 0.5→90分，IoU 0.65→100分
-    const normalizedIoU = Math.min(1, Math.max(0, iou) / 0.45)
-    const raw = 30 + 70 * Math.pow(normalizedIoU, 0.75)
-    return Math.round(Math.max(30, Math.min(100, raw)) * 10) / 10
+  // 加载底图
+  async _loadTemplateImage(bgImagePath) {
+    const canvas = wx.createOffscreenCanvas({ type: '2d', width: 1, height: 1 })
+    const img = canvas.createImage()
+    
+    return new Promise((resolve, reject) => {
+      img.onload = () => resolve(img)
+      img.onerror = reject
+      img.src = bgImagePath
+    })
   },
 
   // 验证轨迹数据质量
