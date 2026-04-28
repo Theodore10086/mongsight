@@ -1,0 +1,84 @@
+<scroll-view scroll-y class="page-scroll" show-scrollbar="{{false}}">
+  <view class="page-inner {{layoutClass}}">
+    <view class="section">
+      <text class="section-label">基础信息</text>
+      <input
+        class="field-line"
+        type="text"
+        maxlength="60"
+        placeholder="请输入作业名称"
+        placeholder-class="field-ph"
+        value="{{title}}"
+        adjust-position="{{true}}"
+        hold-keyboard="{{true}}"
+        cursor-spacing="{{cursorSpacing}}"
+        bindinput="onTitleInput"
+      />
+      <textarea
+        class="field-area"
+        maxlength="800"
+        placeholder="请输入作业要求（选填）"
+        placeholder-class="field-ph"
+        value="{{requirements}}"
+        adjust-position="{{true}}"
+        hold-keyboard="{{true}}"
+        cursor-spacing="{{cursorSpacing}}"
+        bindinput="onRequirementsInput"
+        auto-height
+      />
+    </view>
+
+    <view class="section">
+      <text class="section-label">范字文字类型</text>
+      <text class="section-hint">用于评分：回鹘文适合宽笔画描红；蒙文、满文、汉字按细笔书写放宽比对。</text>
+      <picker
+        mode="selector"
+        range="{{scriptLabels}}"
+        value="{{scriptIndex}}"
+        bindchange="onScriptPick"
+      >
+        <view class="script-picker-line">
+          <text class="script-picker-value">{{scriptLabels[scriptIndex]}}</text>
+          <text class="script-picker-arrow">›</text>
+        </view>
+      </picker>
+    </view>
+
+    <view class="section">
+      <text class="section-label">字帖图片</text>
+      <view class="upload-add" bindtap="chooseImage">
+        <text class="upload-add-plus">＋</text>
+        <text class="upload-add-text">添加字帖</text>
+      </view>
+
+      <view
+        wx:for="{{imageList}}"
+        wx:key="id"
+        wx:for-index="idx"
+        class="sheet-row"
+      >
+        <image class="sheet-thumb" src="{{item.url}}" mode="aspectFill" />
+        <view class="sheet-mid">
+          <text class="sheet-label">书写次数：</text>
+          <input
+            class="sheet-count-input"
+            type="number"
+            value="{{item.count}}"
+            data-index="{{idx}}"
+            adjust-position="{{true}}"
+            hold-keyboard="{{true}}"
+            cursor-spacing="{{cursorSpacing}}"
+            bindinput="handleCountChange"
+          />
+        </view>
+        <text class="sheet-del" data-index="{{idx}}" bindtap="deleteImage">删除</text>
+      </view>
+    </view>
+
+    <view class="bottom-space"></view>
+  </view>
+</scroll-view>
+
+<view class="footer-bar">
+  <button class="btn-submit" bindtap="submitAssignment">发布作业</button>
+</view>

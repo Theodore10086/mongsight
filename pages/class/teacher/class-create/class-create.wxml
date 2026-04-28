@@ -1,0 +1,109 @@
+<scroll-view scroll-y class="page-scroll" show-scrollbar="{{false}}">
+  <view class="page-inner {{layoutClass}}">
+    <!-- 基本信息 -->
+    <view class="section">
+      <text class="section-label">基本信息</text>
+      <input
+        class="field-input"
+        type="text"
+        maxlength="40"
+        placeholder="请输入班级名称"
+        placeholder-class="field-ph"
+        value="{{className}}"
+        data-field="className"
+        adjust-position="{{true}}"
+        hold-keyboard="{{true}}"
+        cursor-spacing="{{cursorSpacing}}"
+        bindinput="onBasicInput"
+      />
+      <textarea
+        class="field-textarea intro"
+        maxlength="300"
+        placeholder="请输入班级简介（选填）"
+        placeholder-class="field-ph"
+        value="{{classDesc}}"
+        data-field="classDesc"
+        adjust-position="{{true}}"
+        hold-keyboard="{{true}}"
+        cursor-spacing="{{cursorSpacing}}"
+        bindinput="onBasicInput"
+        auto-height
+      />
+    </view>
+
+    <!-- 批量导入 -->
+    <view class="section">
+      <text class="section-label">学生名单</text>
+
+      <view wx:if="{{!showBatchImport}}" class="batch-entry" bindtap="toggleBatchImport">
+        <text class="batch-entry-icon">📋</text>
+        <view class="batch-entry-text">
+          <text class="batch-entry-title">批量导入学生</text>
+          <text class="batch-entry-sub">粘贴名单，一键解析姓名、学号与初始密码</text>
+        </view>
+        <text class="batch-entry-arrow">›</text>
+      </view>
+
+      <block wx:if="{{showBatchImport}}">
+        <view class="batch-panel">
+          <view class="format-tip">
+            <text class="format-tip-label">示例格式</text>
+            <text class="format-tip-text">格式：姓名 学号 密码（每行一人，空格分隔）</text>
+          </view>
+          <textarea
+            class="batch-textarea"
+            placeholder="在此粘贴学生名单，每行一人…"
+            placeholder-class="field-ph"
+            value="{{batchRawText}}"
+            adjust-position="{{true}}"
+            hold-keyboard="{{true}}"
+            cursor-spacing="{{cursorSpacing}}"
+            bindinput="onBatchRawInput"
+          />
+          <view class="batch-actions">
+            <button class="btn-parse" bindtap="parseStudentData">点击解析</button>
+            <button class="btn-collapse" bindtap="toggleBatchImport">收起</button>
+          </view>
+        </view>
+      </block>
+    </view>
+
+    <!-- 解析提示 -->
+    <view wx:if="{{parseWarnings.length > 0}}" class="warn-box">
+      <block wx:for="{{parseWarnings}}" wx:key="*this">
+        <text class="warn-line">{{item}}</text>
+      </block>
+    </view>
+
+    <!-- 预览列表 -->
+    <view wx:if="{{students.length > 0}}" class="section preview-section">
+      <text class="section-label">已添加学生（{{students.length}}）</text>
+      <view class="preview-table">
+        <view class="preview-head">
+          <text class="preview-col preview-col-name">姓名</text>
+          <text class="preview-col preview-col-no">学号</text>
+          <text class="preview-col preview-col-pw">密码</text>
+          <text class="preview-col preview-col-act"></text>
+        </view>
+        <view
+          wx:for="{{students}}"
+          wx:key="id"
+          class="preview-row"
+        >
+          <text class="preview-col preview-col-name">{{item.name}}</text>
+          <text class="preview-col preview-col-no">{{item.studentNo}}</text>
+          <text class="preview-col preview-col-pw">{{item.maskPassword}}</text>
+          <view class="preview-col preview-col-act">
+            <text class="preview-del" data-id="{{item.id}}" bindtap="deleteStudent">✕</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="bottom-spacer"></view>
+  </view>
+</scroll-view>
+
+<view class="footer-safe">
+  <button class="btn-submit" bindtap="confirmCreate">确认创建</button>
+</view>

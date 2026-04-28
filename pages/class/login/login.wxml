@@ -1,0 +1,115 @@
+<view class="page class-flow class-flow--login {{layoutClass}}">
+  <!-- 角色选择 -->
+  <view class="role-tabs">
+    <view
+      class="role-tab {{currentRole === 'teacher' ? 'role-tab--active' : ''}}"
+      data-role="teacher"
+      bindtap="switchRole"
+    >
+      <text class="role-tab__text">教师登录</text>
+      <view wx:if="{{currentRole === 'teacher'}}" class="role-tab__indicator"></view>
+    </view>
+    <view
+      class="role-tab {{currentRole === 'student' ? 'role-tab--active' : ''}}"
+      data-role="student"
+      bindtap="switchRole"
+    >
+      <text class="role-tab__text">学生登录</text>
+      <view wx:if="{{currentRole === 'student'}}" class="role-tab__indicator"></view>
+    </view>
+  </view>
+
+  <!-- 表单：教师 -->
+  <view wx:if="{{currentRole === 'teacher'}}" class="form-section">
+    <view class="field">
+      <input
+        class="field__input"
+        type="text"
+        placeholder="请输入教师姓名"
+        placeholder-class="field__placeholder"
+        value="{{teacherForm.name}}"
+        confirm-type="done"
+        adjust-position="{{true}}"
+        hold-keyboard="{{true}}"
+        cursor-spacing="{{cursorSpacing}}"
+        data-role="teacher"
+        data-field="name"
+        bindinput="handleInput"
+      />
+    </view>
+    <view class="field">
+      <input
+        class="field__input"
+        type="text"
+        password
+        placeholder="请输入登录密码"
+        placeholder-class="field__placeholder"
+        value="{{teacherForm.password}}"
+        confirm-type="done"
+        adjust-position="{{true}}"
+        hold-keyboard="{{true}}"
+        cursor-spacing="{{cursorSpacing}}"
+        data-role="teacher"
+        data-field="password"
+        bindinput="handleInput"
+      />
+    </view>
+  </view>
+
+  <!-- 表单：学生 -->
+  <view wx:if="{{currentRole === 'student'}}" class="form-section">
+    <view class="field">
+      <input
+        class="field__input"
+        type="text"
+        placeholder="请输入学生姓名"
+        placeholder-class="field__placeholder"
+        value="{{studentForm.name}}"
+        confirm-type="done"
+        adjust-position="{{true}}"
+        hold-keyboard="{{true}}"
+        cursor-spacing="{{cursorSpacing}}"
+        data-role="student"
+        data-field="name"
+        bindinput="handleInput"
+      />
+    </view>
+    <view class="field">
+      <input
+        class="field__input"
+        type="text"
+        placeholder="请输入学号"
+        placeholder-class="field__placeholder"
+        value="{{studentForm.studentNo}}"
+        confirm-type="done"
+        adjust-position="{{true}}"
+        hold-keyboard="{{true}}"
+        cursor-spacing="{{cursorSpacing}}"
+        data-role="student"
+        data-field="studentNo"
+        bindinput="handleInput"
+      />
+    </view>
+    <view class="field">
+      <input
+        class="field__input"
+        type="text"
+        password
+        placeholder="请输入登录密码"
+        placeholder-class="field__placeholder"
+        value="{{studentForm.password}}"
+        confirm-type="done"
+        adjust-position="{{true}}"
+        hold-keyboard="{{true}}"
+        cursor-spacing="{{cursorSpacing}}"
+        data-role="student"
+        data-field="password"
+        bindinput="handleInput"
+      />
+    </view>
+  </view>
+
+  <view class="login-btn" bindtap="handleLogin" hover-class="login-btn--hover">
+    <text class="login-btn__text">登录</text>
+  </view>
+</view>

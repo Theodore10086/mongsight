@@ -1,47 +1,47 @@
 {
   "compileType": "miniprogram",
-  "libVersion": "3.14.0",
+  "libVersion": "3.15.0",
   "cloudfunctionRoot": "cloudfunctions/",
   "cloudId": "cloud1-6g6qzrswbfeff910",
   "packOptions": {
     "ignore": [
       {
-        "type": "glob",
-        "value": "node_modules/**/*"
+        "value": "node_modules/**/*",
+        "type": "glob"
       },
       {
-        "type": "glob",
-        "value": ".git/**/*"
+        "value": ".git/**/*",
+        "type": "glob"
       },
       {
-        "type": "glob",
-        "value": ".vs/**/*"
+        "value": ".vs/**/*",
+        "type": "glob"
       },
       {
-        "type": "glob",
-        "value": ".claude/**/*"
+        "value": ".claude/**/*",
+        "type": "glob"
       },
       {
-        "type": "glob",
-        "value": "package-lock.json"
+        "value": "package-lock.json",
+        "type": "glob"
       },
       {
-        "type": "glob",
-        "value": "RECOGNITION_DEPLOYMENT.md"
+        "value": "RECOGNITION_DEPLOYMENT.md",
+        "type": "glob"
       },
       {
-        "type": "glob",
-        "value": "scripts/**/*"
+        "value": "scripts/**/*",
+        "type": "glob"
       },
       {
-        "type": "glob",
-        "value": "assets/audio/*.mp3"
+        "value": "assets/audio/*.mp3",
+        "type": "glob"
       }
     ],
     "include": [
       {
-        "type": "file",
-        "value": "assets/audio/"
+        "value": "assets/audio/",
+        "type": "file"
       }
     ]
   },

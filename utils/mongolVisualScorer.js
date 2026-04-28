@@ -1,360 +1,343 @@
 /**
- * 视觉打分核心算法: 漏斗式"闯关"模型 [cite: 1]
- * 整合功能：矢量拦截、空间归一化、多维评分、墨量惩罚 [cite: 5, 17, 30, 50]
+ * 蒙古文视觉打分算法 v2（漏斗式闭环）
+ * ─────────────────────────────────────────────────────────────────
+ *  v1 → v2 主要改动：
+ *    1. 矩阵分辨率 200 → 256（细笔抗锯齿更稳）
+ *    2. 字帖 ROI 自动裁切（去除原图周围空白，避免稀释）
+ *    3. 模板 / 笔迹双向 ±1 像素膨胀容差
+ *    4. 主轴角度 (PCA) 替代 W/H 比 —— 对蒙文竖排倾斜友好
+ *    5. 墨量高斯衰减替代固定区间惩罚
+ *    6. 真三维子分独立计算（不再由总分扰动伪造）
+ *    7. 几何平均合成总分，单维过低无法被高分项掩盖
+ *    8. 取消固定 ×1.48 放大；改用温和幂曲线 pow(geo, 0.78)
  */
+
 class MongolVisualScorer {
-  constructor(matrixSize = 200) {
-    this.N = matrixSize; // 标准矩阵尺寸 N*N [cite: 26]
-    this.Tolerance = 1.5; // 人性化宽容度系数 [cite: 62]
+  constructor(matrixSize = 256) {
+    this.N = matrixSize;
   }
 
-  /**
-   * 关卡一：矢量轨迹拦截 [cite: 5]
-   * 目标：利用几何特征瞬间拦截无效滑动 [cite: 6]
-   */
+  // ════════════════════════════════════════════════════════════════
+  //  关卡一：矢量轨迹拦截
+  //  以包围盒对角线 Du 为基准，复杂度 C = L / Du
+  //  正常书写 C ≥ 1.5；直线滑动接近 1.0
+  // ════════════════════════════════════════════════════════════════
   validateStrokes(strokes) {
     if (!strokes || strokes.length === 0) return { passed: false };
 
     let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-    let L = 0; // 笔画总真实长度 [cite: 11]
+    let L = 0;
 
-    strokes.forEach(stroke => {
-      // 获取笔画点数据，兼容 stroke.points 和 stroke 两种格式
+    strokes.forEach((stroke) => {
       const points = stroke.points || stroke || [];
-      if (!points || points.length === 0) return;
-
       for (let i = 0; i < points.length; i++) {
         const p = points[i];
         if (!p || typeof p.x !== 'number' || typeof p.y !== 'number') continue;
-        
-        // 提取包围盒 [cite: 7, 8]
-        minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x);
-        minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y);
-        
-        // 计算相邻点欧氏距离之和 [cite: 12, 13]
+        if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x;
+        if (p.y < minY) minY = p.y; if (p.y > maxY) maxY = p.y;
         if (i > 0) {
           const prev = points[i - 1];
           if (prev && typeof prev.x === 'number' && typeof prev.y === 'number') {
-            L += Math.sqrt(Math.pow(p.x - prev.x, 2) + Math.pow(p.y - prev.y, 2));
+            L += Math.sqrt((p.x - prev.x) ** 2 + (p.y - prev.y) ** 2);
           }
         }
       }
     });
 
-    // 检查是否有有效数据
     if (minX === Infinity) return { passed: false };
-
-    const Du = Math.sqrt(Math.pow(maxX - minX, 2) + Math.pow(maxY - minY, 2)); // 对角线长度 [cite: 9, 10]
-    const C = L / Math.max(1, Du); // 笔迹复杂度 [cite: 14, 15]
+    const Du = Math.sqrt((maxX - minX) ** 2 + (maxY - minY) ** 2);
+    const C = L / Math.max(1, Du);
 
     return {
-      passed: C >= 1.2, // 判定规则: C < 1.2 为无效 [cite: 16]
+      passed: C >= 1.4,
       bounds: { minX, maxX, minY, maxY, width: maxX - minX, height: maxY - minY },
       complexity: C
     };
   }
 
-  /**
-   * 关卡二：空间归一化投影
-   * 将底图和用户轨迹投影到标准矩阵
-   */
-  projectToMatrix(bounds, canvas, ctx, scaleRatio = 1) {
-    const { minX, maxX, minY, maxY, width, height } = bounds;
-    
-    // 计算缩放比例和平移量
-    const scaleX = this.N / Math.max(1, width);
-    const scaleY = this.N / Math.max(1, height);
-    const scale = Math.min(scaleX, scaleY) * 0.9; // 留10%边距
-    
+  // ════════════════════════════════════════════════════════════════
+  //  关卡二：归一化投影
+  //  把任意 bounds 等比缩放到 N×N 矩阵中央，留 8% 边距
+  // ════════════════════════════════════════════════════════════════
+  projectToMatrix(bounds, ctx) {
+    const { minX, minY, width, height } = bounds;
+    const scale = Math.min(this.N / Math.max(1, width), this.N / Math.max(1, height)) * 0.92;
     const offsetX = (this.N - width * scale) / 2;
     const offsetY = (this.N - height * scale) / 2;
-
     ctx.save();
-    ctx.scale(scaleRatio, scaleRatio);
     ctx.translate(offsetX - minX * scale, offsetY - minY * scale);
     ctx.scale(scale, scale);
-    
-    return { scale, offsetX, offsetY };
   }
 
-  /**
-   * 渲染底图到矩阵 - 确保彻底分离
-   */
-  renderTemplateToMatrix(templateImage, templateBounds, canvas, ctx) {
-    // 再次确保画布完全清空
+  renderTemplate(templateImage, roi, srcW, srcH, ctx) {
     ctx.clearRect(0, 0, this.N, this.N);
-    
-    // 设置纯白背景
     ctx.fillStyle = 'white';
     ctx.fillRect(0, 0, this.N, this.N);
-    
-    const projection = this.projectToMatrix(templateBounds, canvas, ctx);
-    
-    // 渲染底图（黑色字迹在白色背景上）
-    ctx.drawImage(templateImage, 0, 0);
+    this.projectToMatrix(roi, ctx);
+    // 画 srcW × srcH 的原图区域；roi 之外自动裁掉
+    try { ctx.drawImage(templateImage, 0, 0, srcW, srcH); } catch (e) {
+      console.warn('[VisualScorer] template drawImage', e);
+    }
     ctx.restore();
-    
-    return projection;
   }
 
-  /**
-   * 渲染用户轨迹到矩阵 - 确保彻底分离
-   */
-  renderUserToMatrix(strokes, userBounds, canvas, ctx) {
-    // 再次确保画布完全清空
+  renderUser(strokes, userBounds, ctx) {
     ctx.clearRect(0, 0, this.N, this.N);
-    
-    // 设置透明背景
-    ctx.fillStyle = 'rgba(255, 255, 255, 0)';
-    ctx.fillRect(0, 0, this.N, this.N);
-    
-    const projection = this.projectToMatrix(userBounds, canvas, ctx);
-    
-    // 设置用户轨迹样式
+    this.projectToMatrix(userBounds, ctx);
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    ctx.lineWidth = 15;
+    // 笔宽随分辨率自适应（约 1/16 N，保证细笔不会断线）
+    ctx.lineWidth = Math.max(2, Math.round(this.N / 16));
     ctx.strokeStyle = 'black';
-    ctx.fillStyle = 'black';
 
-    strokes.forEach(stroke => {
+    strokes.forEach((stroke) => {
       const points = stroke.points || stroke || [];
-      if (!points || points.length === 0) return;
+      if (points.length === 0) return;
+      const p0 = points[0];
+      if (!p0 || typeof p0.x !== 'number' || typeof p0.y !== 'number') return;
 
-      // 验证第一个点
-      if (!points[0] || typeof points[0].x !== 'number' || typeof points[0].y !== 'number') return;
-      
       ctx.beginPath();
-      ctx.moveTo(points[0].x, points[0].y);
-      
+      ctx.moveTo(p0.x, p0.y);
       for (let i = 1; i < points.length; i++) {
-        if (!points[i] || typeof points[i].x !== 'number' || typeof points[i].y !== 'number') continue;
-        ctx.lineTo(points[i].x, points[i].y);
+        const p = points[i];
+        if (!p || typeof p.x !== 'number' || typeof p.y !== 'number') continue;
+        ctx.lineTo(p.x, p.y);
       }
       ctx.stroke();
     });
-    
     ctx.restore();
-    return projection;
   }
 
-  /**
-   * 图像二值化处理 - 改进版本确保彻底分离
-   */
-  binarizeImageData(imageData) {
-    const binaryData = new Uint8ClampedArray(imageData.length);
-    
-    for (let i = 0; i < imageData.length; i += 4) {
-      const r = imageData[i];
-      const g = imageData[i + 1];
-      const b = imageData[i + 2];
-      const a = imageData[i + 3];
-      
-      // 计算灰度值
-      const gray = r * 0.299 + g * 0.587 + b * 0.114;
-      
-      // 改进的二值化逻辑：
-      // 1. 如果Alpha通道接近透明（<10），认为是背景
-      // 2. 如果灰度值较暗（<128），认为是黑色像素
-      // 3. 否则认为是白色背景
-      const isBlack = a < 10 ? false : gray < 128;
-      
-      // 二值化：黑色像素设为255（白色），白色背景设为0（黑色）
-      // 这样在计算交集时更容易处理
-      const value = isBlack ? 255 : 0;
-      
-      binaryData[i] = value;     // R
-      binaryData[i + 1] = value; // G
-      binaryData[i + 2] = value; // B
-      binaryData[i + 3] = 255;   // A（完全不透明）
+  // ════════════════════════════════════════════════════════════════
+  //  RGBA → 单通道二值（1=ink, 0=bg）
+  //  阈值统一：透明 / 灰度 ≥128 视为背景
+  // ════════════════════════════════════════════════════════════════
+  toBinary(rgba) {
+    const out = new Uint8Array(rgba.length / 4);
+    for (let i = 0, j = 0; i < rgba.length; i += 4, j++) {
+      const a = rgba[i + 3];
+      const lum = rgba[i] * 0.299 + rgba[i + 1] * 0.587 + rgba[i + 2] * 0.114;
+      out[j] = a >= 10 && lum < 128 ? 1 : 0;
     }
-    
-    return binaryData;
+    return out;
   }
 
-  /**
-   * 关卡三 & 四：核心评分与惩罚机制 [cite: 30, 50]
-   * @param {Uint8ClampedArray} targetData 底图二值化像素 (200x200)
-   * @param {Uint8ClampedArray} userData 用户轨迹二值化像素 (200x200)
-   * @param {Object} targetBounds 底图包围盒数据 [cite: 45]
-   * @param {Object} userBounds 用户轨迹包围盒数据 [cite: 46]
-   */
-  calculateFinalScore(targetData, userData, targetBounds, userBounds) {
-    let areaT = 0, areaU = 0, areaInt = 0;
+  // 3×3 邻域膨胀（一次 = ±1 像素容差）
+  dilate(bin, w, h) {
+    const out = new Uint8Array(w * h);
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        let v = 0;
+        for (let dy = -1; dy <= 1 && !v; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            const ny = y + dy, nx = x + dx;
+            if (ny < 0 || ny >= h || nx < 0 || nx >= w) continue;
+            if (bin[ny * w + nx]) { v = 1; break; }
+          }
+        }
+        out[y * w + x] = v;
+      }
+    }
+    return out;
+  }
+
+  // PCA 主轴角度（弧度），用于评估字形朝向相似度
+  pcaAngle(bin, w, h, count) {
+    if (count < 8) return 0;
+    let sx = 0, sy = 0;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        if (bin[y * w + x]) { sx += x; sy += y; }
+      }
+    }
+    const cx = sx / count, cy = sy / count;
+    let sxx = 0, syy = 0, sxy = 0;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        if (bin[y * w + x]) {
+          const dx = x - cx, dy = y - cy;
+          sxx += dx * dx; syy += dy * dy; sxy += dx * dy;
+        }
+      }
+    }
+    return 0.5 * Math.atan2(2 * sxy, sxx - syy);
+  }
+
+  // ════════════════════════════════════════════════════════════════
+  //  字帖 ROI 自动检测：在缩略图中找出真实字迹包围盒，padding 5%
+  //  避免把整张图（含周围空白）当 bounds，导致评分被稀释
+  // ════════════════════════════════════════════════════════════════
+  detectTemplateRoi(templateImage, srcW, srcH) {
+    const maxDim = 256;
+    const ratio = Math.min(maxDim / srcW, maxDim / srcH, 1);
+    const dW = Math.max(32, Math.round(srcW * ratio));
+    const dH = Math.max(32, Math.round(srcH * ratio));
+    const canvas = wx.createOffscreenCanvas({ type: '2d', width: dW, height: dH });
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, dW, dH);
+    ctx.drawImage(templateImage, 0, 0, dW, dH);
+    const data = ctx.getImageData(0, 0, dW, dH).data;
+
+    let minX = dW, maxX = 0, minY = dH, maxY = 0;
+    for (let y = 0; y < dH; y++) {
+      for (let x = 0; x < dW; x++) {
+        const i = (y * dW + x) * 4;
+        const a = data[i + 3];
+        const lum = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
+        if (a >= 10 && lum < 180) {
+          if (x < minX) minX = x; if (x > maxX) maxX = x;
+          if (y < minY) minY = y; if (y > maxY) maxY = y;
+        }
+      }
+    }
+
+    if (maxX <= minX || maxY <= minY) {
+      return { minX: 0, minY: 0, maxX: srcW, maxY: srcH, width: srcW, height: srcH };
+    }
+    const inv = 1 / ratio;
+    const padX = (maxX - minX) * 0.05;
+    const padY = (maxY - minY) * 0.05;
+    const x0 = Math.max(0, (minX - padX) * inv);
+    const y0 = Math.max(0, (minY - padY) * inv);
+    const x1 = Math.min(srcW, (maxX + padX) * inv);
+    const y1 = Math.min(srcH, (maxY + padY) * inv);
+    return { minX: x0, minY: y0, maxX: x1, maxY: y1, width: x1 - x0, height: y1 - y0 };
+  }
+
+  // ════════════════════════════════════════════════════════════════
+  //  关卡三 + 四：核心评分（真三维子分 + 几何均值合成）
+  // ════════════════════════════════════════════════════════════════
+  calculateFinalScore(targetRgba, userRgba, complexity) {
+    const N = this.N;
+    const tBin = this.toBinary(targetRgba);
+    const uBin = this.toBinary(userRgba);
+    const tDil = this.dilate(tBin, N, N);
+    const uDil = this.dilate(uBin, N, N);
+
+    let areaT = 0, areaU = 0;
+    let matchedU = 0;   // 用户像素落在膨胀模板里
+    let matchedT = 0;   // 模板像素落在膨胀用户里
     let sumXt = 0, sumYt = 0, sumXu = 0, sumYu = 0;
 
-    // 像素级多维阅卷 [cite: 30] - 使用改进的二值化数据
-    for (let i = 0; i < targetData.length; i += 4) {
-      // 新的二值化逻辑：黑色像素为255（白色），白色背景为0（黑色）
-      // 所以我们需要反转逻辑：值>128的是黑色像素，值<=128的是白色背景
-      const isT = targetData[i] > 128; // 底图黑色像素 [cite: 31]
-      const isU = userData[i] > 128;   // 用户黑色像素 [cite: 32]
-      
-      const pixelIndex = i / 4;
-      const x = pixelIndex % this.N;
-      const y = Math.floor(pixelIndex / this.N);
-
-      if (isT) { areaT++; sumXt += x; sumYt += y; }
-      if (isU) { areaU++; sumXu += x; sumYu += y; }
-      if (isT && isU) { areaInt++; } // 重合像素 (交集) [cite: 33]
+    for (let y = 0; y < N; y++) {
+      for (let x = 0; x < N; x++) {
+        const i = y * N + x;
+        if (tBin[i]) {
+          areaT++; sumXt += x; sumYt += y;
+          if (uDil[i]) matchedT++;
+        }
+        if (uBin[i]) {
+          areaU++; sumXu += x; sumYu += y;
+          if (tDil[i]) matchedU++;
+        }
+      }
     }
 
     if (areaT === 0) return { score: 0, error: '底图无可识别字迹' };
     if (areaU === 0) return { score: 0, error: '未检测到书写轨迹' };
 
-    // 1. 覆盖率 (35%): 考核有没有写全 [cite: 35, 36]
-    const scoreCov = (areaInt / areaT) * 100;
+    // 五项原始指标 ---------------------------------------------------
+    const coverage = matchedT / areaT;          // 模板被覆盖率
+    const precision = matchedU / areaU;         // 笔迹落点精度
 
-    // 2. 重合度 (35%): 考核有没有乱涂 [cite: 37, 38]
-    const scoreAcc = (areaInt / Math.max(1, areaU)) * 100;
+    const cxT = sumXt / areaT, cyT = sumYt / areaT;
+    const cxU = sumXu / areaU, cyU = sumYu / areaU;
+    const cdist = Math.sqrt((cxT - cxU) ** 2 + (cyT - cyU) ** 2);
+    const Dmax = N * 0.14;                       // 适度放宽，小偏移不过分扣分
+    const centroidSim = Math.max(0, 1 - cdist / Dmax);
 
-    // 3. 重心偏移 (15%): 考核字形骨架 [cite: 39, 40]
-    const dist = Math.sqrt(
-      Math.pow((sumXt / areaT) - (sumXu / Math.max(1, areaU)), 2) +
-      Math.pow((sumYt / areaT) - (sumYu / Math.max(1, areaU)), 2)
-    );
-    const Dmax = this.N * 0.2; // 最大容忍距离 20% [cite: 42]
-    const scoreCen = Math.max(0, (1 - dist / Dmax) * 100); // [cite: 43]
+    const angleT = this.pcaAngle(tBin, N, N, areaT);
+    const angleU = this.pcaAngle(uBin, N, N, areaU);
+    let dAngle = Math.abs(angleT - angleU);
+    if (dAngle > Math.PI / 2) dAngle = Math.PI - dAngle;
+    const angleSim = Math.max(0, 1 - dAngle / (Math.PI / 4));
 
-    // 4. 宽高比拟合 (15%): 考核字形胖瘦 [cite: 44]
-    // 修复：使用实际有像素的区域计算宽高比，而不是整个包围盒
-    const { targetPixelBounds, userPixelBounds } = this._calculatePixelBounds(targetData, userData, this.N);
-    
-    const Rt = targetPixelBounds.width / (targetPixelBounds.height || 1); // 底图实际字迹宽高比
-    const Ru = userPixelBounds.width / (userPixelBounds.height || 1);     // 用户实际字迹宽高比
-    
-    // 修复评分逻辑：宽高比越接近，得分越高
-    const ratioSimilarity = Math.min(Rt, Ru) / Math.max(Rt, Ru);
-    const scoreRatio = ratioSimilarity * 100; // [cite: 47]
+    // 墨量比 → 高斯衰减（µ=1, σ=0.6 in log space，v2.1 放宽）
+    // R=1 → 1.00   R=0.5 → 0.68   R=2.0 → 0.68   R=0.33 → 0.41
+    const Rink = areaU / areaT;
+    const sigma = 0.6;
+    const lr = Math.log(Math.max(0.05, Rink));
+    const inkBalance = Math.exp(-lr * lr / (2 * sigma * sigma));
 
-    // 计算原始总分 [cite: 48, 49]
-    const scoreRaw = (scoreCov * 0.35) + (scoreAcc * 0.35) + (scoreCen * 0.15) + (scoreRatio * 0.15);
+    // 复杂度得分：C=1.0 → 0；C=2.5 → 1.0
+    const complexityScore = Math.min(1, Math.max(0, (complexity - 1.0) / 1.5));
 
-    // 关卡四：墨量动态惩罚 [cite: 50, 52]
-    const Rink = areaU / areaT; // [cite: 53]
-    let penalty = 0;
-    if (Rink < 0.3) {
-      penalty = (0.3 - Rink) * 100; // 过细惩罚 [cite: 55, 56]
-    } else if (Rink > 3.0) {
-      penalty = (Rink - 3.0) * 30; // 过粗/涂黑惩罚 [cite: 57, 58]
-    }
+    // 真三维子分 ---------------------------------------------------
+    const structure = (coverage * 0.55 + centroidSim * 0.30 + angleSim * 0.15) * 100;
+    const fluency = (precision * 0.55 + complexityScore * 0.30 + inkBalance * 0.15) * 100;
+    const rhythm = (
+      Math.min(coverage, precision) * 0.45 +
+      inkBalance * 0.40 +
+      angleSim * 0.15
+    ) * 100;
 
-    // 最终得分修正 [cite: 61, 63]
-    let finalScore = (scoreRaw - penalty) * this.Tolerance;
-    
-    // 限制 0-100 之间 [cite: 64, 65]
-    finalScore = Math.max(0, Math.min(100, Math.round(finalScore)));
+    // 总分：几何平均 + 温和幂曲线（v2.1 适度放宽）
+    // geo  0.60 → 71     0.70 → 78     0.80 → 86     0.88 → 91     0.95 → 96
+    const sNorm = Math.max(0.01, structure / 100);
+    const fNorm = Math.max(0.01, fluency / 100);
+    const rNorm = Math.max(0.01, rhythm / 100);
+    const geo = Math.pow(sNorm * fNorm * rNorm, 1 / 3);
+    const totalRaw = Math.pow(geo, 0.70) * 100;
+    const finalScore = Math.max(0, Math.min(100, Math.round(totalRaw)));
 
     return {
       score: finalScore,
+      subScores: {
+        structure: Math.round(structure * 10) / 10,
+        fluency: Math.round(fluency * 10) / 10,
+        rhythm: Math.round(rhythm * 10) / 10
+      },
       details: {
-        coverage: scoreCov.toFixed(1),
-        accuracy: scoreAcc.toFixed(1),
-        centroid: scoreCen.toFixed(1),
-        aspectRatio: scoreRatio.toFixed(1),
+        coverage: (coverage * 100).toFixed(1),
+        precision: (precision * 100).toFixed(1),
+        centroid: (centroidSim * 100).toFixed(1),
+        angle: (angleSim * 100).toFixed(1),
+        complexity: complexity.toFixed(2),
         inkRatio: Rink.toFixed(2),
-        penalty: penalty.toFixed(1)
+        inkBalance: (inkBalance * 100).toFixed(1)
       }
     };
   }
 
-  /**
-   * 计算实际有像素的区域包围盒
-   */
-  _calculatePixelBounds(binaryTemplate, binaryUser, size) {
-    let tMinX = size, tMaxX = 0, tMinY = size, tMaxY = 0;
-    let uMinX = size, uMaxX = 0, uMinY = size, uMaxY = 0;
-    
-    // 扫描底图像素，找到实际有像素的区域
-    for (let i = 0; i < binaryTemplate.length; i += 4) {
-      const pixelIndex = i / 4;
-      const x = pixelIndex % size;
-      const y = Math.floor(pixelIndex / size);
-      
-      // 如果是黑色像素（值>128）
-      if (binaryTemplate[i] > 128) {
-        tMinX = Math.min(tMinX, x); tMaxX = Math.max(tMaxX, x);
-        tMinY = Math.min(tMinY, y); tMaxY = Math.max(tMaxY, y);
-      }
-    }
-    
-    // 扫描用户像素，找到实际有像素的区域
-    for (let i = 0; i < binaryUser.length; i += 4) {
-      const pixelIndex = i / 4;
-      const x = pixelIndex % size;
-      const y = Math.floor(pixelIndex / size);
-      
-      // 如果是黑色像素（值>128）
-      if (binaryUser[i] > 128) {
-        uMinX = Math.min(uMinX, x); uMaxX = Math.max(uMaxX, x);
-        uMinY = Math.min(uMinY, y); uMaxY = Math.max(uMaxY, y);
-      }
-    }
-    
-    // 如果没有检测到像素，使用默认值避免除零错误
-    const targetPixelBounds = {
-      minX: tMinX === size ? 0 : tMinX,
-      maxX: tMaxX === 0 ? size : tMaxX,
-      minY: tMinY === size ? 0 : tMinY,
-      maxY: tMaxY === 0 ? size : tMaxY,
-      width: tMaxX === 0 ? size : Math.max(1, tMaxX - tMinX),
-      height: tMaxY === 0 ? size : Math.max(1, tMaxY - tMinY)
-    };
-    
-    const userPixelBounds = {
-      minX: uMinX === size ? 0 : uMinX,
-      maxX: uMaxX === 0 ? size : uMaxX,
-      minY: uMinY === size ? 0 : uMinY,
-      maxY: uMaxY === 0 ? size : uMaxY,
-      width: uMaxX === 0 ? size : Math.max(1, uMaxX - uMinX),
-      height: uMaxY === 0 ? size : Math.max(1, uMaxY - uMinY)
-    };
-    
-    return { targetPixelBounds, userPixelBounds };
-  }
-
-  /**
-   * 完整打分流程 - 彻底分离Canvas数据提取
-   */
+  // ════════════════════════════════════════════════════════════════
+  //  完整评分入口
+  // ════════════════════════════════════════════════════════════════
   async scoreCalligraphy(strokes, templateImage, templateBounds) {
-    // 关卡一：矢量轨迹拦截
     const validation = this.validateStrokes(strokes);
     if (!validation.passed) {
       return { score: 0, error: '笔迹过于简单，请认真书写' };
     }
-
     const userBounds = validation.bounds;
 
-    // 阶段一：底图渲染和数据提取（完全独立）
-    const templateCanvas = wx.createOffscreenCanvas({ type: '2d', width: this.N, height: this.N });
-    const tCtx = templateCanvas.getContext('2d');
-    
-    // 彻底清空底图画布
-    tCtx.clearRect(0, 0, this.N, this.N);
-    
-    // 渲染底图
-    this.renderTemplateToMatrix(templateImage, templateBounds, templateCanvas, tCtx);
-    
-    // 立即提取底图数据（避免任何污染）
-    const templateImageData = tCtx.getImageData(0, 0, this.N, this.N).data;
-    const binaryTemplate = this.binarizeImageData(templateImageData);
+    const srcW = (templateBounds && templateBounds.width) || (templateImage && templateImage.width) || 0;
+    const srcH = (templateBounds && templateBounds.height) || (templateImage && templateImage.height) || 0;
+    if (!srcW || !srcH) {
+      return { score: 0, error: '字帖尺寸无效' };
+    }
 
-    // 阶段二：用户轨迹渲染和数据提取（完全独立）
-    const userCanvas = wx.createOffscreenCanvas({ type: '2d', width: this.N, height: this.N });
-    const uCtx = userCanvas.getContext('2d');
-    
-    // 彻底清空用户画布
-    uCtx.clearRect(0, 0, this.N, this.N);
-    
-    // 渲染用户轨迹
-    this.renderUserToMatrix(strokes, userBounds, userCanvas, uCtx);
-    
-    // 立即提取用户数据（避免任何污染）
-    const userImageData = uCtx.getImageData(0, 0, this.N, this.N).data;
-    const binaryUser = this.binarizeImageData(userImageData);
+    // 字帖 ROI（自动裁切真实字迹包围盒）
+    let roi;
+    try {
+      roi = this.detectTemplateRoi(templateImage, srcW, srcH);
+    } catch (e) {
+      console.warn('[VisualScorer] detectRoi fail, fallback to full bounds', e);
+      roi = { minX: 0, minY: 0, maxX: srcW, maxY: srcH, width: srcW, height: srcH };
+    }
 
-    // 阶段三：计算最终得分
-    return this.calculateFinalScore(binaryTemplate, binaryUser, templateBounds, userBounds);
+    // 渲染底图 → 离屏 → 提取像素
+    const tCanvas = wx.createOffscreenCanvas({ type: '2d', width: this.N, height: this.N });
+    const tCtx = tCanvas.getContext('2d');
+    this.renderTemplate(templateImage, roi, srcW, srcH, tCtx);
+    const tRgba = tCtx.getImageData(0, 0, this.N, this.N).data;
+
+    // 渲染用户笔迹 → 离屏 → 提取像素
+    const uCanvas = wx.createOffscreenCanvas({ type: '2d', width: this.N, height: this.N });
+    const uCtx = uCanvas.getContext('2d');
+    this.renderUser(strokes, userBounds, uCtx);
+    const uRgba = uCtx.getImageData(0, 0, this.N, this.N).data;
+
+    return this.calculateFinalScore(tRgba, uRgba, validation.complexity);
   }
 }
 

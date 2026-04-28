@@ -73,15 +73,6 @@
   </view>
 </view>
 
-<!-- 开场视频（已隐藏）
-<intro-video 
-  visible="{{identityState === 'VIDEO_INTRO'}}"
-  show-skip="{{true}}"
-  show-mute-toggle="{{false}}"
-  bind:ended="onIntroVideoEnded"
-  bind:skip="onIntroVideoEnded"
-></intro-video> -->
-
 <!-- 已登录但未完成引导 - 高级感重塑 -->
 <view class="guide-overlay {{identityState !== 'UNAUTH' && !hasGuided ? 'active' : ''}}" wx:if="{{identityState !== 'UNAUTH' && !hasGuided}}">
   <!-- 星空草原背景 -->
@@ -477,23 +468,6 @@
   <view class="quick-btn" catchtap="onClearCanvas">
     <view class="quick-btn-icon icon-qb-clear"></view>
   </view>
-  <view class="quick-btn" catchtap="onToggleMusic" bindlongpress="onMusicLongPress">
-    <view class="quick-btn-icon {{musicEnabled ? 'icon-qb-sound-on' : 'icon-qb-sound-off'}}"></view>
-  </view>
-</view>
-
-<!-- 歌曲选择弹窗 -->
-<view class="music-picker-mask {{showMusicPicker ? 'active' : ''}}" bindtap="onCloseMusicPicker" wx:if="{{showMusicPicker}}"></view>
-<view class="music-picker {{showMusicPicker ? 'active' : ''}}" wx:if="{{showMusicPicker}}">
-  <view class="music-picker-title">选择背景音乐</view>
-  <view class="music-list">
-    <view class="music-item {{currentMusicIndex === index ? 'active' : ''}}" wx:for="{{musicList}}" wx:key="index" bindtap="onSelectMusic" data-index="{{index}}">
-      <text class="music-name">{{item.name}}</text>
-      <text class="music-epname">{{item.epname}}</text>
-      <text class="music-check" wx:if="{{currentMusicIndex === index}}">✓</text>
-    </view>
-  </view>
-  <view class="music-picker-close" bindtap="onCloseMusicPicker">取消</view>
 </view>
 
 <view class="canvas-zone {{isTechMode ? 'tech-mode' : ''}} skin-{{activeSkin}}" bindtap="onCanvasTap" wx:if="{{currentTab === 0}}">
@@ -1097,63 +1071,15 @@
 
 <!-- Tab 内容区域 -->
 <view class="tab-content" wx:if="{{currentTab !== 0}}">
-  <!-- 商城 Tab -->
+  <!-- 班级 Tab -->
   <view class="tab-panel {{currentTab === 1 ? 'active' : ''}}">
-    <view class="mall-header">
-      <text class="mall-title">墨宝商城</text>
+    <view class="class-header">
+      <text class="class-title">班级</text>
     </view>
-    <view class="mall-categories">
-      <view 
-        wx:for="{{mallCategories}}" 
-        wx:key="id"
-        class="category-item {{mallCategoryActive === item.id ? 'active' : ''}}"
-        data-id="{{item.id}}"
-        bindtap="onMallCategoryTap"
-      >
-        <text>{{item.name}}</text>
-      </view>
-    </view>
-    <scroll-view scroll-y class="mall-products">
-      <view class="product-grid">
-        <view class="product-card" wx:for="{{filteredProducts}}" wx:key="id" data-id="{{item.id}}" bindtap="onProductTap" style="animation: fadeInUp {{index * 0.03}}s ease-out;">
-          <view class="product-image category-gradient-{{item.category}}">
-            <view class="product-cat-icon icon-cat-{{item.category}}"></view>
-          </view>
-          <view class="product-info">
-            <text class="product-name">{{item.name}}</text>
-            <view class="product-price-row">
-              <text class="product-price">¥{{item.price}}</text>
-              <text class="product-tag" wx:if="{{item.tag}}">{{item.tag}}</text>
-            </view>
-          </view>
-        </view>
-      </view>
-    </scroll-view>
-  </view>
-  
-  <!-- 商品详情弹窗 -->
-  <view class="product-modal {{showProductModal ? 'active' : ''}}" wx:if="{{showProductModal}}">
-    <view class="product-modal-mask" bindtap="onCloseProductModal"></view>
-    <view class="product-modal-content">
-      <view class="product-modal-header">
-        <view class="product-modal-emoji category-gradient-{{currentProduct.category}}"><view class="product-cat-icon icon-cat-{{currentProduct.category}}"></view></view>
-        <text class="product-modal-close" bindtap="onCloseProductModal">✕</text>
-      </view>
-      <view class="product-modal-body">
-        <text class="product-modal-name">{{currentProduct.name}}</text>
-        <view class="product-modal-tags" wx:if="{{currentProduct.tag}}">
-          <text class="product-modal-tag">{{currentProduct.tag}}</text>
-        </view>
-        <view class="product-modal-price">
-          <text class="price-label">价格</text>
-          <text class="price-value">¥{{currentProduct.price}}</text>
-        </view>
-        <view class="product-modal-desc">
-          <text class="desc-label">商品详情</text>
-          <text class="desc-text">{{currentProduct.desc}}</text>
-        </view>
-      </view>
-      <button class="product-modal-buy" bindtap="onBuyProduct">立即购买</button>
+    <view class="class-entry">
+      <text class="class-entry-title">班级教学</text>
+      <text class="class-entry-desc">教师管理班级与作业，学生完成作业与提交。请先选择角色登录。</text>
+      <button class="class-entry-btn" bindtap="onGoToClassLogin">进入班级登录</button>
     </view>
   </view>
   
@@ -1358,7 +1284,7 @@
       <view class="privilege-grid">
         <view class="privilege-item">
           <view class="privilege-icon icon-p-gem"></view>
-          <text class="privilege-text">墨玉商城</text>
+          <text class="privilege-text">班级权益</text>
         </view>
         <view class="privilege-item">
           <view class="privilege-icon icon-p-badge"></view>

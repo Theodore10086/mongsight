@@ -154,52 +154,10 @@ Page({
     // TabBar 配置
     tabs: [
       { id: 0, name: '首页' },
-      { id: 1, name: '商城' },
+      { id: 1, name: '班级' },
       { id: 2, name: '社区' },
       { id: 3, name: '我' }
     ],
-    
-    // 商城数据
-    mallCategoryActive: 0,
-    mallCategories: [
-      { id: 0, name: '全部' },
-      { id: 1, name: '墨宝' },
-      { id: 2, name: '纸张' },
-      { id: 3, name: '笔具' },
-      { id: 4, name: '周边' },
-      { id: 5, name: '课程' }
-    ],
-    mallProducts: [
-      { id: 1, category: 1, name: '草原特级墨块', price: 99, image: '', tag: '热销', desc: '采用内蒙古天然松烟墨料，经过传统工艺精制而成，墨色浓黑，质地细腻，适合书法创作与描红练习。' },
-      { id: 2, category: 2, name: '手工宣纸', price: 49, image: '', tag: '新品', desc: '安徽泾县传统手工宣纸，纸质柔软，吸墨性好，不易渗化，是蒙古文书法的最佳选择。' },
-      { id: 3, category: 3, name: '狼毫毛笔', price: 159, image: '', tag: '推荐', desc: '精选东北黄狼尾毛，笔锋锐利，弹性适中，适合书写蒙古文各种笔画。' },
-      { id: 4, category: 1, name: '书画墨汁', price: 39, image: '', tag: '优惠', desc: '可以直接使用的墨汁，无需研磨，方便快捷。墨色均匀，不堵笔。' },
-      { id: 5, category: 2, name: '竹纤维纸', price: 69, image: '', tag: '', desc: '新型环保纸张，纹理清晰，质感柔和，适合日常练习使用。' },
-      { id: 6, category: 3, name: '兼毫毛笔', price: 89, image: '', tag: '', desc: '狼毫与羊毫混合制笔，软硬适中，初学者首选。' },
-      { id: 7, category: 4, name: '红木镇纸', price: 129, image: '', tag: '精品', desc: '采用非洲红木制作，重量适中，摆放平稳，兼具实用与收藏价值。' },
-      { id: 8, category: 4, name: '青花墨碟', price: 49, image: '', tag: '', desc: '景德镇青花瓷墨碟，造型精美，容量适中，是文房必备之选。' },
-      { id: 9, category: 4, name: '书法毛毡', price: 59, image: '', tag: '', desc: '优质羊毛毡，吸水防渗，保护桌面，让书写更加得心应手。' },
-      { id: 10, category: 5, name: '蒙古文入门课程', price: 199, image: '', tag: '课程', desc: '从基础笔画到完整作品，系统学习蒙古文书法的在线课程，永久有效。' },
-      { id: 11, category: 5, name: '书法大师班', price: 499, image: '', tag: '课程', desc: '由著名蒙古文书法人士授课，一对一指导，提升书法水平。' },
-      { id: 12, category: 1, name: '朱砂印泥', price: 79, image: '', tag: '', desc: '传统朱砂印泥，色泽鲜艳，经久不褪，是印章的绝佳搭配。' },
-      { id: 13, category: 1, name: '松烟墨条', price: 168, image: '', tag: '高端', desc: '古法松烟墨条，质地细腻，墨色沉稳，适合创作高质量书法作品。' },
-      { id: 14, category: 2, name: '蜡染宣纸', price: 89, image: '', tag: '', desc: '传统蜡染工艺，纸张纹理独特，防水防潮，装饰效果极佳。' },
-      { id: 15, category: 3, name: '羊毫毛笔', price: 129, image: '', tag: '', desc: '纯羊毛制作，笔触柔软，蓄墨量大，适合书写流畅的蒙古文。' },
-      { id: 16, category: 4, name: '黄铜笔搁', price: 79, image: '', tag: '', desc: '黄铜材质，造型优雅，耐用不变形，是笔搁的上佳之选。' },
-      { id: 17, category: 4, name: '紫砂墨罐', price: 199, image: '', tag: '精品', desc: '宜兴紫砂墨罐，透气性好，保持墨汁新鲜不干涸。' },
-      { id: 18, category: 5, name: '蒙古文进阶课程', price: 299, image: '', tag: '课程', desc: '进阶蒙古文书法的系统课程，包含多种字体风格学习。' },
-      { id: 19, category: 1, name: '彩色墨汁套装', price: 59, image: '', tag: '', desc: '多种颜色可选，满足不同创作需求，色彩鲜艳持久。' },
-      { id: 20, category: 3, name: '竹笔套装', price: 99, image: '', tag: '', desc: '传统蒙古文竹笔套装，包含不同规格，传承草原文化。' },
-      { id: 21, category: 2, name: '水写布', price: 29, image: '', tag: '', desc: '可反复使用的水写布，环保经济，适合初学者练习基本笔画。' },
-      { id: 22, category: 4, name: '字帖临摹垫', price: 39, image: '', tag: '', desc: '硅胶防滑垫，保护字帖不移位，书写更稳定舒适。' },
-      { id: 23, category: 5, name: '蒙古文硬笔课程', price: 99, image: '', tag: '课程', desc: '学习蒙古文硬笔书法，掌握标准书写技巧。' },
-      { id: 24, category: 4, name: '便携墨盒', price: 49, image: '', tag: '', desc: '外出写书法必备，小巧便携，墨量可视化。' }
-    ],
-    filteredProducts: [],
-    
-    // 商品详情弹窗
-    showProductModal: false,
-    currentProduct: {},
     
     // 社区数据
     communityPosts: [
@@ -220,11 +178,6 @@ Page({
     allStrokes: [], 
     currentStroke: [], 
     showTemplate: false, // 控制字帖显示，初始为隐藏状态
-    musicEnabled: true,
-    wasBgMusicPlaying: false,
-    showMusicPicker: false,
-    musicList: [],
-    currentMusicIndex: 0,
     
     // 左侧边栏（字帖、落款、试炼）
     showLeftSidebar: false,
@@ -1196,7 +1149,7 @@ Page({
         { id: 0, name: '首页' },
         { id: 4, name: '识别', pagePath: '/pages/scan/scan' },
         { id: 2, name: '社区' },
-        { id: 1, name: '商城' },
+        { id: 1, name: '班级' },
         { id: 3, name: '我' }
       ]
     })
@@ -1268,8 +1221,7 @@ Page({
     // 加载我的作品
     const savedWorks = wx.getStorageSync('myWorks') || []
     this.setData({ 
-      myWorks: savedWorks,
-      filteredProducts: this.data.mallProducts
+      myWorks: savedWorks
     })
     
     // 加载签到状态
@@ -1285,11 +1237,6 @@ Page({
     // 检查本地缓存的用户信息
     const cachedUserInfo = wx.getStorageSync('userInfo')
     const hasCompletedOnboarding = wx.getStorageSync('hasCompletedOnboarding') || false
-    
-    // 显示开启入籍时，播放悲壮歌曲
-    if (app.playGuideMusic) {
-      app.playGuideMusic();
-    }
     
     if (cachedUserInfo) {
       console.log('[UserIdentity] 已缓存用户信息:', cachedUserInfo.nickName)
@@ -1445,10 +1392,6 @@ Page({
   
   onStartGuide() {
     console.log('[Guide] 用户选择开始探索');
-    const app = getApp();
-    if (app.playBgMusic) {
-      app.playBgMusic(0);
-    }
     this.setData({
       showGuideChoice: false,
       guideEnabled: true,
@@ -1459,10 +1402,6 @@ Page({
   
   onSkipGuide() {
     console.log('[Guide] 用户选择跳过引导');
-    const app = getApp();
-    if (app.playBgMusic) {
-      app.playBgMusic(0);
-    }
     this.setData({
       showGuideChoice: false,
       guideEnabled: false,
@@ -3104,39 +3043,6 @@ Page({
   // 阻止快捷按钮事件冒泡
   onQuickActionTap() {},
 
-  onToggleMusic() {
-    const enabled = !this.data.musicEnabled;
-    this.setData({ musicEnabled: enabled });
-    const app = getApp();
-    app.toggleBgMusic(enabled, this.data.currentMusicIndex);
-  },
-
-  onMusicLongPress() {
-    const app = getApp();
-    const musicList = app.getMusicList() || [];
-    const currentIndex = app.getCurrentMusicIndex();
-    this.setData({
-      showMusicPicker: true,
-      musicList: musicList,
-      currentMusicIndex: currentIndex
-    });
-  },
-
-  onSelectMusic(e) {
-    const index = e.currentTarget.dataset.index;
-    const app = getApp();
-    this.setData({
-      currentMusicIndex: index,
-      showMusicPicker: false,
-      musicEnabled: true
-    });
-    app.toggleBgMusic(true, index);
-  },
-
-  onCloseMusicPicker() {
-    this.setData({ showMusicPicker: false });
-  },
-
   // 4. 撤销
   onUndo() {
     const { allStrokes } = this.data
@@ -4223,12 +4129,6 @@ Page({
       return;
     }
 
-    const app = getApp();
-    if (app.globalData.bgMusicManager && app.globalData.bgMusicManager.paused === false) {
-      app.globalData.bgMusicManager.pause();
-      this.setData({ wasBgMusicPlaying: true });
-    }
-    
     if (!this.innerAudioContext) {
       this.innerAudioContext = wx.createInnerAudioContext();
       this._setupAudioListeners();
@@ -4252,23 +4152,11 @@ Page({
     this.innerAudioContext.onStop(() => {
       console.log('音频停止');
       this.setData({ isPlaying: false });
-      
-      const app = getApp();
-      if (this.data.wasBgMusicPlaying && app.globalData.bgMusicManager) {
-        app.globalData.bgMusicManager.play();
-        this.setData({ wasBgMusicPlaying: false });
-      }
     });
     
     this.innerAudioContext.onEnded(() => {
       console.log('音频播放结束');
       this.setData({ isPlaying: false });
-      
-      const app = getApp();
-      if (this.data.wasBgMusicPlaying && app.globalData.bgMusicManager) {
-        app.globalData.bgMusicManager.play();
-        this.setData({ wasBgMusicPlaying: false });
-      }
     });
     
     this.innerAudioContext.onError((res) => {
@@ -4415,7 +4303,7 @@ Page({
     })
   },
 
-  // 视觉打分核心逻辑 - 使用新的漏斗式闯关模型
+  // 视觉打分核心逻辑 - 使用 v2 漏斗式闯关模型（真三维子分）
   async _runVisualScoring() {
     try {
       const { allStrokes, collectionConfig } = this.data
@@ -4424,30 +4312,26 @@ Page({
       if (!bgImagePath) throw new Error('请先导入字帖图片')
       if (!allStrokes || allStrokes.length === 0) throw new Error('请先完成书写')
 
-      // 创建新的视觉打分器实例
-      const scorer = new MongolVisualScorer(200)
+      const scorer = new MongolVisualScorer(256)
 
-      // 预计算底图包围盒（一次性生成）
+      // 仅获取原图尺寸；ROI 自动裁切由打分器内部完成
       const templateBounds = await this._getTemplateBounds(bgImagePath)
-      
-      // 加载底图
       const templateImage = await this._loadTemplateImage(bgImagePath)
 
-      // 使用新的漏斗式算法进行打分
       const result = await scorer.scoreCalligraphy(allStrokes, templateImage, templateBounds)
-      
       if (result.error) {
         throw new Error(result.error)
       }
 
       const score = result.score
+      const sub = result.subScores || {}
       const feedback = this._buildVisualFeedback(score)
 
-      // 由总分推导三维度子分（含小幅随机扰动，让显示更自然）
-      const rand = (range) => (Math.random() * range * 2 - range)
-      const structureScore = Math.max(0, Math.min(100, score + rand(3))).toFixed(1)
-      const fluencyScore = Math.max(0, Math.min(100, score * 0.95 + rand(4))).toFixed(1)
-      const rhythmScore = Math.max(0, Math.min(100, score * 0.92 + rand(4))).toFixed(1)
+      // v2 真三维子分；缺失时回退到总分（保证 UI 永不空白）
+      const fallback = Number(score) || 0
+      const structureScore = (sub.structure != null ? sub.structure : fallback).toFixed(1)
+      const fluencyScore = (sub.fluency != null ? sub.fluency : fallback).toFixed(1)
+      const rhythmScore = (sub.rhythm != null ? sub.rhythm : fallback).toFixed(1)
 
       this.setData({
         scoringPhase: 'result',
@@ -4462,11 +4346,11 @@ Page({
           feedback,
           method: 'visual',
           strokeCount: allStrokes.length,
-          details: result.details // 新增详细评分信息
+          details: result.details
         }
       })
 
-      console.log('视觉打分详情:', result.details)
+      console.log('[VisualScoring] total =', score, ' sub =', sub, ' details =', result.details)
     } catch (err) {
       console.error('[Visual Scoring] failed:', err)
       wx.showToast({ title: err.message || '视觉打分失败，请重试', icon: 'none', duration: 2500 })
@@ -4474,18 +4358,15 @@ Page({
     }
   },
 
-  // 预计算底图包围盒（一次性生成）
+  // 仅返回原图尺寸；真实字迹 ROI 由 scorer.detectTemplateRoi 自动检测
   async _getTemplateBounds(bgImagePath) {
-    // 这里可以缓存底图包围盒，避免重复计算
     const bgInfo = await new Promise((resolve, reject) => {
       wx.getImageInfo({ src: bgImagePath, success: resolve, fail: reject })
     })
-    
-    // 假设底图是整个画布，返回整个图像的包围盒
     return {
       minX: 0,
-      maxX: bgInfo.width,
       minY: 0,
+      maxX: bgInfo.width,
       maxY: bgInfo.height,
       width: bgInfo.width,
       height: bgInfo.height
@@ -4656,15 +4537,15 @@ Page({
     return union === 0 ? 0 : intersection / union
   },
 
-  // 视觉打分反馈文案
+  // 视觉打分反馈文案（与 v2.1 放宽后的曲线对齐）
   _buildVisualFeedback(score) {
     if (score >= 95) return '蒙宝点评：形神兼备，与字帖如出一辙，太棒了！'
-    if (score >= 90) return '蒙宝点评：轮廓高度吻合，视觉还原度极佳！'
-    if (score >= 85) return '蒙宝点评：整体形态很像，细节再打磨一下就完美了。'
-    if (score >= 80) return '蒙宝点评：大致形态对了，再注意一下边缘轮廓的贴合度。'
-    if (score >= 70) return '蒙宝点评：能看出原字的影子，继续对照图片多练几遍。'
-    if (score >= 60) return '蒙宝点评：基本形态有了，建议放慢速度仔细描摹。'
-    return '蒙宝点评：和字帖差距还比较大，先观察原字结构再下笔。'
+    if (score >= 88) return '蒙宝点评：结构、笔意、墨韵俱佳，视觉还原度极高！'
+    if (score >= 82) return '蒙宝点评：整体形态贴合，再打磨细节就更出彩了。'
+    if (score >= 75) return '蒙宝点评：临写到位，部分位置或墨量略有偏差。'
+    if (score >= 65) return '蒙宝点评：能看出原字结构，建议关注重心与笔画走向。'
+    if (score >= 55) return '蒙宝点评：基本形态已具，多对照字帖慢慢练。'
+    return '蒙宝点评：先观察原字的结构与朝向再下笔会更好。'
   },
 
   _handleScoringResult(result) {
@@ -6231,10 +6112,15 @@ Page({
     wx.showToast({ title: '用户名已更新', icon: 'success' })
   },
 
-  // 跳转到订单页面（切换到商城Tab）
+  // “我的订单”沿用为班级入口：切换到班级 Tab（用户可再点「进入班级登录」）
   onGoToOrders() {
     this.setData({ currentTab: 1 })
-    wx.showToast({ title: '商城即将推出', icon: 'none' })
+  },
+
+  onGoToClassLogin() {
+    wx.navigateTo({
+      url: '/pages/class/login/login'
+    })
   },
 
   // 跳转到我的作品页面
@@ -6502,34 +6388,6 @@ Page({
     return this.onSubmitPostCloud()
   },
 
-  onMallCategoryTap(e) {
-    const id = e.currentTarget.dataset.id
-    const filtered = id === 0 ? this.data.mallProducts : this.data.mallProducts.filter(p => p.category === id)
-    this.setData({ 
-      mallCategoryActive: id,
-      filteredProducts: filtered
-    })
-  },
-
-  // 点击商品查看详情
-  onProductTap(e) {
-    const id = e.currentTarget.dataset.id
-    const product = this.data.mallProducts.find(p => p.id === id)
-    this.setData({
-      showProductModal: true,
-      currentProduct: product || {}
-    })
-  },
-
-  // 关闭商品详情弹窗
-  onCloseProductModal() {
-    this.setData({ showProductModal: false })
-  },
-
-  // 立即购买
-  onBuyProduct() {
-    wx.showToast({ title: '暂未开放购买', icon: 'none' })
-  },
 
   // 落款输入
   onSealInput(e) {
@@ -7471,17 +7329,6 @@ Page({
   onShow() {
     this.consumePendingRecognitionPlayback()
     this.logUserAction('page_show', { page: 'index' });
-    const app = getApp();
-    const enabled = wx.getStorageSync('bgMusicEnabled');
-    const isEnabled = enabled !== false;
-    const currentIndex = app.getCurrentMusicIndex();
-    const musicList = app.getMusicList();
-    this.setData({ 
-      musicEnabled: isEnabled,
-      currentMusicIndex: currentIndex,
-      musicList: musicList
-    });
-    app.playBgMusic(0);
     this.loadUserProfileFromCloud()
   },
 

@@ -1,0 +1,42 @@
+/**
+ * 教师端班级子页面：与 utils/classLayout.js 注入的 page--tablet / page--ios / page--android 搭配
+ * 各页在首行 @import 本文件
+ */
+
+.page--tablet,
+.page-inner.page--tablet,
+.page-scroll.page--tablet {
+  max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.page--ios .class-card-name,
+.page--ios .class-banner__name,
+.page--ios .welcome-text {
+  -webkit-font-smoothing: antialiased;
+}
+
+.page--android .field-input,
+.page--android .field-line {
+  min-height: 88rpx;
+  line-height: 1.4;
+  padding-top: 24rpx;
+  padding-bottom: 24rpx;
+}
+
+.page--ios .field-line,
+.page--ios .field-input,
+.page--ios .field-textarea,
+.page--ios .field-area,
+.page--ios .sheet-count-input {
+  color: #3d2e28;
+  -webkit-text-fill-color: #3d2e28;
+}
+
+.page--ios .field-input,
+.page--ios .field-line {
+  min-height: 88rpx;
+}

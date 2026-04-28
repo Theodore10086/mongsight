@@ -51,7 +51,7 @@
   background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYzQ5YTNjIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTMgOS41TDEyIDNsOSA2LjVWMjBhMSAxIDAgMCAxLTEgMUg0YTEgMSAwIDAgMS0xLTFWOS41eiIvPjxwYXRoIGQ9Ik05IDIxVjEyaDZ2OSIvPjwvc3ZnPg==");
 }
 
-/* id 1 — 商城 (shop) */
+/* id 1 — 班级 (class) */
 .tab-icon-id-1 {
   background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjYWFhIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNNiAyTDMgNnYxNGEyIDIgMCAwIDAgMiAyaDE0YTIgMiAwIDAgMCAyLTJWNmwtMy00eiIvPjxsaW5lIHgxPSIzIiB5MT0iNiIgeDI9IjIxIiB5Mj0iNiIvPjxwYXRoIGQ9Ik0xNiAxMGE0IDQgMCAwIDEtOCAwIi8+PC9zdmc+");
 }
@@ -86,10 +86,15 @@
 /* ── Labels ───────────────────────────────────────────────── */
 
 .tab-name {
-  font-size: 20rpx;
+  font-size: 22rpx;
   color: rgba(28, 20, 16, 0.38);
   transition: color 0.2s ease;
-  letter-spacing: 0.5rpx;
+  letter-spacing: 0;
+  max-width: 100%;
+  overflow: visible;
+  white-space: nowrap;
+  line-height: 1.3;
+  text-align: center;
 }
 
 .tab-item.active .tab-name {

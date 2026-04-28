@@ -1,0 +1,134 @@
+<view class="page {{layoutClass}}">
+  <!-- 班级名称 -->
+  <view class="class-banner">
+    <text class="class-banner__name">{{className}}</text>
+    <text class="class-banner__hint">综合管理</text>
+  </view>
+
+  <!-- Tab -->
+  <view class="tabs">
+    <view
+      class="tabs-item {{currentTab === 'students' ? 'tabs-item--active' : ''}}"
+      data-tab="students"
+      bindtap="switchMainTab"
+    >
+      <text class="tabs-item__text">学生管理</text>
+      <view wx:if="{{currentTab === 'students'}}" class="tabs-item__indicator"></view>
+    </view>
+    <view
+      class="tabs-item {{currentTab === 'assignments' ? 'tabs-item--active' : ''}}"
+      data-tab="assignments"
+      bindtap="switchMainTab"
+    >
+      <text class="tabs-item__text">作业管理</text>
+      <view wx:if="{{currentTab === 'assignments'}}" class="tabs-item__indicator"></view>
+    </view>
+  </view>
+
+  <!-- 学生管理 -->
+  <block wx:if="{{currentTab === 'students'}}">
+    <view class="toolbar">
+      <button class="toolbar-btn toolbar-btn--primary" size="mini" bindtap="toggleStudentImport">
+        {{showStudentImport ? '收起添加' : '批量添加'}}
+      </button>
+      <view class="toolbar-right">
+        <button class="toolbar-btn" size="mini" bindtap="toggleBatchMode">
+          {{batchMode ? '取消批量' : '批量'}}
+        </button>
+        <button
+          wx:if="{{batchMode && batchSelectedCount > 0}}"
+          class="toolbar-btn toolbar-btn--danger"
+          size="mini"
+          bindtap="batchDeleteStudents"
+        >
+          批量删除
+        </button>
+      </view>
+    </view>
+
+    <view wx:if="{{showStudentImport}}" class="import-panel">
+      <view class="import-tip">
+        <text class="import-tip-label">格式说明</text>
+        <text class="import-tip-text">每行一人：姓名 学号 密码（空格分隔）；将追加到本班名单，重复学号自动跳过。</text>
+      </view>
+      <textarea
+        class="import-textarea"
+        placeholder="在此粘贴学生名单…"
+        placeholder-class="import-ph"
+        value="{{batchImportText}}"
+        bindinput="onBatchImportInput"
+      />
+      <button class="import-parse" bindtap="parseBatchStudents">解析并添加</button>
+    </view>
+
+    <scroll-view scroll-y class="panel-scroll {{showStudentImport ? 'panel-scroll--import' : ''}}" show-scrollbar="{{false}}">
+      <block wx:if="{{studentList.length === 0}}">
+        <view class="student-empty">
+          <text class="student-empty-text">暂无学生，请使用「批量添加」导入名单</text>
+        </view>
+      </block>
+      <block wx:else>
+        <view
+          wx:for="{{studentList}}"
+          wx:key="id"
+          class="card card-row"
+        >
+          <view
+            wx:if="{{batchMode}}"
+            class="card-check"
+            catchtap="toggleStudentSelect"
+            data-id="{{item.id}}"
+          >
+            <view class="checkbox {{item.selected ? 'checkbox--on' : ''}}"></view>
+          </view>
+          <view class="card-body card-body--student">
+            <text class="card-title">{{item.name}}</text>
+            <text class="card-sub">学号 {{item.studentNo}}</text>
+            <text class="card-meta">初始密码 {{item.maskPassword}}</text>
+          </view>
+        </view>
+      </block>
+      <view class="scroll-pad"></view>
+    </scroll-view>
+  </block>
+
+  <!-- 作业管理 -->
+  <block wx:if="{{currentTab === 'assignments'}}">
+    <scroll-view scroll-y class="panel-scroll panel-scroll--fab" show-scrollbar="{{false}}">
+      <block wx:if="{{assignmentList.length === 0}}">
+        <view class="student-empty">
+          <text class="student-empty-text">暂无作业，请点击右下角发布</text>
+        </view>
+      </block>
+      <block wx:else>
+        <view wx:for="{{assignmentList}}" wx:key="id" class="card card-assign">
+          <view
+            class="assign-tap"
+            data-id="{{item.id}}"
+            bindtap="goAssignmentReview"
+          >
+            <view class="assign-head">
+              <text class="assign-title">{{item.title}}</text>
+              <text class="assign-type">{{item.type}}</text>
+            </view>
+            <view class="assign-foot">
+              <text class="assign-progress">已提交 {{item.submitCount}} / {{item.totalCount}}</text>
+              <text class="assign-date">{{item.date}}</text>
+            </view>
+          </view>
+          <view
+            class="assign-del"
+            catchtap="onDeleteAssignment"
+            data-id="{{item.id}}"
+          >删除</view>
+        </view>
+      </block>
+      <view class="scroll-pad scroll-pad--fab"></view>
+    </scroll-view>
+
+    <view class="fab" bindtap="goPublishAssignment">
+      <text class="fab-icon">＋</text>
+      <text class="fab-text">发布作业</text>
+    </view>
+  </block>
+</view>

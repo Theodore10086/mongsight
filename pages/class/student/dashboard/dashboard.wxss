@@ -1,0 +1,229 @@
+/* 安全区/平板主列由 app.wxss 引入的 class-surface 提供 */
+.page--tablet .profile-welcome {
+  font-size: 44rpx;
+}
+
+.page--tablet .section-title {
+  font-size: 36rpx;
+}
+
+.page--tablet .card {
+  padding: 36rpx 32rpx;
+}
+
+.page--tablet .card-title {
+  font-size: 32rpx;
+}
+
+/* 顶部个人信息区 */
+.profile {
+  margin-bottom: 36rpx;
+}
+
+.profile-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20rpx;
+  padding: 40rpx 36rpx 36rpx;
+  background: linear-gradient(160deg, #fcfaf6 0%, #f0ebe3 48%, #e8e1d4 100%);
+  box-shadow: 0 12rpx 40rpx rgba(92, 64, 51, 0.1);
+  border: 1rpx solid rgba(201, 162, 39, 0.12);
+}
+
+/* 轻微宣纸感：极淡的斜向纹理 */
+.profile-paper {
+  position: absolute;
+  inset: 0;
+  opacity: 0.35;
+  background-image: repeating-linear-gradient(
+      -8deg,
+      rgba(201, 162, 39, 0.03) 0,
+      rgba(201, 162, 39, 0.03) 1rpx,
+      transparent 1rpx,
+      transparent 8rpx
+    ),
+    repeating-linear-gradient(92deg, rgba(92, 64, 51, 0.02) 0, transparent 3rpx);
+  pointer-events: none;
+}
+
+.profile-welcome,
+.profile-class {
+  position: relative;
+  z-index: 1;
+  display: block;
+}
+
+.profile-welcome {
+  font-size: 40rpx;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #1e3a5c;
+  letter-spacing: 1rpx;
+  margin-bottom: 20rpx;
+}
+
+.profile-class {
+  font-size: 28rpx;
+  color: #5c4033;
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+/* 区块标题 · 金色竖线 */
+.section-head {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24rpx;
+  padding-left: 4rpx;
+}
+
+.section-gold {
+  width: 6rpx;
+  height: 32rpx;
+  border-radius: 3rpx;
+  margin-right: 16rpx;
+  background: linear-gradient(180deg, #d4b84a 0%, #a67c2d 100%);
+  box-shadow: 0 0 12rpx rgba(199, 162, 64, 0.35);
+}
+
+.section-title {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #3d3428;
+  letter-spacing: 2rpx;
+}
+
+/* 作业卡片 */
+.card {
+  background: #ffffff;
+  border-radius: 20rpx;
+  padding: 32rpx 28rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 8rpx 28rpx rgba(61, 52, 40, 0.08);
+  border: 1rpx solid rgba(92, 64, 51, 0.06);
+}
+
+.card-main {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.card-left {
+  flex: 1;
+  min-width: 0;
+  padding-right: 12rpx;
+}
+
+.card-title {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #2c2418;
+  line-height: 1.45;
+  margin-bottom: 12rpx;
+}
+
+.card-date {
+  display: block;
+  font-size: 24rpx;
+  color: #7a6b5c;
+  line-height: 1.4;
+}
+
+.card-right {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  min-height: 120rpx;
+}
+
+.card-row-status {
+  margin-bottom: 12rpx;
+}
+
+.tag-undone {
+  font-size: 26rpx;
+  color: #9a3412;
+  font-weight: 600;
+  padding: 4rpx 0;
+}
+
+.tag-progress {
+  font-size: 26rpx;
+  color: #1d4ed8;
+  font-weight: 600;
+  padding: 4rpx 0;
+}
+
+.tag-done {
+  font-size: 26rpx;
+  color: #0d9488;
+  font-weight: 600;
+  padding: 4rpx 0;
+}
+
+/* 青绿色：醒目分数（也可用红色，此处用 teal 与书卷感协调） */
+.card-score {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #0d9488;
+  line-height: 1.2;
+  text-shadow: 0 1rpx 0 rgba(255, 255, 255, 0.8);
+}
+
+/* 高分离度时可用红：.card-score--warm { color: #dc2626; } */
+
+.btn {
+  font-size: 24rpx;
+  line-height: 1.4;
+  padding: 12rpx 24rpx;
+  border-radius: 999rpx;
+  text-align: center;
+  min-width: 160rpx;
+  box-sizing: border-box;
+}
+
+.btn-practice {
+  color: #faf8f5;
+  background: #5c4033;
+  border: 1rpx solid #4a3428;
+  font-weight: 500;
+}
+
+.btn-outline {
+  color: #5c4033;
+  background: rgba(248, 246, 240, 0.9);
+  border: 2rpx solid rgba(92, 64, 51, 0.45);
+  font-weight: 500;
+}
+
+.btn-disabled {
+  color: rgba(92, 64, 51, 0.55);
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(92, 64, 51, 0.18);
+}
+
+.btn--hover {
+  opacity: 0.88;
+}
+
+/* 无作业 */
+.empty-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 46vh;
+  padding: 40rpx 32rpx;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: #8a7a6a;
+  line-height: 1.6;
+  text-align: center;
+}

@@ -9,7 +9,7 @@ Component({
   data: {
     tabs: [
       { id: 0, name: '首页', icon: '🏠', activeIcon: '🏠' },
-      { id: 1, name: '商城', icon: '🛒', activeIcon: '🛒' },
+      { id: 1, name: '班级', icon: '👥', activeIcon: '👥' },
       { id: 2, name: '社区', icon: '💬', activeIcon: '💬' },
       { id: 3, name: '我', icon: '👤', activeIcon: '👤' }
     ]

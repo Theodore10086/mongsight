@@ -1,3 +1,6 @@
+/* app.wxss — 班级流安全区/平板布局（从根目录单一路径引用，子页面不再各自 @import 以免相对路径易错） */
+@import './pages/class/class-surface.wxss';
+
 /**app.wxss**/
 .container {
   height: 100%;

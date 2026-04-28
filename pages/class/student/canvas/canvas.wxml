@@ -1,0 +1,91 @@
+<view class="page class-flow class-flow--canvas {{layoutClass}}">
+  <view class="top-bar">
+    <text class="top-bar__progress">本页进度：{{displaySuccess}}/{{displayTarget}}</text>
+    <view
+      class="top-bar__submit"
+      hover-class="top-bar__submit--hover"
+      bindtap="submitWork"
+    >提交</view>
+  </view>
+
+  <view class="main-row">
+    <view class="toolbar">
+      <view class="toolbar-block">
+        <view
+          class="tool-item {{currentTool === 'pen' ? 'tool-item--active' : ''}}"
+          bindtap="onPenToolTap"
+        >
+          <text class="tool-icon tool-icon--pen">笔</text>
+          <text class="tool-label">画笔</text>
+        </view>
+        <view wx:if="{{showPenMenu}}" class="pen-menu" catchtap="preventClose">
+          <view
+            class="pen-opt {{lineWidth === penThin ? 'pen-opt--on' : ''}}"
+            data-width="{{penThin}}"
+            bindtap="selectLineWidth"
+          >细</view>
+          <view
+            class="pen-opt {{lineWidth === penMid ? 'pen-opt--on' : ''}}"
+            data-width="{{penMid}}"
+            bindtap="selectLineWidth"
+          >中</view>
+          <view
+            class="pen-opt {{lineWidth === penThick ? 'pen-opt--on' : ''}}"
+            data-width="{{penThick}}"
+            bindtap="selectLineWidth"
+          >粗</view>
+        </view>
+      </view>
+
+      <view
+        class="tool-item {{currentTool === 'eraser' ? 'tool-item--active' : ''}}"
+        bindtap="selectEraser"
+      >
+        <text class="tool-icon">⌫</text>
+        <text class="tool-label">橡皮</text>
+      </view>
+
+      <view class="tool-item" bindtap="undoLastStroke">
+        <text class="tool-icon tool-icon--undo">↶</text>
+        <text class="tool-label">撤回</text>
+      </view>
+
+      <view class="tool-item" bindtap="clearCanvas">
+        <text class="tool-icon tool-icon--clear">∅</text>
+        <text class="tool-label">清空</text>
+      </view>
+    </view>
+
+    <view class="canvas-wrap">
+      <view class="canvas-container" aria-hidden="true">
+        <canvas
+          type="2d"
+          id="targetCanvas"
+          class="target-canvas"
+        ></canvas>
+        <canvas
+          type="2d"
+          id="writeCanvas"
+          class="write-canvas"
+          bindtouchstart="onTouchStart"
+          bindtouchmove="onTouchMove"
+          bindtouchend="onTouchEnd"
+          bindtouchcancel="onTouchEnd"
+        ></canvas>
+      </view>
+    </view>
+  </view>
+
+  <view class="pager">
+    <view
+      class="pager-btn {{currentPage <= 1 ? 'pager-btn--disabled' : ''}}"
+      bindtap="prevPage"
+    >上一页</view>
+    <text class="pager-num">{{currentPage}}/{{totalPages}}</text>
+    <view
+      class="pager-btn {{currentPage >= totalPages ? 'pager-btn--disabled' : ''}}"
+      bindtap="nextPage"
+    >下一页</view>
+  </view>
+
+</view>

@@ -1,0 +1,218 @@
+@import '../teacher-class-surface.wxss';
+
+.page-scroll {
+  height: 100vh;
+  min-height: 100dvh;
+  box-sizing: border-box;
+  width: 100%;
+  padding-bottom: calc(140rpx + constant(safe-area-inset-bottom));
+  padding-bottom: calc(140rpx + env(safe-area-inset-bottom));
+  padding-left: constant(safe-area-inset-left);
+  padding-left: env(safe-area-inset-left);
+  padding-right: constant(safe-area-inset-right);
+  padding-right: env(safe-area-inset-right);
+  background-color: #f8f6f0;
+}
+
+.page-inner {
+  padding: 28rpx 32rpx 0;
+  box-sizing: border-box;
+}
+
+.section {
+  margin-bottom: 40rpx;
+}
+
+.section-label {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #5c4033;
+  margin-bottom: 20rpx;
+}
+
+.section-hint {
+  display: block;
+  font-size: 24rpx;
+  color: rgba(92, 64, 51, 0.55);
+  line-height: 1.5;
+  margin-bottom: 16rpx;
+}
+
+.script-picker-line {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22rpx 24rpx;
+  box-sizing: border-box;
+  background-color: rgba(255, 252, 248, 0.95);
+  border-radius: 16rpx;
+  border: 1rpx solid rgba(139, 90, 43, 0.22);
+}
+
+.script-picker-value {
+  font-size: 28rpx;
+  color: #3d2e28;
+  flex: 1;
+  min-width: 0;
+}
+
+.script-picker-arrow {
+  font-size: 32rpx;
+  color: rgba(139, 90, 43, 0.45);
+  margin-left: 16rpx;
+  flex-shrink: 0;
+}
+
+.field-line {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 20rpx 8rpx 18rpx;
+  margin-bottom: 28rpx;
+  font-size: 30rpx;
+  color: #3d2e28;
+  background-color: transparent;
+  border: none;
+  border-bottom: 2rpx solid rgba(139, 90, 43, 0.22);
+  border-radius: 0;
+}
+
+.field-area {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 200rpx;
+  padding: 22rpx 24rpx;
+  font-size: 28rpx;
+  color: #3d2e28;
+  line-height: 1.55;
+  background-color: rgba(255, 252, 248, 0.95);
+  border-radius: 16rpx;
+  border: 1rpx solid rgba(139, 90, 43, 0.15);
+}
+
+.field-ph {
+  color: rgba(92, 64, 51, 0.38);
+  font-size: 26rpx;
+}
+
+.upload-add {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200rpx;
+  margin-bottom: 28rpx;
+  border-radius: 16rpx;
+  border: 2rpx dashed rgba(139, 90, 43, 0.35);
+  background-color: rgba(255, 252, 248, 0.6);
+}
+
+.upload-add:active {
+  opacity: 0.85;
+  background-color: rgba(212, 175, 55, 0.08);
+}
+
+.upload-add-plus {
+  font-size: 56rpx;
+  font-weight: 300;
+  color: rgba(92, 64, 51, 0.45);
+  line-height: 1;
+  margin-bottom: 12rpx;
+}
+
+.upload-add-text {
+  font-size: 28rpx;
+  color: rgba(92, 64, 51, 0.55);
+}
+
+.sheet-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid rgba(139, 90, 43, 0.1);
+}
+
+.sheet-row:last-of-type {
+  border-bottom: none;
+}
+
+.sheet-thumb {
+  width: 120rpx;
+  height: 120rpx;
+  flex-shrink: 0;
+  border-radius: 12rpx;
+  background-color: #efe9df;
+}
+
+.sheet-mid {
+  flex: 1;
+  min-width: 0;
+  margin-left: 24rpx;
+  margin-right: 16rpx;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.sheet-label {
+  font-size: 26rpx;
+  color: #3d2e28;
+}
+
+.sheet-count-input {
+  width: 120rpx;
+  height: 56rpx;
+  padding: 0 16rpx;
+  box-sizing: border-box;
+  font-size: 28rpx;
+  color: #3d2e28;
+  text-align: center;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 10rpx;
+  border: 1rpx solid rgba(139, 90, 43, 0.22);
+}
+
+.sheet-del {
+  flex-shrink: 0;
+  font-size: 26rpx;
+  color: #a05040;
+  padding: 12rpx 8rpx;
+}
+
+.bottom-space {
+  height: 24rpx;
+}
+
+.footer-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  padding: 16rpx 32rpx calc(16rpx + env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, rgba(248, 246, 240, 0) 0%, #f8f6f0 25%);
+  box-sizing: border-box;
+}
+
+.btn-submit {
+  width: 100%;
+  height: 96rpx;
+  line-height: 96rpx;
+  padding: 0;
+  margin: 0;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #5c4033;
+  border-radius: 48rpx;
+  border: none;
+  box-shadow: 0 8rpx 24rpx rgba(92, 64, 51, 0.22);
+}
+
+.btn-submit::after {
+  border: none;
+}

@@ -44,11 +44,6 @@ Component({
 
   methods: {
     initGuide() {
-      const app = getApp();
-      if (app.playGuideMusic) {
-        app.playGuideMusic();
-      }
-      
       this.guideMachine.init(this);
       this.setData({ visible: true });
       

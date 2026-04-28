@@ -1,0 +1,203 @@
+/* 安全区/平板由 app.wxss 的 class-surface 提供 */
+@import '../teacher-class-surface.wxss';
+
+/* 顶部欢迎 — 略深米色纹理感 */
+.welcome {
+  padding: 40rpx 36rpx 36rpx;
+  background-color: #efe9df;
+  background-image: repeating-linear-gradient(
+      90deg,
+      rgba(139, 90, 43, 0.04) 0,
+      rgba(139, 90, 43, 0.04) 2rpx,
+      transparent 2rpx,
+      transparent 24rpx
+    ),
+    linear-gradient(180deg, #f2ebe0 0%, #ebe4d8 100%);
+  border-bottom: 1rpx solid rgba(92, 64, 51, 0.08);
+}
+
+.welcome-text {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #2c3e50;
+  letter-spacing: 1rpx;
+}
+
+/* 列表 */
+.list-scroll {
+  height: calc(100vh - 220rpx);
+  box-sizing: border-box;
+}
+
+.list-scroll-pad {
+  height: 120rpx;
+}
+
+.class-card {
+  margin: 24rpx 28rpx 0;
+  padding: 28rpx 28rpx 24rpx;
+  background-color: #ffffff;
+  border-radius: 20rpx;
+  box-shadow: 0 4rpx 20rpx rgba(92, 64, 51, 0.08);
+  border: 1rpx solid rgba(139, 90, 43, 0.06);
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.class-card:active {
+  opacity: 0.92;
+}
+
+.class-card-main {
+  flex: 1;
+  min-width: 0;
+  padding-right: 20rpx;
+}
+
+.class-card-name {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #3d2e28;
+  margin-bottom: 12rpx;
+}
+
+.class-card-desc {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-size: 26rpx;
+  color: rgba(61, 46, 40, 0.65);
+  line-height: 1.55;
+}
+
+.class-card-side {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16rpx;
+  padding-top: 2rpx;
+}
+
+.class-card-meta {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6rpx;
+}
+
+.class-card-del {
+  font-size: 24rpx;
+  color: #a05040;
+  padding: 8rpx 16rpx;
+  border-radius: 999rpx;
+  border: 1rpx solid rgba(160, 80, 64, 0.35);
+  background: rgba(255, 252, 248, 0.95);
+}
+
+.class-card-meta-icon {
+  font-size: 28rpx;
+}
+
+.class-card-meta-num {
+  font-size: 24rpx;
+  color: rgba(92, 64, 51, 0.75);
+}
+
+/* 空状态 — 书卷示意 */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 120rpx;
+  padding-left: 48rpx;
+  padding-right: 48rpx;
+}
+
+.empty-icon-wrap {
+  margin-bottom: 36rpx;
+}
+
+.scroll-icon {
+  position: relative;
+  width: 120rpx;
+  height: 100rpx;
+}
+
+.scroll-roll {
+  position: absolute;
+  left: 50%;
+  top: 8rpx;
+  transform: translateX(-50%);
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  border: 6rpx solid #8b5a2b;
+  background: linear-gradient(145deg, #fdf9f3 0%, #e8dcc8 100%);
+  box-sizing: border-box;
+}
+
+.scroll-body {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 112rpx;
+  height: 52rpx;
+  background: linear-gradient(180deg, #faf6ef 0%, #efe9df 100%);
+  border-radius: 8rpx;
+  border: 3rpx solid rgba(139, 90, 43, 0.35);
+  box-shadow: 0 4rpx 12rpx rgba(92, 64, 51, 0.12);
+}
+
+.empty-title {
+  font-size: 28rpx;
+  color: rgba(92, 64, 51, 0.65);
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* FAB */
+.fab {
+  position: fixed;
+  right: 32rpx;
+  bottom: calc(48rpx + env(safe-area-inset-bottom));
+  z-index: 100;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12rpx;
+  padding: 20rpx 36rpx;
+  border-radius: 999rpx;
+  background-color: #5c4033;
+  box-shadow: 0 8rpx 28rpx rgba(92, 64, 51, 0.35);
+  max-width: calc(100vw - 64rpx - constant(safe-area-inset-left) - constant(safe-area-inset-right));
+  max-width: calc(100vw - 64rpx - env(safe-area-inset-left) - env(safe-area-inset-right));
+  box-sizing: border-box;
+}
+
+.fab:active {
+  opacity: 0.88;
+}
+
+.fab-plus {
+  font-size: 36rpx;
+  font-weight: 300;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.fab-label {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #ffffff;
+  white-space: nowrap;
+  line-height: 1.35;
+  overflow: visible;
+}

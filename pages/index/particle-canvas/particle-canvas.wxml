@@ -1,8 +1,0 @@
-<view class="particle-canvas-container">
-  <canvas 
-    type="2d" 
-    id="particleCanvas"
-    class="particle-canvas"
-    style="width: {{width}}px; height: {{height}}px;"
-  ></canvas>
-</view>

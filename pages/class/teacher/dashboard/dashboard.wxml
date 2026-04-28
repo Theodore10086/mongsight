@@ -1,0 +1,53 @@
+<view class="page class-flow--teacher-dash {{layoutClass}}">
+  <!-- 顶部欢迎 -->
+  <view class="welcome">
+    <text class="welcome-text">欢迎您，{{teacherDisplayName}} 老师</text>
+  </view>
+
+  <!-- 有班级 -->
+  <block wx:if="{{classList.length > 0}}">
+    <scroll-view scroll-y class="list-scroll" show-scrollbar="{{false}}">
+      <view wx:for="{{classList}}" wx:key="id" class="class-card">
+        <view
+          class="class-card-main"
+          data-id="{{item.id}}"
+          bindtap="goToDetail"
+        >
+          <text class="class-card-name">{{item.name}}</text>
+          <view class="class-card-desc">{{item.desc}}</view>
+        </view>
+        <view class="class-card-side">
+          <view class="class-card-meta">
+            <text class="class-card-meta-icon">👤</text>
+            <text class="class-card-meta-num">{{item.studentCount}}人</text>
+          </view>
+          <view
+            class="class-card-del"
+            catchtap="onDeleteClass"
+            data-id="{{item.id}}"
+          >删除</view>
+        </view>
+      </view>
+      <view class="list-scroll-pad"></view>
+    </scroll-view>
+  </block>
+
+  <!-- 空状态 -->
+  <block wx:else>
+    <view class="empty">
+      <view class="empty-icon-wrap" aria-hidden="true">
+        <view class="scroll-icon">
+          <view class="scroll-roll"></view>
+          <view class="scroll-body"></view>
+        </view>
+      </view>
+      <text class="empty-title">暂无班级，请先创建</text>
+    </view>
+  </block>
+
+  <!-- 悬浮创建 -->
+  <view class="fab" bindtap="goToCreate">
+    <text class="fab-plus">＋</text>
+    <text class="fab-label">创建班级</text>
+  </view>
+</view>

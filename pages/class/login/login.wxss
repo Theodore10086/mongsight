@@ -1,0 +1,196 @@
+/* 布局见 app.wxss 引入的 class-surface，此处不 @import 避免子路径编译失败 */
+
+/* 登录页在 class-flow 之上仅保留版式细化（输入框、角色 Tab 等） */
+.page {
+  overflow: visible;
+}
+
+/* 角色 Tab */
+.role-tabs {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  flex-shrink: 0;
+  margin-bottom: 56rpx;
+  padding: 0 8rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.role-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24rpx 16rpx 16rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.role-tab__text {
+  font-size: 32rpx;
+  color: rgba(92, 64, 51, 0.45);
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.role-tab--active .role-tab__text {
+  color: #5c4033;
+  font-weight: 700;
+}
+
+.role-tab__indicator {
+  margin-top: 16rpx;
+  width: 72rpx;
+  height: 6rpx;
+  border-radius: 3rpx;
+  background: linear-gradient(90deg, #d4af37 0%, #8b5a2b 100%);
+}
+
+/* 表单区：独立层叠 + 隔离，减少安卓/WebView 下子元素命中异常 */
+.form-section {
+  position: relative;
+  z-index: 10;
+  margin-bottom: 72rpx;
+  isolation: isolate;
+  transform: translateZ(0);
+}
+
+/* iOS：含 transform 的祖先会导致部分机型原生 input 文字不可见 */
+.page--ios .form-section {
+  transform: none;
+  -webkit-transform: none;
+}
+
+/* 用 flex 竖直对齐，避免 line-height=height 在 iOS/安卓上压缩原生 input 的触控区域 */
+.field {
+  margin-bottom: 40rpx;
+  padding: 0 24rpx;
+  min-height: 104rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 16rpx;
+  border-bottom: 2rpx solid rgba(139, 90, 43, 0.22);
+  box-shadow: 0 2rpx 12rpx rgba(92, 64, 51, 0.06);
+  overflow: visible;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 1;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+.page--ios .field {
+  transform: none;
+  -webkit-transform: none;
+}
+
+.field__input {
+  width: 100%;
+  min-height: 88rpx;
+  padding: 12rpx 0;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 2;
+  line-height: 1.45;
+  font-size: 34rpx;
+  color: #3d2e28;
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.field__placeholder {
+  color: rgba(92, 64, 51, 0.35);
+  font-size: 28rpx;
+}
+
+/* iOS：≥16px 等效，减轻输入框放大页面 */
+.page--ios .field__input {
+  font-size: 34rpx;
+}
+
+.page--ios .field__placeholder {
+  font-size: 28rpx;
+}
+
+/* Android：更大触控与字号 */
+.page--android .field {
+  min-height: 112rpx;
+}
+
+.page--android .field__input {
+  min-height: 92rpx;
+  font-size: 32rpx;
+  padding: 16rpx 0;
+}
+
+/* 平板 */
+.page--tablet .role-tab__text {
+  font-size: 34rpx;
+}
+
+.page--tablet .role-tab__indicator {
+  width: 80rpx;
+}
+
+.page--tablet .field {
+  padding: 0 32rpx;
+  min-height: 108rpx;
+  border-radius: 18rpx;
+}
+
+.page--tablet .field__input {
+  min-height: 88rpx;
+  font-size: 32rpx;
+  padding: 10rpx 0;
+}
+
+.page--tablet .field__placeholder {
+  font-size: 30rpx;
+}
+
+/* 登录 CTA */
+.login-btn {
+  width: 100%;
+  min-height: 96rpx;
+  height: auto;
+  margin-top: 8rpx;
+  padding: 20rpx 28rpx;
+  box-sizing: border-box;
+  border-radius: 48rpx;
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #5c4033;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.35;
+  position: relative;
+  z-index: 5;
+  text-align: center;
+  -webkit-tap-highlight-color: transparent;
+  overflow: visible;
+}
+
+.login-btn__text {
+  font-size: inherit;
+  font-weight: inherit;
+  color: #ffffff;
+  line-height: inherit;
+  white-space: nowrap;
+}
+
+.page--tablet .login-btn {
+  min-height: 104rpx;
+  font-size: 36rpx;
+  border-radius: 52rpx;
+  padding: 24rpx 28rpx;
+}
+
+.login-btn--hover {
+  opacity: 0.9;
+  background-color: #4a3428;
+}

@@ -1,0 +1,115 @@
+/* 班级流：安全区、平板主列、触控基线。各页 @import 后根节点加 class="page class-flow" 等 */
+page {
+  background: #f8f6f0;
+  min-height: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 默认：学生 dashboard、教师列表等 */
+.class-flow {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  position: relative;
+  z-index: 0;
+  padding-top: 20rpx;
+  padding-bottom: calc(40rpx + constant(safe-area-inset-bottom));
+  padding-bottom: calc(40rpx + env(safe-area-inset-bottom));
+  padding-left: calc(32rpx + constant(safe-area-inset-left));
+  padding-left: calc(32rpx + env(safe-area-inset-left));
+  padding-right: calc(32rpx + constant(safe-area-inset-right));
+  padding-right: calc(32rpx + env(safe-area-inset-right));
+  touch-action: manipulation;
+  overflow-x: hidden;
+}
+
+/* 登录：底部留白更多，避免与 Home 指示条/键盘抢位 */
+.class-flow--login {
+  padding-top: 32rpx;
+  padding-bottom: calc(80rpx + constant(safe-area-inset-bottom));
+  padding-bottom: calc(80rpx + env(safe-area-inset-bottom));
+}
+
+/* 书写：整页 flex 列 + 与画板区留白 */
+.class-flow--canvas {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  height: 100%;
+  padding-top: 12rpx;
+  padding-bottom: calc(28rpx + constant(safe-area-inset-bottom));
+  padding-bottom: calc(28rpx + env(safe-area-inset-bottom));
+  padding-left: calc(20rpx + constant(safe-area-inset-left));
+  padding-left: calc(20rpx + env(safe-area-inset-left));
+  padding-right: calc(20rpx + constant(safe-area-inset-right));
+  padding-right: calc(20rpx + env(safe-area-inset-right));
+}
+
+/* 教师 dashboard：底部 FAB/列表预留 + 左右安全区（无额外顶 padding，由 welcome 顶满） */
+.class-flow--teacher-dash {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  position: relative;
+  z-index: 0;
+  padding-top: 0;
+  padding-left: constant(safe-area-inset-left);
+  padding-left: env(safe-area-inset-left);
+  padding-right: constant(safe-area-inset-right);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: calc(160rpx + constant(safe-area-inset-bottom));
+  padding-bottom: calc(160rpx + env(safe-area-inset-bottom));
+  touch-action: manipulation;
+  overflow-x: hidden;
+}
+
+/* 平板：主列收窄 */
+.class-flow.page--tablet,
+.page--tablet.class-flow {
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 28rpx;
+  padding-left: calc(40rpx + constant(safe-area-inset-left));
+  padding-left: calc(40rpx + env(safe-area-inset-left));
+  padding-right: calc(40rpx + constant(safe-area-inset-right));
+  padding-right: calc(40rpx + env(safe-area-inset-right));
+  padding-bottom: calc(48rpx + constant(safe-area-inset-bottom));
+  padding-bottom: calc(48rpx + env(safe-area-inset-bottom));
+}
+
+.class-flow--canvas.page--tablet,
+.page--tablet.class-flow--canvas {
+  max-width: 900px;
+  padding-top: 20rpx;
+  padding-left: calc(32rpx + constant(safe-area-inset-left));
+  padding-left: calc(32rpx + env(safe-area-inset-left));
+  padding-right: calc(32rpx + constant(safe-area-inset-right));
+  padding-right: calc(32rpx + env(safe-area-inset-right));
+  padding-bottom: calc(40rpx + constant(safe-area-inset-bottom));
+  padding-bottom: calc(40rpx + env(safe-area-inset-bottom));
+}
+
+.class-flow--login.page--tablet,
+.page--tablet.class-flow--login {
+  max-width: 560px;
+  padding-top: 48rpx;
+  padding-bottom: calc(96rpx + constant(safe-area-inset-bottom));
+  padding-bottom: calc(96rpx + env(safe-area-inset-bottom));
+}
+
+.class-flow--teacher-dash.page--tablet,
+.page--tablet.class-flow--teacher-dash {
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: calc(32rpx + constant(safe-area-inset-left));
+  padding-left: calc(32rpx + env(safe-area-inset-left));
+  padding-right: calc(32rpx + constant(safe-area-inset-right));
+  padding-right: calc(32rpx + env(safe-area-inset-right));
+  padding-bottom: calc(180rpx + constant(safe-area-inset-bottom));
+  padding-bottom: calc(180rpx + env(safe-area-inset-bottom));
+}
