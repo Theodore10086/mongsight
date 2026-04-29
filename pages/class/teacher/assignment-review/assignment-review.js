@@ -205,26 +205,94 @@ Page({
     })
   },
 
-  /** 导出所有图片（前端模拟：提示发送至邮箱） */
+  /** 把所有「已通过」作业的图片串行保存到教师本机相册 */
   handleExportAll() {
-    const count = this.data.submittedCount
-    if (count === 0) {
-      wx.showToast({ title: '暂无已提交作业', icon: 'none' })
+    const targets = (this.data.submissionList || []).filter(
+      (s) => s.status === 'passed' && s.imageUrl
+    )
+    if (targets.length === 0) {
+      wx.showToast({ title: '没有已通过的作业图片', icon: 'none' })
       return
     }
+
     wx.showModal({
-      title: '导出作业图片',
-      content: `共 ${count} 份已提交作业。是否将所有作业图片打包发送至您的绑定邮箱？`,
-      confirmText: '确认导出',
+      title: '保存到相册',
+      content: `将 ${targets.length} 份「已通过」作业图片保存到您的手机相册，确认继续？`,
+      confirmText: '开始保存',
       cancelText: '取消',
       success: (res) => {
         if (!res.confirm) return
-        wx.showToast({
-          title: '导出任务已提交云端处理',
-          icon: 'success',
-          duration: 2200
-        })
+        this._ensureAlbumScope(() => this._saveAlbumSerial(targets))
       }
     })
+  },
+
+  /** 保证已拿到 writePhotosAlbum 权限，否则引导到设置页 */
+  _ensureAlbumScope(onReady) {
+    wx.getSetting({
+      success: (res) => {
+        const authed = res.authSetting && res.authSetting['scope.writePhotosAlbum']
+        if (authed === false) {
+          wx.showModal({
+            title: '需要相册权限',
+            content: '请在设置中允许「保存到相册」，否则无法导出作业图片。',
+            confirmText: '去设置',
+            cancelText: '取消',
+            success: (r) => {
+              if (!r.confirm) return
+              wx.openSetting({
+                success: (s) => {
+                  if (s.authSetting && s.authSetting['scope.writePhotosAlbum']) {
+                    onReady()
+                  }
+                }
+              })
+            }
+          })
+          return
+        }
+        onReady()
+      },
+      fail: () => onReady()
+    })
+  },
+
+  /** 串行保存，避免相册写入被系统限流 */
+  _saveAlbumSerial(targets) {
+    const total = targets.length
+    let okCount = 0
+    let failCount = 0
+    let i = 0
+
+    wx.showLoading({ title: `保存中 0/${total}`, mask: true })
+
+    const next = () => {
+      if (i >= total) {
+        wx.hideLoading()
+        wx.showModal({
+          title: '保存完成',
+          content: `成功 ${okCount} 张，失败 ${failCount} 张。`,
+          showCancel: false,
+          confirmText: '我知道了'
+        })
+        return
+      }
+      const item = targets[i++]
+      wx.showLoading({ title: `保存中 ${i}/${total}`, mask: true })
+      wx.saveImageToPhotosAlbum({
+        filePath: item.imageUrl,
+        success: () => {
+          okCount++
+          next()
+        },
+        fail: (err) => {
+          failCount++
+          console.warn('[review] saveImageToPhotosAlbum fail', item.id, err)
+          next()
+        }
+      })
+    }
+
+    next()
   }
 })

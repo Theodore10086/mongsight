@@ -104,7 +104,7 @@
       hover-class="bottom-btn--hover"
       bindtap="handleExportAll"
     >
-      <text class="bottom-btn__text">导出所有图片</text>
+      <text class="bottom-btn__text">保存已通过到相册</text>
     </view>
   </view>
 
