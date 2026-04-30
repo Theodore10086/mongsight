@@ -1,121 +1,148 @@
+const { callClassService } = require('../../../../utils/classCloud.js')
 const {
-  getStudentSession
+  getStudentSession,
+  setStudentSession,
+  clearStudentSession
 } = require('../../../../utils/classStudentAuth.js')
-const {
-  readAssignmentsForClass,
-  readSubmissions,
-  readProgress
-} = require('../../teacher/teacher-scope.js')
 const { getClassPageLayout } = require('../../../../utils/classLayout.js')
-
-/**
- * 三种状态：
- *   pending     —— 没有任何提交，没有任何进度（首次进入）
- *   inprogress  —— 有进度但未完成全部页（多页字帖才有此状态）
- *   completed   —— 全部页通关，等待教师批阅
- */
-function mapAssignmentsForDashboard(records, studentKey) {
-  if (!Array.isArray(records) || records.length === 0) {
-    return []
-  }
-  return records.map((a) => {
-    const progress = studentKey ? readProgress(a.id, studentKey) : null
-    const subs = readSubmissions(a.id)
-    const mySub = studentKey ? (subs[studentKey] || null) : null
-
-    let status = 'pending'
-    let progressText = ''
-
-    if (progress && progress.isFinal) {
-      status = 'completed'
-    } else if (progress && Array.isArray(progress.successByPage) && progress.successByPage.length) {
-      const total = progress.totalPages || progress.successByPage.length
-      // 估算「已完成页数」：当前页之前的均视为达标
-      const cur = Math.max(1, Math.min(total, progress.currentPage || 1))
-      status = 'inprogress'
-      progressText = `进行中 ${cur - 1}/${total}`
-    }
-
-    const score = mySub && mySub.aiScore != null ? mySub.aiScore : null
-
-    return {
-      id: a.id,
-      title: a.title || '作业',
-      date: a.date || '',
-      status,
-      score,
-      progressText
-    }
-  })
-}
 
 Page({
   data: {
     layoutClass: '',
     studentName: '',
-    className: '',
-    assignmentList: []
+    studentNo: '',
+    classList: [],
+    loaded: false
   },
 
   onLoad() {
     this.setData(getClassPageLayout())
-    const session = getStudentSession()
-    if (!session) {
-      wx.redirectTo({
-        url: '/pages/class/login/login'
-      })
+    if (!getStudentSession()) {
+      wx.redirectTo({ url: '/pages/class/login/login' })
       return
     }
-    this.applySession(session)
+    this.refresh()
+  },
+
+  onShow() {
+    this.setData(getClassPageLayout())
+    if (!getStudentSession()) {
+      wx.redirectTo({ url: '/pages/class/login/login' })
+      return
+    }
+    this.refresh({ silent: true })
   },
 
   onResize() {
     this.setData(getClassPageLayout())
   },
 
-  onShow() {
-    this.setData(getClassPageLayout())
-    const session = getStudentSession()
-    if (!session) {
-      wx.redirectTo({
-        url: '/pages/class/login/login'
-      })
-      return
+  async refresh(opts) {
+    const silent = opts && opts.silent
+    if (!silent) {
+      wx.showLoading({ title: '加载中', mask: true })
     }
-    this.applySession(session)
+    try {
+      const data = await callClassService('getMyJoinedClasses')
+      if (!silent) wx.hideLoading()
+      const session = getStudentSession() || {}
+      // 同步姓名（云端为准）
+      if (data.studentName && data.studentName !== session.name) {
+        setStudentSession({ ...session, name: data.studentName })
+      }
+      this.setData({
+        studentName: data.studentName || session.name || '',
+        studentNo: session.studentNo || '',
+        classList: data.classes || [],
+        loaded: true
+      })
+    } catch (err) {
+      if (!silent) wx.hideLoading()
+      const msg = err && err.message ? err.message : ''
+      if (/未登录/.test(msg)) {
+        clearStudentSession()
+        wx.redirectTo({ url: '/pages/class/login/login' })
+        return
+      }
+      console.warn('[student-dashboard] refresh', err)
+      wx.showToast({ title: msg || '加载失败', icon: 'none' })
+      this.setData({ loaded: true })
+    }
   },
 
-  applySession(session) {
-    const raw = readAssignmentsForClass(session.classId)
-    const studentKey = session.studentId || session.studentNo || ''
-    const assignmentList = mapAssignmentsForDashboard(raw, studentKey)
-    this.setData({
-      studentName: session.name || '同学',
-      className: session.className || '班级',
-      assignmentList
-    })
-  },
-
-  goToAssignment(e) {
-    const { id, status } = e.currentTarget.dataset
+  goToClass(e) {
+    const id = e.currentTarget.dataset.id
+    const name = e.currentTarget.dataset.name || ''
     if (!id) {
       return
     }
-
-    // 已完成 —— 拦截跳转，弹窗提示等待批阅
-    if (status === 'completed') {
-      wx.showModal({
-        title: '作业已完成',
-        content: '本作业已经完成，等待教师批阅，结果会在批阅后通知。',
-        showCancel: false,
-        confirmText: '知道了'
-      })
-      return
-    }
-
-    // 未开始或进行中：进入作业页（练习模式自动恢复进度）
     wx.navigateTo({
-      url: `/pages/class/student/canvas/canvas?id=${encodeURIComponent(id)}`
+      url: `/pages/class/student/class-home/class-home?classId=${encodeURIComponent(id)}&className=${encodeURIComponent(name)}`
+    })
+  },
+
+  onChangePassword() {
+    wx.showModal({
+      title: '修改密码 · 第 1 步',
+      editable: true,
+      placeholderText: '请输入当前密码',
+      confirmText: '下一步',
+      cancelText: '取消',
+      success: (resOld) => {
+        if (!resOld.confirm) return
+        const oldPassword = (resOld.content || '').trim()
+        if (!oldPassword) {
+          wx.showToast({ title: '请输入当前密码', icon: 'none' })
+          return
+        }
+        wx.showModal({
+          title: '修改密码 · 第 2 步',
+          editable: true,
+          placeholderText: '请输入新密码（至少 6 位）',
+          confirmText: '保存',
+          cancelText: '取消',
+          success: async (resNew) => {
+            if (!resNew.confirm) return
+            const newPassword = (resNew.content || '').trim()
+            if (!newPassword) {
+              wx.showToast({ title: '请输入新密码', icon: 'none' })
+              return
+            }
+            if (newPassword.length < 6) {
+              wx.showToast({ title: '密码至少 6 位', icon: 'none' })
+              return
+            }
+            wx.showLoading({ title: '保存中', mask: true })
+            try {
+              await callClassService('changeStudentPassword', { oldPassword, newPassword })
+              wx.hideLoading()
+              wx.showToast({ title: '已更新', icon: 'success' })
+            } catch (err) {
+              wx.hideLoading()
+              wx.showToast({ title: err.message || '保存失败', icon: 'none' })
+            }
+          }
+        })
+      }
+    })
+  },
+
+  onLogout() {
+    wx.showModal({
+      title: '退出登录',
+      content: '确定要退出当前学生账号吗？',
+      confirmText: '退出',
+      confirmColor: '#a05040',
+      success: (res) => {
+        if (!res.confirm) return
+        clearStudentSession()
+        const app = getApp()
+        if (app && app.globalData) {
+          app.globalData.classRole = ''
+          app.globalData.classStudent = null
+        }
+        wx.redirectTo({ url: '/pages/class/login/login' })
+      }
     })
   }
 })

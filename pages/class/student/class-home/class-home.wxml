@@ -1,0 +1,60 @@
+<view class="page class-flow {{layoutClass}}">
+  <view class="banner">
+    <text class="banner__name">{{className}}</text>
+    <text class="banner__hint">点击作业进入练习</text>
+  </view>
+
+  <block wx:if="{{assignmentList.length > 0}}">
+    <view
+      class="card"
+      wx:for="{{assignmentList}}"
+      wx:key="id"
+      data-id="{{item.id}}"
+      data-status="{{item.status}}"
+      bindtap="goToAssignment"
+    >
+      <view class="card-main">
+        <view class="card-left">
+          <text class="card-title">{{item.title}}</text>
+          <text class="card-date">布置时间：{{item.date}}</text>
+        </view>
+        <view class="card-right">
+          <block wx:if="{{item.status === 'pending'}}">
+            <view class="card-row-status">
+              <text class="tag-undone">未交</text>
+            </view>
+            <view class="btn btn-practice" hover-class="btn--hover">去练习</view>
+          </block>
+          <block wx:elif="{{item.status === 'inprogress'}}">
+            <view class="card-row-status">
+              <text class="tag-progress">{{item.progressText}}</text>
+            </view>
+            <view class="btn btn-practice" hover-class="btn--hover">继续练习</view>
+          </block>
+          <block wx:elif="{{item.status === 'rejected'}}">
+            <view class="card-row-status">
+              <text class="tag-rejected">已驳回</text>
+            </view>
+            <view class="btn btn-practice" hover-class="btn--hover">重新完成</view>
+          </block>
+          <block wx:elif="{{item.status === 'completed'}}">
+            <view class="card-row-status">
+              <text class="tag-done">已通过</text>
+            </view>
+            <view class="btn btn-outline btn-disabled">已完成</view>
+          </block>
+          <block wx:else>
+            <view class="card-row-status">
+              <text class="tag-done">已完成</text>
+            </view>
+            <view class="btn btn-outline btn-disabled">等待批阅</view>
+          </block>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <view wx:else class="empty-wrap">
+    <text class="empty-text">老师暂时还没布置作业哦～</text>
+  </view>
+</view>

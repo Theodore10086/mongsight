@@ -1,57 +1,6 @@
-const STORAGE_TEACHER_NAME = 'classTeacherName'
-const {
-  readTeacherClassList,
-  studentStorageKeyForClass,
-  deleteClassById,
-  hasTeacherClassListEverBeenSaved
-} = require('../teacher-scope.js')
+const { callClassService } = require('../../../../utils/classCloud.js')
+const { getTeacherSession, setTeacherSession, clearTeacherSession } = require('../../../../utils/classStudentAuth.js')
 const { getClassPageLayout } = require('../../../../utils/classLayout.js')
-
-/** 从本地学生名单实时计算某班级的学生人数 */
-function countStudentsInClass(classId) {
-  if (!classId) return 0
-  try {
-    const raw = wx.getStorageSync(studentStorageKeyForClass(classId))
-    return Array.isArray(raw) ? raw.length : 0
-  } catch (e) {
-    return 0
-  }
-}
-
-const MOCK_CLASSES = [
-  {
-    id: 'c1',
-    name: '高一 · 蒙古文书法入门',
-    desc: '本学期学习基础笔画与常用字头结构，配合字帖临摹与每日打卡。',
-    studentCount: 40
-  },
-  {
-    id: 'c2',
-    name: '社团 · 草原笔墨社',
-    desc: '面向全校开放，每周一次集中练习与作品点评。',
-    studentCount: 28
-  },
-  {
-    id: 'c3',
-    name: '暑期集训班',
-    desc: '短期强化班，侧重章法与作品创作，含结业展。',
-    studentCount: 16
-  }
-]
-
-function mergeClassList() {
-  const stored = readTeacherClassList()
-  if (stored.length > 0) {
-    // 实时刷新每个班级的学生人数（学生增减后立即反映）
-    return stored.map((c) => Object.assign({}, c, {
-      studentCount: countStudentsInClass(c.id)
-    }))
-  }
-  if (hasTeacherClassListEverBeenSaved()) {
-    return []
-  }
-  return MOCK_CLASSES
-}
 
 function safeDecode(str) {
   if (!str || typeof str !== 'string') {
@@ -68,31 +17,28 @@ Page({
   data: {
     layoutClass: '',
     teacherDisplayName: '老师',
-    classList: []
+    classList: [],
+    loaded: false
   },
 
   onLoad(options) {
     this.setData(getClassPageLayout())
-    const fromQuery =
-      safeDecode(options.name) ||
-      safeDecode(options.teacherName) ||
-      ''
-    const fromStorage = wx.getStorageSync(STORAGE_TEACHER_NAME) || ''
-    const name = (fromQuery || fromStorage || '').trim()
-    if (name) {
-      wx.setStorageSync(STORAGE_TEACHER_NAME, name)
-    }
-
-    const teacherDisplayName = name || '老师'
+    const fromQuery = safeDecode(options.name) || safeDecode(options.teacherName) || ''
+    const session = getTeacherSession()
+    const name = (fromQuery || (session && session.name) || '').trim()
 
     this.setData({
-      teacherDisplayName
+      teacherDisplayName: name || '老师'
     })
     this.refreshClassList()
   },
 
   onShow() {
     this.setData(getClassPageLayout())
+    if (!getTeacherSession()) {
+      this._redirectToLogin()
+      return
+    }
     this.refreshClassList()
   },
 
@@ -100,10 +46,28 @@ Page({
     this.setData(getClassPageLayout())
   },
 
-  refreshClassList() {
-    this.setData({
-      classList: mergeClassList()
-    })
+  _redirectToLogin() {
+    wx.redirectTo({ url: '/pages/class/login/login' })
+  },
+
+  async refreshClassList() {
+    try {
+      const data = await callClassService('getMyClasses')
+      this.setData({
+        classList: (data && data.classes) || [],
+        loaded: true
+      })
+    } catch (err) {
+      const msg = err && err.message ? err.message : ''
+      if (/未登录/.test(msg)) {
+        clearTeacherSession()
+        this._redirectToLogin()
+        return
+      }
+      console.warn('[teacher-dashboard] refreshClassList', err)
+      wx.showToast({ title: msg || '加载班级失败', icon: 'none' })
+      this.setData({ loaded: true })
+    }
   },
 
   goToDetail(e) {
@@ -129,16 +93,44 @@ Page({
     }
     wx.showModal({
       title: '删除班级',
-      content: '将删除本班及学生名单、作业记录（本地数据），确定吗？',
+      content: '将删除本班及学生名单、作业记录，确定吗？',
       confirmText: '删除',
+      confirmColor: '#a05040',
+      success: async (res) => {
+        if (!res.confirm) {
+          return
+        }
+        wx.showLoading({ title: '删除中', mask: true })
+        try {
+          await callClassService('deleteClass', { classId: id })
+          wx.hideLoading()
+          wx.showToast({ title: '已删除', icon: 'none' })
+          this.refreshClassList()
+        } catch (err) {
+          wx.hideLoading()
+          wx.showToast({ title: err.message || '删除失败', icon: 'none' })
+        }
+      }
+    })
+  },
+
+  onLogout() {
+    wx.showModal({
+      title: '退出登录',
+      content: '确定要退出当前教师账号吗？',
+      confirmText: '退出',
       confirmColor: '#a05040',
       success: (res) => {
         if (!res.confirm) {
           return
         }
-        deleteClassById(id)
-        this.refreshClassList()
-        wx.showToast({ title: '已删除', icon: 'none' })
+        clearTeacherSession()
+        const app = getApp()
+        if (app && app.globalData) {
+          app.globalData.classRole = ''
+          app.globalData.classTeacher = null
+        }
+        this._redirectToLogin()
       }
     })
   }

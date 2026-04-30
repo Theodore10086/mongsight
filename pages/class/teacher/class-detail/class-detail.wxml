@@ -49,7 +49,7 @@
     <view wx:if="{{showStudentImport}}" class="import-panel">
       <view class="import-tip">
         <text class="import-tip-label">格式说明</text>
-        <text class="import-tip-text">每行一人：姓名 学号 密码（空格分隔）；将追加到本班名单，重复学号自动跳过。</text>
+        <text class="import-tip-text">每行一人：姓名 学号（可选追加初始密码）；未填写密码时默认 mgcs123456。重复学号自动跳过。</text>
       </view>
       <textarea
         class="import-textarea"
@@ -84,7 +84,22 @@
           <view class="card-body card-body--student">
             <text class="card-title">{{item.name}}</text>
             <text class="card-sub">学号 {{item.studentNo}}</text>
-            <text class="card-meta">初始密码 {{item.maskPassword}}</text>
+            <view class="card-meta-row">
+              <text class="card-meta">密码 {{item.passwordVisible ? item.password : item.maskPassword}}</text>
+              <text
+                wx:if="{{!batchMode}}"
+                class="card-meta-action"
+                catchtap="togglePasswordVisible"
+                data-id="{{item.id}}"
+              >{{item.passwordVisible ? '隐藏' : '查看'}}</text>
+              <text
+                wx:if="{{!batchMode}}"
+                class="card-meta-action"
+                catchtap="onChangeStudentPassword"
+                data-no="{{item.studentNo}}"
+                data-name="{{item.name}}"
+              >改密</text>
+            </view>
           </view>
         </view>
       </block>

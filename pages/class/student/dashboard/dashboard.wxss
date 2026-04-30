@@ -7,12 +7,12 @@
   font-size: 36rpx;
 }
 
-.page--tablet .card {
+.page--tablet .class-card {
   padding: 36rpx 32rpx;
 }
 
-.page--tablet .card-title {
-  font-size: 32rpx;
+.page--tablet .class-card-name {
+  font-size: 34rpx;
 }
 
 /* 顶部个人信息区 */
@@ -24,13 +24,12 @@
   position: relative;
   overflow: hidden;
   border-radius: 20rpx;
-  padding: 40rpx 36rpx 36rpx;
+  padding: 36rpx 32rpx 32rpx;
   background: linear-gradient(160deg, #fcfaf6 0%, #f0ebe3 48%, #e8e1d4 100%);
   box-shadow: 0 12rpx 40rpx rgba(92, 64, 51, 0.1);
   border: 1rpx solid rgba(201, 162, 39, 0.12);
 }
 
-/* 轻微宣纸感：极淡的斜向纹理 */
 .profile-paper {
   position: absolute;
   inset: 0;
@@ -46,27 +45,67 @@
   pointer-events: none;
 }
 
-.profile-welcome,
-.profile-class {
+.profile-row {
   position: relative;
   z-index: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.profile-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-welcome,
+.profile-class {
   display: block;
 }
 
 .profile-welcome {
-  font-size: 40rpx;
+  font-size: 38rpx;
   font-weight: 600;
   line-height: 1.4;
   color: #1e3a5c;
   letter-spacing: 1rpx;
-  margin-bottom: 20rpx;
+  margin-bottom: 14rpx;
 }
 
 .profile-class {
-  font-size: 28rpx;
+  font-size: 26rpx;
   color: #5c4033;
   line-height: 1.5;
   font-weight: 500;
+}
+
+.profile-actions {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12rpx;
+}
+
+.profile-action {
+  font-size: 22rpx;
+  color: #8b5a2b;
+  padding: 8rpx 18rpx;
+  border-radius: 999rpx;
+  border: 1rpx solid rgba(139, 90, 43, 0.32);
+  background-color: rgba(255, 255, 255, 0.75);
+  text-align: center;
+}
+
+.profile-action--logout {
+  color: #a05040;
+  border-color: rgba(160, 80, 64, 0.45);
+}
+
+.profile-action:active {
+  opacity: 0.78;
 }
 
 /* 区块标题 · 金色竖线 */
@@ -87,132 +126,79 @@
 }
 
 .section-title {
-  font-size: 34rpx;
+  font-size: 32rpx;
   font-weight: 600;
   color: #3d3428;
   letter-spacing: 2rpx;
 }
 
-/* 作业卡片 */
-.card {
+/* 班级卡片 */
+.class-card {
   background: #ffffff;
   border-radius: 20rpx;
-  padding: 32rpx 28rpx;
+  padding: 30rpx 28rpx;
   margin-bottom: 24rpx;
   box-shadow: 0 8rpx 28rpx rgba(61, 52, 40, 0.08);
   border: 1rpx solid rgba(92, 64, 51, 0.06);
-}
-
-.card-main {
   display: flex;
   flex-direction: row;
-  align-items: stretch;
-  justify-content: space-between;
-  gap: 20rpx;
+  align-items: center;
+  gap: 16rpx;
 }
 
-.card-left {
+.class-card:active {
+  opacity: 0.92;
+}
+
+.class-card-main {
   flex: 1;
   min-width: 0;
-  padding-right: 12rpx;
 }
 
-.card-title {
+.class-card-name {
   display: block;
   font-size: 30rpx;
-  font-weight: 600;
+  font-weight: 700;
   color: #2c2418;
-  line-height: 1.45;
-  margin-bottom: 12rpx;
-}
-
-.card-date {
-  display: block;
-  font-size: 24rpx;
-  color: #7a6b5c;
   line-height: 1.4;
+  margin-bottom: 8rpx;
 }
 
-.card-right {
+.class-card-teacher {
+  display: block;
+  font-size: 22rpx;
+  color: rgba(61, 46, 40, 0.6);
+  margin-bottom: 4rpx;
+}
+
+.class-card-desc {
+  display: block;
+  font-size: 22rpx;
+  color: rgba(61, 46, 40, 0.55);
+  line-height: 1.5;
+}
+
+.class-card-side {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  justify-content: space-between;
-  min-height: 120rpx;
+  gap: 8rpx;
 }
 
-.card-row-status {
-  margin-bottom: 12rpx;
-}
-
-.tag-undone {
-  font-size: 26rpx;
-  color: #9a3412;
-  font-weight: 600;
-  padding: 4rpx 0;
-}
-
-.tag-progress {
-  font-size: 26rpx;
-  color: #1d4ed8;
-  font-weight: 600;
-  padding: 4rpx 0;
-}
-
-.tag-done {
-  font-size: 26rpx;
-  color: #0d9488;
-  font-weight: 600;
-  padding: 4rpx 0;
-}
-
-/* 青绿色：醒目分数（也可用红色，此处用 teal 与书卷感协调） */
-.card-score {
-  font-size: 36rpx;
-  font-weight: 700;
-  color: #0d9488;
-  line-height: 1.2;
-  text-shadow: 0 1rpx 0 rgba(255, 255, 255, 0.8);
-}
-
-/* 高分离度时可用红：.card-score--warm { color: #dc2626; } */
-
-.btn {
-  font-size: 24rpx;
-  line-height: 1.4;
-  padding: 12rpx 24rpx;
-  border-radius: 999rpx;
-  text-align: center;
-  min-width: 160rpx;
-  box-sizing: border-box;
-}
-
-.btn-practice {
-  color: #faf8f5;
-  background: #5c4033;
-  border: 1rpx solid #4a3428;
+.class-card-stat {
+  font-size: 22rpx;
+  color: rgba(92, 64, 51, 0.65);
   font-weight: 500;
 }
 
-.btn-outline {
-  color: #5c4033;
-  background: rgba(248, 246, 240, 0.9);
-  border: 2rpx solid rgba(92, 64, 51, 0.45);
-  font-weight: 500;
+.class-card-arrow {
+  font-size: 38rpx;
+  color: rgba(92, 64, 51, 0.45);
+  line-height: 1;
 }
 
-.btn-disabled {
-  color: rgba(92, 64, 51, 0.55);
-  background: rgba(0, 0, 0, 0.04);
-  border-color: rgba(92, 64, 51, 0.18);
-}
-
-.btn--hover {
-  opacity: 0.88;
-}
-
-/* 无作业 */
+/* 无班级 */
 .empty-wrap {
   display: flex;
   align-items: center;
@@ -222,7 +208,7 @@
 }
 
 .empty-text {
-  font-size: 28rpx;
+  font-size: 26rpx;
   color: #8a7a6a;
   line-height: 1.6;
   text-align: center;

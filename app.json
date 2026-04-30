@@ -10,6 +10,7 @@
     "pages/class/teacher/assignment-create/assignment-create",
     "pages/class/teacher/assignment-review/assignment-review",
     "pages/class/student/dashboard/dashboard",
+    "pages/class/student/class-home/class-home",
     "pages/class/student/canvas/canvas"
   ],
   "window": {

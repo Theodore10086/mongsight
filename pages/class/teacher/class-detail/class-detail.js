@@ -1,21 +1,12 @@
 /**
- * 班级详情 — 综合管理（学生 / 作业）
- * 模拟数据见 ./class-detail.mock.js，便于后续替换为云接口层
+ * 班级详情 — 综合管理（学生 / 作业），全部走云端
  */
 
-const { mockStudents } = require('./class-detail.mock.js')
-const {
-  readTeacherClassList,
-  studentStorageKeyForClass,
-  readAssignmentsForClass,
-  removeAssignmentForClass,
-  readProgress
-} = require('../teacher-scope.js')
+const { callClassService } = require('../../../../utils/classCloud.js')
+const { getTeacherSession } = require('../../../../utils/classStudentAuth.js')
 const { getClassPageLayout } = require('../../../../utils/classLayout.js')
 
-function genStudentRowId() {
-  return `stu_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
-}
+const DEFAULT_STUDENT_PASSWORD = 'mgcs123456'
 
 function maskPassword(pwd) {
   const s = String(pwd || '')
@@ -25,73 +16,17 @@ function maskPassword(pwd) {
 }
 
 function decorateStudents(list) {
-  return list.map((item) => ({
-    ...item,
+  return (list || []).map((item) => ({
+    id: item.id,
+    studentDocId: item.studentDocId,
+    name: item.name,
+    studentNo: item.studentNo,
+    password: item.password,
     maskPassword: maskPassword(item.password),
-    selected: false
+    bound: !!item.bound,
+    selected: false,
+    passwordVisible: false
   }))
-}
-
-function resolveClassName(classId) {
-  if (!classId) {
-    return '班级'
-  }
-  try {
-    const arr = readTeacherClassList()
-    const found = arr.find((c) => c.id === classId)
-    if (found && found.name) {
-      return found.name
-    }
-  } catch (e) {
-    console.warn('[class-detail] resolveClassName', e)
-  }
-  return '班级'
-}
-
-function loadAssignmentList(classId) {
-  const list = readAssignmentsForClass(classId)
-  if (!Array.isArray(list)) return []
-
-  // 实时计算 submitCount / totalCount，避免依赖发布时的静态值
-  let students = []
-  if (classId) {
-    try {
-      const raw = wx.getStorageSync(studentStorageKeyForClass(classId))
-      students = Array.isArray(raw) ? raw : []
-    } catch (e) {
-      students = []
-    }
-  }
-
-  return list.map((a) => {
-    const totalCount = students.length
-    let submitCount = 0
-    students.forEach((s) => {
-      // 双 key 兼容：学生端可能用 student.id 或 studentNo 存储
-      const progress =
-        readProgress(a.id, s.id) ||
-        readProgress(a.id, s.studentNo)
-      if (progress && progress.isFinal) {
-        submitCount += 1
-      }
-    })
-    return Object.assign({}, a, { submitCount, totalCount })
-  })
-}
-
-function loadStoredStudents(classId) {
-  if (!classId) {
-    return null
-  }
-  try {
-    const raw = wx.getStorageSync(studentStorageKeyForClass(classId))
-    if (raw === '' || raw === undefined || raw === null) {
-      return null
-    }
-    return Array.isArray(raw) ? raw : null
-  } catch (e) {
-    return null
-  }
 }
 
 Page({
@@ -105,65 +40,61 @@ Page({
     showStudentImport: false,
     batchImportText: '',
     studentList: [],
-    assignmentList: []
+    assignmentList: [],
+    loaded: false
   },
 
   onLoad(options) {
+    this.setData(getClassPageLayout())
+    if (!getTeacherSession()) {
+      wx.redirectTo({ url: '/pages/class/login/login' })
+      return
+    }
     const classId = (options.id || options.classId || '').trim()
-    const className = resolveClassName(classId)
-
-    const stored = loadStoredStudents(classId)
-    const baseList = stored !== null ? stored : mockStudents(classId)
-    const studentList = decorateStudents(baseList)
-    const assignmentList = loadAssignmentList(classId)
-
-    wx.setNavigationBarTitle({
-      title: className
-    })
-
-    this.setData({
-      ...getClassPageLayout(),
-      classId,
-      className,
-      studentList,
-      assignmentList,
-      batchSelectedCount: 0
-    })
+    if (!classId) {
+      wx.showToast({ title: '缺少班级 id', icon: 'none' })
+      setTimeout(() => wx.navigateBack({ delta: 1 }), 1200)
+      return
+    }
+    this.setData({ classId })
+    this.loadDetail()
   },
 
   onShow() {
-    const classId = (this.data.classId || '').trim()
-    if (!classId) {
-      return
-    }
-    this.setData({
-      assignmentList: loadAssignmentList(classId)
-    })
+    this.setData(getClassPageLayout())
+    if (!this.data.classId) return
+    if (!this.data.loaded) return
+    this.loadDetail({ silent: true })
   },
 
-  persistStudents(nextList) {
-    const classId = this.data.classId
-    if (!classId) {
-      return
+  async loadDetail(opts) {
+    const silent = opts && opts.silent
+    if (!silent) {
+      wx.showLoading({ title: '加载中', mask: true })
     }
-    const plain = nextList.map(({ id, name, studentNo, password }) => ({
-      id,
-      name,
-      studentNo,
-      password
-    }))
     try {
-      wx.setStorageSync(studentStorageKeyForClass(classId), plain)
-    } catch (e) {
-      console.warn('[class-detail] persistStudents', e)
+      const data = await callClassService('getClassDetail', { classId: this.data.classId })
+      if (!silent) wx.hideLoading()
+      const className = (data.classInfo && data.classInfo.name) || '班级'
+      wx.setNavigationBarTitle({ title: className })
+      this.setData({
+        className,
+        studentList: decorateStudents(data.studentList || []),
+        assignmentList: data.assignmentList || [],
+        batchMode: false,
+        batchSelectedCount: 0,
+        loaded: true
+      })
+    } catch (err) {
+      if (!silent) wx.hideLoading()
+      wx.showToast({ title: err.message || '加载失败', icon: 'none' })
     }
   },
 
   syncBatchSelectedCount(studentList, batchMode) {
-    const n =
-      batchMode && Array.isArray(studentList)
-        ? studentList.filter((s) => s.selected).length
-        : 0
+    const n = batchMode && Array.isArray(studentList)
+      ? studentList.filter((s) => s.selected).length
+      : 0
     this.setData({ batchSelectedCount: n })
   },
 
@@ -177,7 +108,8 @@ Page({
     }
     const cleared = this.data.studentList.map((s) => ({
       ...s,
-      selected: false
+      selected: false,
+      passwordVisible: false
     }))
     this.setData({
       currentTab: tab,
@@ -198,11 +130,12 @@ Page({
     this.setData({ batchImportText: e.detail.value })
   },
 
-  parseBatchStudents() {
+  async parseBatchStudents() {
     const raw = this.data.batchImportText || ''
     const normalized = raw.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
     const lines = normalized.split('\n')
     const added = []
+    const seen = new Set()
     let invalid = 0
 
     lines.forEach((line) => {
@@ -211,61 +144,67 @@ Page({
         return
       }
       const parts = trimmed.split(/\s+/).filter(Boolean)
+      let name = ''
+      let studentNo = ''
+      let password = DEFAULT_STUDENT_PASSWORD
       if (parts.length === 3) {
-        added.push({
-          id: genStudentRowId(),
-          name: parts[0],
-          studentNo: parts[1],
-          password: parts[2]
-        })
+        name = parts[0]
+        studentNo = parts[1]
+        password = parts[2]
+      } else if (parts.length === 2) {
+        name = parts[0]
+        studentNo = parts[1]
       } else {
         invalid += 1
+        return
       }
+      if (seen.has(studentNo)) {
+        return
+      }
+      seen.add(studentNo)
+      added.push({ name, studentNo, password })
     })
 
     if (added.length === 0 && invalid === 0) {
       wx.showToast({ title: '请粘贴名单', icon: 'none' })
       return
     }
-
-    const existingNos = new Set(this.data.studentList.map((s) => s.studentNo))
-    const merged = []
-    let dup = 0
-    added.forEach((row) => {
-      if (existingNos.has(row.studentNo)) {
-        dup += 1
-        return
-      }
-      existingNos.add(row.studentNo)
-      merged.push(row)
-    })
-
-    const nextRaw = [...this.data.studentList.map(({ id, name, studentNo, password }) => ({ id, name, studentNo, password })), ...merged]
-    const studentList = decorateStudents(nextRaw)
-
-    this.setData({
-      studentList,
-      batchImportText: '',
-      showStudentImport: false
-    })
-    this.persistStudents(studentList)
-    this.syncBatchSelectedCount(studentList, this.data.batchMode)
-
-    let msg = `已添加 ${merged.length} 人`
-    if (dup > 0) {
-      msg += `，跳过重复 ${dup}`
+    if (added.length === 0) {
+      wx.showToast({ title: '请检查名单格式', icon: 'none' })
+      return
     }
-    if (invalid > 0) {
-      msg += `，忽略 ${invalid} 行`
+
+    wx.showLoading({ title: '导入中', mask: true })
+    try {
+      const result = await callClassService('appendStudents', {
+        classId: this.data.classId,
+        students: added
+      })
+      wx.hideLoading()
+      const tips = []
+      if (result.added) tips.push(`新增 ${result.added}`)
+      if (result.reused) tips.push(`复用 ${result.reused}`)
+      if (result.duplicated) tips.push(`跳过重复 ${result.duplicated}`)
+      if (invalid) tips.push(`忽略 ${invalid} 行`)
+      wx.showToast({
+        title: tips.length > 0 ? tips.join('，') : '已导入',
+        icon: 'none',
+        duration: 2200
+      })
+      this.setData({ batchImportText: '', showStudentImport: false })
+      this.loadDetail({ silent: true })
+    } catch (err) {
+      wx.hideLoading()
+      wx.showToast({ title: err.message || '导入失败', icon: 'none' })
     }
-    wx.showToast({ title: msg, icon: 'none', duration: 2200 })
   },
 
   toggleBatchMode() {
     const next = !this.data.batchMode
     const studentList = this.data.studentList.map((s) => ({
       ...s,
-      selected: next ? s.selected : false
+      selected: next ? s.selected : false,
+      passwordVisible: false
     }))
     this.setData({
       batchMode: next,
@@ -289,6 +228,53 @@ Page({
     this.syncBatchSelectedCount(studentList, true)
   },
 
+  togglePasswordVisible(e) {
+    const id = e.currentTarget.dataset.id
+    if (!id) return
+    const studentList = this.data.studentList.map((s) =>
+      s.id === id ? { ...s, passwordVisible: !s.passwordVisible } : s
+    )
+    this.setData({ studentList })
+  },
+
+  onChangeStudentPassword(e) {
+    const studentNo = e.currentTarget.dataset.no
+    const studentName = e.currentTarget.dataset.name || ''
+    if (!studentNo) return
+    wx.showModal({
+      title: `修改 ${studentName} 的密码`,
+      editable: true,
+      placeholderText: '请输入新密码（至少 6 位）',
+      confirmText: '保存',
+      cancelText: '取消',
+      success: async (res) => {
+        if (!res.confirm) return
+        const newPassword = (res.content || '').trim()
+        if (!newPassword) {
+          wx.showToast({ title: '请输入新密码', icon: 'none' })
+          return
+        }
+        if (newPassword.length < 6) {
+          wx.showToast({ title: '密码至少 6 位', icon: 'none' })
+          return
+        }
+        wx.showLoading({ title: '保存中', mask: true })
+        try {
+          await callClassService('teacherSetStudentPassword', {
+            studentNo,
+            newPassword
+          })
+          wx.hideLoading()
+          wx.showToast({ title: '已更新', icon: 'success' })
+          this.loadDetail({ silent: true })
+        } catch (err) {
+          wx.hideLoading()
+          wx.showToast({ title: err.message || '保存失败', icon: 'none' })
+        }
+      }
+    })
+  },
+
   batchDeleteStudents() {
     if (!this.data.batchMode) {
       return
@@ -299,23 +285,27 @@ Page({
       return
     }
     wx.showModal({
-      title: '批量删除',
-      content: `确定删除选中的 ${selected.length} 名学生吗？`,
+      title: '批量移出班级',
+      content: `将从本班移出选中的 ${selected.length} 名学生（学生账号本身保留）。`,
       confirmColor: '#5c4033',
-      success: (res) => {
+      success: async (res) => {
         if (!res.confirm) {
           return
         }
-        const removeSet = new Set(selected.map((s) => s.id))
-        const nextList = this.data.studentList.filter((s) => !removeSet.has(s.id))
-        const studentList = nextList.map((s) => ({ ...s, selected: false }))
-        this.setData({
-          studentList,
-          batchMode: false,
-          batchSelectedCount: 0
-        })
-        this.persistStudents(studentList)
-        wx.showToast({ title: '已删除', icon: 'success' })
+        const studentNos = selected.map((s) => s.studentNo)
+        wx.showLoading({ title: '处理中', mask: true })
+        try {
+          await callClassService('deleteStudents', {
+            classId: this.data.classId,
+            studentNos
+          })
+          wx.hideLoading()
+          wx.showToast({ title: '已移出', icon: 'success' })
+          this.loadDetail({ silent: true })
+        } catch (err) {
+          wx.hideLoading()
+          wx.showToast({ title: err.message || '操作失败', icon: 'none' })
+        }
       }
     })
   },
@@ -351,18 +341,23 @@ Page({
     }
     wx.showModal({
       title: '删除作业',
-      content: '将删除该作业记录（本地），确定吗？',
+      content: '将删除该作业及所有学生的提交记录、批改决定，确定吗？',
       confirmText: '删除',
       confirmColor: '#a05040',
-      success: (res) => {
+      success: async (res) => {
         if (!res.confirm) {
           return
         }
-        removeAssignmentForClass(classId, assignmentId)
-        this.setData({
-          assignmentList: loadAssignmentList(classId)
-        })
-        wx.showToast({ title: '已删除', icon: 'none' })
+        wx.showLoading({ title: '删除中', mask: true })
+        try {
+          await callClassService('deleteAssignment', { classId, assignmentId })
+          wx.hideLoading()
+          wx.showToast({ title: '已删除', icon: 'none' })
+          this.loadDetail({ silent: true })
+        } catch (err) {
+          wx.hideLoading()
+          wx.showToast({ title: err.message || '删除失败', icon: 'none' })
+        }
       }
     })
   }

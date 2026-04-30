@@ -2,55 +2,46 @@
   <view class="profile">
     <view class="profile-card">
       <view class="profile-paper" aria-hidden="true"></view>
-      <text class="profile-welcome">欢迎同学：{{studentName}}</text>
-      <text class="profile-class">当前班级：{{className}}</text>
+      <view class="profile-row">
+        <view class="profile-text">
+          <text class="profile-welcome">欢迎同学：{{studentName}}</text>
+          <text class="profile-class">学号：{{studentNo}}</text>
+        </view>
+        <view class="profile-actions">
+          <view class="profile-action" bindtap="onChangePassword">修改密码</view>
+          <view class="profile-action profile-action--logout" bindtap="onLogout">退出</view>
+        </view>
+      </view>
     </view>
   </view>
 
   <view class="section-head">
     <view class="section-gold" aria-hidden="true"></view>
-    <text class="section-title">我的作业</text>
+    <text class="section-title">我已加入的班级</text>
   </view>
 
-  <block wx:if="{{assignmentList.length > 0}}">
+  <block wx:if="{{classList.length > 0}}">
     <view
-      class="card"
-      wx:for="{{assignmentList}}"
+      class="class-card"
+      wx:for="{{classList}}"
       wx:key="id"
       data-id="{{item.id}}"
-      data-status="{{item.status}}"
-      bindtap="goToAssignment"
+      data-name="{{item.name}}"
+      bindtap="goToClass"
     >
-      <view class="card-main">
-        <view class="card-left">
-          <text class="card-title">{{item.title}}</text>
-          <text class="card-date">布置时间：{{item.date}}</text>
-        </view>
-        <view class="card-right">
-          <block wx:if="{{item.status === 'pending'}}">
-            <view class="card-row-status">
-              <text class="tag-undone">未交</text>
-            </view>
-            <view class="btn btn-practice" hover-class="btn--hover">去练习</view>
-          </block>
-          <block wx:elif="{{item.status === 'inprogress'}}">
-            <view class="card-row-status">
-              <text class="tag-progress">{{item.progressText}}</text>
-            </view>
-            <view class="btn btn-practice" hover-class="btn--hover">继续练习</view>
-          </block>
-          <block wx:else>
-            <view class="card-row-status">
-              <text class="tag-done">已完成</text>
-            </view>
-            <view class="btn btn-outline btn-disabled">等待批阅</view>
-          </block>
-        </view>
+      <view class="class-card-main">
+        <text class="class-card-name">{{item.name}}</text>
+        <text wx:if="{{item.teacherName}}" class="class-card-teacher">班主任：{{item.teacherName}}</text>
+        <text wx:if="{{item.desc}}" class="class-card-desc">{{item.desc}}</text>
+      </view>
+      <view class="class-card-side">
+        <text class="class-card-stat">作业 {{item.finalAssignments}}/{{item.totalAssignments}}</text>
+        <text class="class-card-arrow">›</text>
       </view>
     </view>
   </block>
 
   <view wx:else class="empty-wrap">
-    <text class="empty-text">老师暂时还没布置作业哦～</text>
+    <text class="empty-text">尚未被任何班级导入。请联系教师将您的学号加入班级名单。</text>
   </view>
 </view>

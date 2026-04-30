@@ -1,61 +1,76 @@
 const MAX_IMAGES = 9
-const {
-  studentStorageKeyForClass,
-  appendAssignmentForClass
-} = require('../teacher-scope.js')
+const { callClassService, uploadFile } = require('../../../../utils/classCloud.js')
+const { getTeacherSession } = require('../../../../utils/classStudentAuth.js')
 const { getClassPageLayout } = require('../../../../utils/classLayout.js')
 const { SCRIPT_TYPES } = require('../../../../utils/copybookScoreProfile.js')
 
-function countStudentsInClass(classId) {
-  if (!classId) {
-    return 0
-  }
-  try {
-    const raw = wx.getStorageSync(studentStorageKeyForClass(classId))
-    return Array.isArray(raw) ? raw.length : 0
-  } catch (e) {
-    return 0
-  }
+function drawImageContain(ctx, img, destW, destH) {
+  const srcW = img.width || destW || 1
+  const srcH = img.height || destH || 1
+  const scale = Math.min(destW / srcW, destH / srcH)
+  const drawW = Math.max(1, Math.round(srcW * scale))
+  const drawH = Math.max(1, Math.round(srcH * scale))
+  const dx = Math.round((destW - drawW) / 2)
+  const dy = Math.round((destH - drawH) / 2)
+  ctx.drawImage(img, dx, dy, drawW, drawH)
 }
 
-function todayYMD() {
-  const d = new Date()
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
+function paintOrientedImage(ctx, img, destW, destH, orientation) {
+  const o = String(orientation || '').toLowerCase()
+  const needRotate = o === 'left' || o === 'right' || o === 'left-mirrored' || o === 'right-mirrored' || o === 'up-mirrored' || o === 'down-mirrored' || o === '90' || o === '270' || o === '6' || o === '8' || o === '5' || o === '7'
+  if (!needRotate) {
+    drawImageContain(ctx, img, destW, destH)
+    return
+  }
+  ctx.save()
+  switch (o) {
+    case 'left': case '270': case '8':
+      ctx.translate(0, destH)
+      ctx.rotate(-Math.PI / 2)
+      drawImageContain(ctx, img, destH, destW)
+      break
+    case 'right': case '90': case '6':
+      ctx.translate(destW, 0)
+      ctx.rotate(Math.PI / 2)
+      drawImageContain(ctx, img, destH, destW)
+      break
+    case 'down-mirrored': case '5':
+      ctx.translate(destW, destH)
+      ctx.scale(-1, -1)
+      drawImageContain(ctx, img, destW, destH)
+      break
+    case 'left-mirrored': case '7':
+      ctx.translate(destW, destH)
+      ctx.rotate(Math.PI / 2)
+      ctx.scale(-1, 1)
+      drawImageContain(ctx, img, destH, destW)
+      break
+    case 'right-mirrored':
+      ctx.translate(destW, destH)
+      ctx.rotate(-Math.PI / 2)
+      ctx.scale(-1, 1)
+      drawImageContain(ctx, img, destH, destW)
+      break
+    case 'up-mirrored':
+      ctx.translate(destW, 0)
+      ctx.scale(-1, 1)
+      drawImageContain(ctx, img, destW, destH)
+      break
+    default:
+      drawImageContain(ctx, img, destW, destH)
+  }
+  ctx.restore()
 }
 
-/**
- * 将选图产生的临时路径转为本地用户目录下的持久路径，便于学生端读取同一作业字帖。
- * 已是持久路径或网络路径则原样返回。
- */
-function persistCopybookImageList(items) {
-  const fs = wx.getFileSystemManager()
-  return (items || []).map((item) => {
-    const count = Math.max(1, Number(item.count) || 1)
-    let url = item.url
-    if (!url || typeof url !== 'string') {
-      return { url: '', count }
-    }
-    const lower = url.toLowerCase()
-    if (lower.indexOf('http://') === 0 || lower.indexOf('https://') === 0) {
-      return { url, count }
-    }
-    if (lower.indexOf('cloud://') === 0) {
-      return { url, count }
-    }
-    try {
-      const saved = fs.saveFileSync(url)
-      return { url: saved || url, count }
-    } catch (e) {
-      console.warn('[assignment-create] saveFile 字帖图失败，保留原路径', e)
-      return { url, count }
-    }
-  })
+function normalizeImagePath(localPath) {
+  return Promise.resolve(localPath)
 }
 
 const SCRIPT_LABELS = ['蒙文（细笔写字）', '回鹘文（宽笔描红）', '满文', '汉字']
+
+function genImageRowId() {
+  return `img_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+}
 
 Page({
   data: {
@@ -67,11 +82,16 @@ Page({
     imageList: [],
     scriptTypes: SCRIPT_TYPES,
     scriptLabels: SCRIPT_LABELS,
-    scriptIndex: 0
+    scriptIndex: 0,
+    submitting: false
   },
 
   onLoad(options) {
     this.setData(getClassPageLayout())
+    if (!getTeacherSession()) {
+      wx.redirectTo({ url: '/pages/class/login/login' })
+      return
+    }
     const classId = (options.classId || '').trim()
     if (classId) {
       this.setData({ classId })
@@ -137,7 +157,7 @@ Page({
       }
       const next = this.data.imageList.concat(
         paths.map((url) => ({
-          id: `img_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+          id: genImageRowId(),
           url,
           count: 1
         }))
@@ -186,7 +206,7 @@ Page({
       return
     }
     const raw = e.detail.value
-    const trimmed = String(raw ?? '').trim()
+    const trimmed = String(raw === undefined || raw === null ? '' : raw).trim()
     if (trimmed === '') {
       const list = this.data.imageList.map((item, i) =>
         i === index ? { ...item, count: '' } : item
@@ -202,12 +222,8 @@ Page({
       this.setData({ imageList: list })
       return
     }
-    if (v < 1) {
-      v = 1
-    }
-    if (v > 999) {
-      v = 999
-    }
+    if (v < 1) v = 1
+    if (v > 999) v = 999
     const list = this.data.imageList.map((item, i) =>
       i === index ? { ...item, count: v } : item
     )
@@ -224,7 +240,10 @@ Page({
     this.setData({ imageList: list })
   },
 
-  submitAssignment() {
+  async submitAssignment() {
+    if (this.data.submitting) {
+      return
+    }
     const title = (this.data.title || '').trim()
     if (!title) {
       wx.showToast({ title: '请填写作业名称', icon: 'none' })
@@ -255,44 +274,51 @@ Page({
       return
     }
     const requirements = (this.data.requirements || '').trim()
-    const imageList = persistCopybookImageList(
-      this.data.imageList.map((item) => ({
-        url: item.url,
-        count: Math.max(1, Math.min(999, parseInt(String(item.count).trim(), 10) || 1))
-      }))
-    )
-
     const types = this.data.scriptTypes || SCRIPT_TYPES
     const idx = Math.max(0, Math.min(types.length - 1, Number(this.data.scriptIndex) || 0))
     const scriptType = types[idx]
 
-    const record = {
-      id: `asg_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`,
-      title,
-      type: '字帖作业',
-      scriptType,
-      submitCount: 0,
-      totalCount: countStudentsInClass(classId),
-      date: todayYMD(),
-      requirements,
-      imageList
-    }
+    this.setData({ submitting: true })
 
-    appendAssignmentForClass(classId, record)
+    try {
+      // 1. 逐张上传到云存储
+      wx.showLoading({ title: '上传图片 0/' + this.data.imageList.length, mask: true })
+      const uploadedList = []
+      for (let i = 0; i < this.data.imageList.length; i++) {
+        const item = this.data.imageList[i]
+        wx.showLoading({ title: `上传图片 ${i + 1}/${this.data.imageList.length}`, mask: true })
+        const ext = (() => {
+          const m = String(item.url || '').match(/\.([a-zA-Z0-9]+)$/)
+          return m ? m[1].toLowerCase() : 'jpg'
+        })()
+        const cloudPath = `class/copybooks/${classId}/${Date.now()}_${i}_${Math.random().toString(36).slice(2, 6)}.${ext}`
+        const normalizedPath = await normalizeImagePath(item.url)
+        const fileID = await uploadFile(normalizedPath || item.url, cloudPath)
+        uploadedList.push({
+          fileID,
+          count: Math.max(1, Math.min(999, parseInt(String(item.count).trim(), 10) || 1))
+        })
+      }
 
-    const payload = { classId, title, requirements, imageList }
-    console.log('[assignment-create] 发布作业', payload)
-
-    wx.showToast({
-      title: '发布成功',
-      icon: 'success',
-      duration: 1500
-    })
-
-    setTimeout(() => {
-      wx.navigateBack({
-        delta: 1
+      // 2. 写作业记录（命中重名时云端会返回 '名称已被占用'）
+      wx.showLoading({ title: '发布中', mask: true })
+      await callClassService('createAssignment', {
+        classId,
+        title,
+        requirements,
+        scriptType,
+        imageList: uploadedList
       })
-    }, 1500)
+      wx.hideLoading()
+      wx.showToast({ title: '发布成功', icon: 'success', duration: 1500 })
+      setTimeout(() => {
+        wx.navigateBack({ delta: 1 })
+      }, 1300)
+    } catch (err) {
+      wx.hideLoading()
+      wx.showToast({ title: err.message || '发布失败', icon: 'none' })
+    } finally {
+      this.setData({ submitting: false })
+    }
   }
 })

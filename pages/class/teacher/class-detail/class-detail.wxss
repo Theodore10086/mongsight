@@ -282,6 +282,27 @@
   color: rgba(92, 64, 51, 0.55);
 }
 
+.card-meta-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16rpx;
+  flex-wrap: wrap;
+}
+
+.card-meta-action {
+  font-size: 22rpx;
+  color: #8b5a2b;
+  padding: 4rpx 14rpx;
+  border-radius: 8rpx;
+  border: 1rpx solid rgba(139, 90, 43, 0.32);
+  background-color: rgba(212, 175, 55, 0.08);
+}
+
+.card-meta-action:active {
+  opacity: 0.78;
+}
+
 .card-assign {
   display: flex;
   flex-direction: row;

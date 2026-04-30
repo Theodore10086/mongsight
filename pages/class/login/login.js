@@ -1,9 +1,10 @@
 const TEACHER_DASHBOARD = '/pages/class/teacher/dashboard/dashboard'
 const STUDENT_DASHBOARD = '/pages/class/student/dashboard/dashboard'
+
+const { callClassService } = require('../../../utils/classCloud.js')
 const {
-  findImportedStudent,
-  resolveClassNameByClassId,
-  setStudentSession
+  setStudentSession,
+  setTeacherSession
 } = require('../../../utils/classStudentAuth.js')
 const { getClassPageLayout } = require('../../../utils/classLayout.js')
 
@@ -20,7 +21,8 @@ Page({
       password: ''
     },
     layoutClass: '',
-    cursorSpacing: 28
+    cursorSpacing: 28,
+    submitting: false
   },
 
   onLoad() {
@@ -62,27 +64,53 @@ Page({
     }
   },
 
-  handleLogin() {
+  async handleLogin() {
+    if (this.data.submitting) {
+      return
+    }
     const { currentRole, teacherForm, studentForm } = this.data
 
     if (currentRole === 'teacher') {
       const name = (teacherForm.name || '').trim()
-      const password = teacherForm.password || ''
-      if (password === '123456' && name !== '') {
-        try {
-          wx.setStorageSync('classTeacherName', name)
-        } catch (err) {
-          console.warn('[login] setStorageSync classTeacherName', err)
+      const password = (teacherForm.password || '').trim()
+      if (!name) {
+        wx.showToast({ title: '请输入教师姓名', icon: 'none' })
+        return
+      }
+      if (!password) {
+        wx.showToast({ title: '请输入登录密码', icon: 'none' })
+        return
+      }
+      this.setData({ submitting: true })
+      wx.showLoading({ title: '登录中', mask: true })
+      try {
+        const data = await callClassService('registerOrLoginTeacher', { name, password })
+        setTeacherSession({
+          teacherDocId: data.teacherDocId,
+          name: data.name
+        })
+        const app = getApp()
+        if (app && app.globalData) {
+          app.globalData.classRole = 'teacher'
+          app.globalData.classTeacher = { teacherDocId: data.teacherDocId, name: data.name }
+          app.globalData.classStudent = null
         }
-        const q = encodeURIComponent(name)
-        wx.redirectTo({
-          url: `${TEACHER_DASHBOARD}?name=${q}`
-        })
-      } else {
+        wx.hideLoading()
         wx.showToast({
-          title: '姓名或密码错误',
-          icon: 'none'
+          title: data.isNew ? '账号已创建' : '登录成功',
+          icon: 'success',
+          duration: 800
         })
+        setTimeout(() => {
+          wx.redirectTo({
+            url: `${TEACHER_DASHBOARD}?name=${encodeURIComponent(data.name)}`
+          })
+        }, 600)
+      } catch (err) {
+        wx.hideLoading()
+        wx.showToast({ title: err.message || '登录失败', icon: 'none' })
+      } finally {
+        this.setData({ submitting: false })
       }
       return
     }
@@ -92,34 +120,39 @@ Page({
       const studentNo = (studentForm.studentNo || '').trim()
       const password = (studentForm.password || '').trim()
       if (!name || !studentNo || !password) {
-        wx.showToast({
-          title: '请填写姓名、学号与密码',
-          icon: 'none'
-        })
+        wx.showToast({ title: '请填写姓名、学号与密码', icon: 'none' })
         return
       }
-
-      const hit = findImportedStudent(name, studentNo, password)
-      if (!hit) {
-        wx.showToast({
-          title: '账号或密码错误',
-          icon: 'none'
+      this.setData({ submitting: true })
+      wx.showLoading({ title: '登录中', mask: true })
+      try {
+        const data = await callClassService('loginStudent', { name, studentNo, password })
+        setStudentSession({
+          studentDocId: data.studentDocId,
+          name: data.name,
+          studentNo: data.studentNo
         })
-        return
+        const app = getApp()
+        if (app && app.globalData) {
+          app.globalData.classRole = 'student'
+          app.globalData.classStudent = {
+            studentDocId: data.studentDocId,
+            name: data.name,
+            studentNo: data.studentNo
+          }
+          app.globalData.classTeacher = null
+        }
+        wx.hideLoading()
+        wx.showToast({ title: '登录成功', icon: 'success', duration: 800 })
+        setTimeout(() => {
+          wx.redirectTo({ url: STUDENT_DASHBOARD })
+        }, 600)
+      } catch (err) {
+        wx.hideLoading()
+        wx.showToast({ title: err.message || '登录失败', icon: 'none' })
+      } finally {
+        this.setData({ submitting: false })
       }
-
-      const className = resolveClassNameByClassId(hit.classId)
-      setStudentSession({
-        studentId: hit.student.id,
-        name: hit.student.name,
-        studentNo: hit.student.studentNo,
-        classId: hit.classId,
-        className
-      })
-
-      wx.redirectTo({
-        url: STUDENT_DASHBOARD
-      })
     }
   }
 })

@@ -1,11 +1,8 @@
 /**
- * 学生端：与教师导入名单（class_students_*）对齐的登录校验与本地会话
+ * 学生端会话缓存（仅缓存身份展示信息；权限以云端 openId 绑定为准）
  */
 
 const STORAGE_STUDENT_SESSION = 'classStudentSession'
-const LEGACY_TEACHER_LIST = 'teacherClassList'
-const STUDENT_PREFIX = 'class_students_'
-const TEACHER_LIST_PREFIX = 'teacherClassList__'
 
 function getStudentSession() {
   try {
@@ -13,7 +10,7 @@ function getStudentSession() {
     if (!raw || typeof raw !== 'object') {
       return null
     }
-    if (!(raw.classId && raw.studentNo)) {
+    if (!raw.studentNo) {
       return null
     }
     return raw
@@ -36,93 +33,44 @@ function clearStudentSession() {
   } catch (e) {}
 }
 
-/**
- * 在所有已落库的班级名单中查找与姓名、学号、密码一致的记录（与教师批量导入格式一致）
- * @returns {{ student: object, classId: string } | null}
- */
-function findImportedStudent(name, studentNo, password) {
-  const n = (name || '').trim()
-  const no = (studentNo || '').trim()
-  const pwd = String(password || '').trim()
-  if (!n || !no || !pwd) {
+const STORAGE_TEACHER_SESSION = 'classTeacherSession'
+
+function getTeacherSession() {
+  try {
+    const raw = wx.getStorageSync(STORAGE_TEACHER_SESSION)
+    if (!raw || typeof raw !== 'object') {
+      return null
+    }
+    if (!raw.teacherDocId || !raw.name) {
+      return null
+    }
+    return raw
+  } catch (e) {
     return null
   }
-  try {
-    const info = wx.getStorageInfoSync()
-    const keys = (info.keys || []).filter((k) => k.indexOf(STUDENT_PREFIX) === 0)
-    for (let i = 0; i < keys.length; i++) {
-      const key = keys[i]
-      const classId = key.slice(STUDENT_PREFIX.length)
-      if (!classId) {
-        continue
-      }
-      const list = wx.getStorageSync(key)
-      if (!Array.isArray(list)) {
-        continue
-      }
-      const student = list.find((s) => {
-        if (!s) {
-          return false
-        }
-        const sn = String(s.studentNo || '').trim()
-        const pw = String(s.password || '').trim()
-        const nm = (s.name || '').trim()
-        return nm === n && sn === no && pw === pwd
-      })
-      if (student) {
-        return { student, classId }
-      }
-    }
-  } catch (e) {
-    console.warn('[classStudentAuth] findImportedStudent', e)
-  }
-  return null
 }
 
-/**
- * 根据班级 id 解析名称（遍历各教师的 teacherClassList__* 及旧版 key）
- */
-function resolveClassNameByClassId(classId) {
-  if (!classId) {
-    return '班级'
-  }
+function setTeacherSession(payload) {
   try {
-    const info = wx.getStorageInfoSync()
-    const keys = info.keys || []
-    for (let i = 0; i < keys.length; i++) {
-      const key = keys[i]
-      if (key.indexOf(TEACHER_LIST_PREFIX) !== 0) {
-        continue
-      }
-      const list = wx.getStorageSync(key)
-      if (!Array.isArray(list)) {
-        continue
-      }
-      const found = list.find((c) => c && c.id === classId)
-      if (found && found.name) {
-        return found.name
-      }
-    }
-    try {
-      const legacy = wx.getStorageSync(LEGACY_TEACHER_LIST)
-      if (Array.isArray(legacy)) {
-        const found = legacy.find((c) => c && c.id === classId)
-        if (found && found.name) {
-          return found.name
-        }
-      }
-    } catch (e2) {}
+    wx.setStorageSync(STORAGE_TEACHER_SESSION, payload)
   } catch (e) {
-    console.warn('[classStudentAuth] resolveClassNameByClassId', e)
+    console.warn('[classStudentAuth] setTeacherSession', e)
   }
-  return '班级'
+}
+
+function clearTeacherSession() {
+  try {
+    wx.removeStorageSync(STORAGE_TEACHER_SESSION)
+  } catch (e) {}
 }
 
 module.exports = {
   STORAGE_STUDENT_SESSION,
-  findImportedStudent,
-  resolveClassNameByClassId,
+  STORAGE_TEACHER_SESSION,
   getStudentSession,
   setStudentSession,
-  clearStudentSession
+  clearStudentSession,
+  getTeacherSession,
+  setTeacherSession,
+  clearTeacherSession
 }

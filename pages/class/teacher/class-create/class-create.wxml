@@ -48,7 +48,7 @@
         <view class="batch-panel">
           <view class="format-tip">
             <text class="format-tip-label">示例格式</text>
-            <text class="format-tip-text">格式：姓名 学号 密码（每行一人，空格分隔）</text>
+            <text class="format-tip-text">格式：姓名 学号（每行一人，空格分隔；可选追加自定义初始密码）。未填写时默认密码为 mgcs123456</text>
           </view>
           <textarea
             class="batch-textarea"

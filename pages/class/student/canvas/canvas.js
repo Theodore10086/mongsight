@@ -9,12 +9,7 @@ const {
   normalizeScriptType
 } = require('../../../../utils/copybookScoreProfile.js')
 const { getStudentSession } = require('../../../../utils/classStudentAuth.js')
-const {
-  readAssignmentsForClass,
-  saveSubmission,
-  readProgress,
-  saveProgress
-} = require('../../teacher/teacher-scope.js')
+const { callClassService, getTempFileURL, uploadFile } = require('../../../../utils/classCloud.js')
 const { getClassPageLayout } = require('../../../../utils/classLayout.js')
 
 /**
@@ -105,6 +100,11 @@ function buildTargetMasksFromImageData(imageData, scoreParams) {
 function drawFallbackTargetTemplate(ctx, lw, lh) {
   ctx.fillStyle = '#f4efe6'
   ctx.fillRect(0, 0, lw, lh)
+  const padX = Math.max(12, Math.floor(lw * 0.07))
+  const padY = Math.max(12, Math.floor(lh * 0.07))
+  ctx.strokeStyle = 'rgba(92, 64, 51, 0.18)'
+  ctx.lineWidth = Math.max(1, Math.floor(Math.min(lw, lh) * 0.004))
+  ctx.strokeRect(padX, padY, Math.max(1, lw - padX * 2), Math.max(1, lh - padY * 2))
   const ax = Math.floor(lw * 0.2)
   const ay = Math.floor(lh * 0.35)
   const aw = Math.floor(lw * 0.6)
@@ -119,15 +119,84 @@ function drawFallbackTargetTemplate(ctx, lw, lh) {
   )
 }
 
+function drawImageContain(ctx, img, destW, destH) {
+  const srcW = img.width || destW || 1
+  const srcH = img.height || destH || 1
+  const scale = Math.min(destW / srcW, destH / srcH)
+  const drawW = Math.max(1, Math.round(srcW * scale))
+  const drawH = Math.max(1, Math.round(srcH * scale))
+  const dx = Math.round((destW - drawW) / 2)
+  const dy = Math.round((destH - drawH) / 2)
+  ctx.drawImage(img, dx, dy, drawW, drawH)
+}
+
+function paintOrientedImage(ctx, img, destW, destH, orientation) {
+  const o = String(orientation || '').toLowerCase()
+  const needRotate = o === 'left' || o === 'right' || o === 'left-mirrored' || o === 'right-mirrored' || o === 'up-mirrored' || o === 'down-mirrored' || o === '90' || o === '270' || o === '6' || o === '8' || o === '5' || o === '7'
+  if (!needRotate) {
+    drawImageContain(ctx, img, destW, destH)
+    return
+  }
+
+  ctx.save()
+  switch (o) {
+    case 'left':
+    case '270':
+    case '8':
+      ctx.translate(0, destH)
+      ctx.rotate(-Math.PI / 2)
+      drawImageContain(ctx, img, destH, destW)
+      break
+    case 'right':
+    case '90':
+    case '6':
+      ctx.translate(destW, 0)
+      ctx.rotate(Math.PI / 2)
+      drawImageContain(ctx, img, destH, destW)
+      break
+    case 'down-mirrored':
+    case '5':
+      ctx.translate(destW, destH)
+      ctx.scale(-1, -1)
+      drawImageContain(ctx, img, destW, destH)
+      break
+    case 'left-mirrored':
+    case '7':
+      ctx.translate(destW, destH)
+      ctx.rotate(Math.PI / 2)
+      ctx.scale(-1, 1)
+      drawImageContain(ctx, img, destH, destW)
+      break
+    case 'right-mirrored':
+      ctx.translate(destW, destH)
+      ctx.rotate(-Math.PI / 2)
+      ctx.scale(-1, 1)
+      drawImageContain(ctx, img, destH, destW)
+      break
+    case 'up-mirrored':
+      ctx.translate(destW, 0)
+      ctx.scale(-1, 1)
+      drawImageContain(ctx, img, destW, destH)
+      break
+    default:
+      drawImageContain(ctx, img, destW, destH)
+  }
+  ctx.restore()
+}
+
 function buildSlideList(imageList) {
   const slides = []
   ;(imageList || []).forEach((it) => {
-    const u = (it && it.url ? String(it.url) : '').trim()
+    if (!it) return
+    const fileID = String(it.fileID || '').trim()
+    const tempFileURL = String(it.tempFileURL || '').trim()
+    const legacyUrl = String(it.url || '').trim()
+    const u = tempFileURL || fileID || legacyUrl
     if (!u) {
       return
     }
     const targetCount = Math.max(1, Number(it.count) || 1)
-    slides.push({ url: u, targetCount })
+    slides.push({ url: u, fileID, tempFileURL, legacyUrl, targetCount })
   })
   return slides
 }
@@ -220,7 +289,7 @@ function drawTemplateAsGray(targetCtx, templateImg, w, h, opts) {
     return
   }
 
-  octx.drawImage(templateImg, 0, 0, off.width, off.height)
+  paintOrientedImage(octx, templateImg, off.width, off.height, templateImg.__orientation)
   let imgData
   try {
     imgData = octx.getImageData(0, 0, off.width, off.height)
@@ -471,13 +540,15 @@ Page({
   canvasW: 0,
   canvasH: 0,
 
-  onLoad(options) {
+  async onLoad(options) {
     this.setData(getClassPageLayout())
     const id = (options.id || '').trim()
     const mode = (options.mode || '').trim()
 
     if (mode === 'review') {
       wx.setNavigationBarTitle({ title: '作业回看' })
+    } else if (mode === 'retry') {
+      wx.setNavigationBarTitle({ title: '重新完成作业' })
     }
 
     if (!id) {
@@ -507,9 +578,18 @@ Page({
       return
     }
 
-    const assignments = readAssignmentsForClass(session.classId)
-    const assignment = assignments.find((a) => a && a.id === id)
-
+    wx.showLoading({ title: '加载中', mask: true })
+    let data
+    try {
+      data = await callClassService('getAssignmentForStudent', { assignmentId: id })
+    } catch (err) {
+      wx.hideLoading()
+      wx.showToast({ title: err.message || '未找到该作业', icon: 'none' })
+      setTimeout(() => wx.navigateBack({ delta: 1 }), 1500)
+      return
+    }
+    wx.hideLoading()
+    const assignment = data.assignment
     if (!assignment) {
       wx.showToast({ title: '未找到该作业', icon: 'none' })
       setTimeout(() => wx.navigateBack({ delta: 1 }), 1500)
@@ -517,16 +597,15 @@ Page({
     }
 
     const slideList = buildSlideList(assignment.imageList)
+    console.log('[canvas] slideList', JSON.stringify(slideList))
     const hasImg = slideList.length > 0
     const totalPages = hasImg ? slideList.length : this.data.defaultTotalPages
     let successByPage = new Array(totalPages).fill(0)
     let restoredPage = 1
 
-    // 仅在「练习模式」下恢复进度；review 模式直接显示原始字帖
-    if (mode !== 'review') {
-      const studentKey = session.studentId || session.studentNo || ''
-      const saved = readProgress(id, studentKey)
-      if (saved && saved.totalPages === totalPages && Array.isArray(saved.successByPage)) {
+    if (mode !== 'review' && mode !== 'retry' && data.progress) {
+      const saved = data.progress
+      if (saved.totalPages === totalPages && Array.isArray(saved.successByPage)) {
         for (let i = 0; i < totalPages; i++) {
           successByPage[i] = Number(saved.successByPage[i] || 0)
         }
@@ -535,12 +614,26 @@ Page({
         }
       }
     }
+    if (mode === 'retry') {
+      successByPage = new Array(totalPages).fill(0)
+      restoredPage = 1
+    }
 
     const templateSrc = hasImg ? slideList[restoredPage - 1].url : ''
     const displayTarget = hasImg
       ? slideList[restoredPage - 1].targetCount
       : this.data.defaultTargetCount
     const displaySuccess = successByPage[restoredPage - 1] || 0
+    const reviewStatus = data.submission && data.submission.reviewStatus ? data.submission.reviewStatus : ''
+    console.log('[canvas] page init', {
+      hasImg,
+      totalPages,
+      restoredPage,
+      templateSrc,
+      displayTarget,
+      displaySuccess,
+      reviewStatus
+    })
 
     const titleText = assignment.title ? String(assignment.title) : '书写练习'
     if (mode !== 'review') {
@@ -563,7 +656,17 @@ Page({
       currentPage: restoredPage,
       displaySuccess,
       displayTarget,
-      templateSkin: ((restoredPage - 1) % 2) + 1
+      templateSkin: ((restoredPage - 1) % 2) + 1,
+      reviewStatus
+    }, () => {
+      console.log('[canvas] setData ready', {
+        templateSrc: this.data.templateSrc,
+        slideCount: (this.data.slideList || []).length,
+        currentPage: this.data.currentPage
+      })
+      if (this.targetCtx && this.targetCanvasNode) {
+        this._drawTargetAndRebuildMask()
+      }
     })
   },
 
@@ -613,6 +716,8 @@ Page({
       }
       const w = r0.width || r1.width || 0
       const h = r0.height || r1.height || 0
+      this._templateOrientation = 1
+      console.log('[canvas] canvas nodes ready', { hasTarget: !!(r0 && r0.node), hasWrite: !!(r1 && r1.node), w, h })
       if (!w || !h) {
         if (attempt < 12) {
           setTimeout(() => this._initBothCanvases(attempt + 1), 120)
@@ -631,6 +736,11 @@ Page({
       const wCanvas = r1.node
       const tCtx = tCanvas.getContext('2d')
       const wrCtx = wCanvas.getContext('2d')
+      console.log('[canvas] canvas contexts ready', { hasTargetCtx: !!tCtx, hasWriteCtx: !!wrCtx })
+      this.targetCanvasNode = tCanvas
+      this.targetCtx = tCtx
+      this.writeCanvasNode = wCanvas
+      this._writeCtx = wrCtx
 
       tCanvas.width = pw
       tCanvas.height = ph
@@ -650,6 +760,7 @@ Page({
       this._writeCtx = wrCtx
       this._targetMaskReady = false
 
+      console.log('[canvas] init draw start', { templateSrc: this.data.templateSrc, slideCount: (this.data.slideList || []).length })
       this._drawTargetAndRebuildMask()
     })
   },
@@ -671,7 +782,7 @@ Page({
       if (imgNode) {
         ox.fillStyle = '#f4efe6'
         ox.fillRect(0, 0, pw, ph)
-        ox.drawImage(imgNode, 0, 0, pw, ph)
+        paintOrientedImage(ox, imgNode, pw, ph, imgNode.__orientation)
       } else {
         ox.setTransform(dprVal, 0, 0, dprVal, 0, 0)
         drawFallbackTargetTemplate(ox, lw, lh)
@@ -713,6 +824,7 @@ Page({
     const lw = this.canvasW
     const lh = this.canvasH
     const src = (this.data.templateSrc || '').trim()
+    console.log('[canvas] drawTarget src', src)
     const params = this._scoreParams || getCopybookScoreParams('mongolian')
     const dpr = this.dpr
     const pw = tCanvas.width
@@ -730,6 +842,11 @@ Page({
       tCtx.fillRect(0, 0, lw, lh)
       tCtx.imageSmoothingEnabled = true
       tCtx.imageSmoothingQuality = 'high'
+      tCtx.strokeStyle = 'rgba(92, 64, 51, 0.16)'
+      tCtx.lineWidth = Math.max(1, Math.floor(Math.min(lw, lh) * 0.004))
+      const safePadX = Math.max(14, Math.floor(lw * 0.06))
+      const safePadY = Math.max(14, Math.floor(lh * 0.06))
+      tCtx.strokeRect(safePadX, safePadY, Math.max(1, lw - safePadX * 2), Math.max(1, lh - safePadY * 2))
       if (imgNode) {
         drawTemplateAsGray(tCtx, imgNode, lw, lh, { grayLevel: 185 })
       } else {
@@ -746,42 +863,83 @@ Page({
       }, 32)
     }
 
-    const drawFallback = () => {
+    const drawFallback = (reason) => {
+      console.warn('[canvas] drawFallback', reason || 'unknown')
       paintOpaque(null)
       buildMaskLater(null)
     }
 
     if (!src) {
-      drawFallback()
+      console.warn('[canvas] empty template src')
+      drawFallback('empty-src')
       return
     }
 
     const loadAndDraw = (path) => {
+      console.log('[canvas] loadAndDraw', path)
       const img = tCanvas.createImage()
       img.onload = function () {
+        console.log('[canvas] img load ok', path, img.width, img.height)
+        img.__orientation = self._templateOrientation || 1
         paintOpaque(img)
         buildMaskLater(img)
+        console.log('[canvas] draw success', { path, width: img.width, height: img.height })
       }
-      img.onerror = function () {
-        drawFallback()
+      img.onerror = function (err) {
+        console.warn('[canvas] img load fail', err, path)
+        drawFallback('img-onerror')
       }
+      img.__orientation = self._templateOrientation || 1
       img.src = path
     }
 
-    if (/^https?:\/\//.test(src)) {
+    const downloadHttp = (url) => {
       wx.downloadFile({
-        url: src,
+        url,
         success(res) {
+          console.log('[canvas] downloadFile response', { url, statusCode: res.statusCode, tempFilePath: res.tempFilePath })
           if (res.statusCode === 200 && res.tempFilePath) {
+            console.log('[canvas] downloadFile ok', url, res.tempFilePath)
             loadAndDraw(res.tempFilePath)
           } else {
-            drawFallback()
+            console.warn('[canvas] downloadFile non-200', res.statusCode, url)
+            drawFallback('download-non200')
           }
         },
-        fail() { drawFallback() }
+        fail(err) {
+          console.warn('[canvas] downloadFile fail', err, url)
+          drawFallback('download-fail')
+        }
       })
-    } else {
+    }
+
+    const loadByFileID = (fileID) => {
+      console.log('[canvas] loadByFileID', fileID)
+      getTempFileURL(fileID).then((map) => {
+        const httpsUrl = map[fileID]
+        if (httpsUrl) {
+          console.log('[canvas] temp url ok', fileID, httpsUrl)
+          loadAndDraw(httpsUrl)
+        } else {
+          console.warn('[canvas] no temp url for fileID', fileID)
+          drawFallback('no-temp-url')
+        }
+      }).catch((err) => {
+        console.warn('[canvas] getTempFileURL fail', err)
+        drawFallback('get-temp-url-fail')
+      })
+    }
+
+    if (/^cloud:\/\//.test(src)) {
+      // 云存储 fileID：先取临时 URL，再下载本地缓存供 canvas 使用
+      loadByFileID(src)
+    } else if (/^https?:\/\//.test(src)) {
+      downloadHttp(src)
+    } else if (/^wxfile:\/\//.test(src) || /^file:\/\//.test(src)) {
       loadAndDraw(src)
+    } else {
+      // 其他情况也按云端 fileID 处理，避免直接回落到本地路径逻辑
+      loadByFileID(src)
     }
   },
 
@@ -877,8 +1035,10 @@ Page({
 
   _applyPageTemplate(pageIndex1) {
     const slides = this.data.slideList || []
+    console.log('[canvas] _applyPageTemplate start', { pageIndex1, slidesLen: slides.length })
     if (!slides.length) {
       this.setData({ templateSrc: '' }, () => {
+        console.log('[canvas] _applyPageTemplate empty slides')
         this._drawTargetAndRebuildMask()
       })
       this._syncProgressDisplay()
@@ -886,9 +1046,11 @@ Page({
     }
     const idx = Math.max(0, Math.min(slides.length - 1, pageIndex1 - 1))
     const row = slides[idx]
+    console.log('[canvas] _applyPageTemplate row', { idx, row })
     this.setData(
       { templateSrc: row && row.url ? row.url : '' },
       () => {
+        console.log('[canvas] _applyPageTemplate setData done', this.data.templateSrc)
         this._drawTargetAndRebuildMask()
       }
     )
@@ -1024,6 +1186,9 @@ Page({
   },
 
   submitWork() {
+    if (this._submitting) {
+      return
+    }
     const wCan = this.writeCanvasNode
     if (!wCan || !this._writeCtx) {
       wx.showToast({ title: '画板未就绪', icon: 'none' })
@@ -1036,10 +1201,7 @@ Page({
       fileType: 'png',
       quality: 1,
       success: (res) => {
-        const tempPath = res.tempFilePath
-        console.log('[canvas] canvasToTempFilePath', tempPath, 'visualScore', score)
-        // 持久化图片并写入教师端可读的提交记录
-        this._persistSubmission(score, tempPath)
+        this._handleSubmit(score, res.tempFilePath)
       },
       fail: (err) => {
         console.warn('[canvas] canvasToTempFilePath fail', err)
@@ -1048,72 +1210,81 @@ Page({
     })
   },
 
-  /** 将临时图片保存到本地文件系统，然后写入提交记录 */
-  _persistSubmission(score, tempPath) {
-    const doRecord = (savedPath) => {
-      const session = getStudentSession()
-      const assignmentId = this.data.assignmentId
-      if (session && assignmentId) {
-        saveSubmission(assignmentId, session.studentId || session.studentNo, {
-          studentName: session.name || '',
-          studentNo: session.studentNo || '',
-          aiScore: score,
-          savedFilePath: savedPath,
-          submittedAt: new Date().toISOString()
-        })
-      }
-      this._onSubmitResult(score)
-    }
-
-    if (!tempPath) {
-      doRecord('')
+  /**
+   * 计算分数 → 上传图片到云存储 → 调云函数提交（progress + submission）
+   */
+  async _handleSubmit(score, tempPath) {
+    if (score < 90) {
+      wx.showModal({
+        title: '提交结果',
+        content: `分数：${score}分。提交失败，再接再厉哦～`,
+        showCancel: false,
+        confirmText: '继续练习'
+      })
       return
     }
 
-    wx.saveFile({
-      tempFilePath: tempPath,
-      success: (saveRes) => {
-        doRecord(saveRes.savedFilePath || tempPath)
-      },
-      fail: () => {
-        // saveFile 失败则退而保存 tempPath（本次启动内有效）
-        doRecord(tempPath)
-      }
-    })
-  },
+    const page = this.data.currentPage
+    const slides = this.data.slideList || []
+    const idx = page - 1
+    const successByPage = [...(this.data.successByPage || [])]
+    while (successByPage.length < this.data.totalPages) {
+      successByPage.push(0)
+    }
+    successByPage[idx] = (successByPage[idx] || 0) + 1
 
-  _onSubmitResult(score) {
-    if (score >= 90) {
-      const page = this.data.currentPage
-      const slides = this.data.slideList || []
-      const idx = page - 1
-      const successByPage = [...(this.data.successByPage || [])]
-      while (successByPage.length < this.data.totalPages) {
-        successByPage.push(0)
-      }
-      successByPage[idx] = (successByPage[idx] || 0) + 1
+    let targetNeed = this.data.defaultTargetCount
+    if (slides.length > 0 && slides[idx]) {
+      targetNeed = slides[idx].targetCount
+    }
+    const reachedPageGoal = successByPage[idx] >= targetNeed
+    const isLastPage = page >= this.data.totalPages
+    const isFinal = reachedPageGoal && isLastPage
 
-      let targetNeed = this.data.defaultTargetCount
-      if (slides.length > 0 && slides[idx]) {
-        targetNeed = slides[idx].targetCount
+    const session = getStudentSession()
+    const assignmentId = this.data.assignmentId
+    if (!session || !assignmentId) {
+      wx.showToast({ title: '会话失效，请重新登录', icon: 'none' })
+      return
+    }
+
+    this._submitting = true
+    wx.showLoading({ title: '上传中', mask: true })
+
+    let imageFileID = ''
+    try {
+      if (tempPath) {
+        const cloudPath = `class/submissions/${assignmentId}/${session.studentNo}_p${page}_${Date.now()}.png`
+        try {
+          imageFileID = await uploadFile(tempPath, cloudPath)
+        } catch (uploadErr) {
+          console.warn('[canvas] uploadFile fail', uploadErr)
+          // 上传失败不阻塞进度上报，但提交记录会缺图
+        }
       }
-      const reachedPageGoal = successByPage[idx] >= targetNeed
-      const isLastPage = page >= this.data.totalPages
-      const isFinal = reachedPageGoal && isLastPage
+
+      wx.showLoading({ title: '提交中', mask: true })
+      await callClassService('submitWork', {
+        assignmentId,
+        aiScore: score,
+        imageFileID,
+        successByPage,
+        currentPage: page,
+        totalPages: this.data.totalPages,
+        isFinal
+      })
 
       this.setData({ successByPage })
       this._syncProgressDisplay()
       this.clearCanvas()
-
-      // 持久化进度：每次得分通过都写一次本地存储
-      this._persistProgress(page, successByPage, isFinal)
+      wx.hideLoading()
 
       wx.showModal({
         title: '提交结果',
         content: `分数：${score}分。恭喜您提交成功！`,
         showCancel: false,
         confirmText: '知道了',
-        success: () => {
+        success: async () => {
           if (!reachedPageGoal) {
             return
           }
@@ -1123,8 +1294,20 @@ Page({
             this._syncTemplateSkin()
             this._applyPageTemplate(nextP)
             this.clearCanvas()
-            // 翻页后再保存一次（currentPage 已更新）
-            this._persistProgress(nextP, successByPage, false)
+            // 翻页后将 currentPage 同步给云端
+            try {
+              await callClassService('submitWork', {
+                assignmentId,
+                aiScore: 0,
+                imageFileID: '',
+                successByPage,
+                currentPage: nextP,
+                totalPages: this.data.totalPages,
+                isFinal: false
+              })
+            } catch (e) {
+              console.warn('[canvas] sync nextPage fail', e)
+            }
             wx.showToast({ title: '已进入下一页字帖', icon: 'none', duration: 2000 })
             return
           }
@@ -1139,27 +1322,11 @@ Page({
           })
         }
       })
-    } else {
-      wx.showModal({
-        title: '提交结果',
-        content: `分数：${score}分。提交失败，再接再厉哦～`,
-        showCancel: false,
-        confirmText: '继续练习'
-      })
+    } catch (err) {
+      wx.hideLoading()
+      wx.showToast({ title: err.message || '提交失败', icon: 'none' })
+    } finally {
+      this._submitting = false
     }
-  },
-
-  /** 写入学生该作业的当前进度（练习模式专用）*/
-  _persistProgress(currentPage, successByPage, isFinal) {
-    const session = getStudentSession()
-    const assignmentId = this.data.assignmentId
-    if (!session || !assignmentId) return
-    const studentKey = session.studentId || session.studentNo || ''
-    saveProgress(assignmentId, studentKey, {
-      successByPage: successByPage.slice(),
-      currentPage,
-      totalPages: this.data.totalPages,
-      isFinal: !!isFinal
-    })
   }
 })
