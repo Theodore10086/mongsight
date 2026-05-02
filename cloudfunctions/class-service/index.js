@@ -78,6 +78,65 @@ function genId(prefix) {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`
 }
 
+function normalizeReviewStatus(submissionStatus, teacherStatus) {
+  const sub = trimStr(submissionStatus)
+  const rev = trimStr(teacherStatus)
+  if (sub === 'passed' || rev === 'passed') return 'passed'
+  if (sub === 'rejected' || rev === 'rejected') return 'rejected'
+  if (sub === 'pending' || rev === 'pending') return 'pending'
+  return ''
+}
+
+function resolveStudentAssignmentStatus(options) {
+  const {
+    hasSubmission,
+    submissionStatus,
+    teacherStatus,
+    resubmitted,
+    hasProgress
+  } = options || {}
+
+  const reviewStatus = normalizeReviewStatus(submissionStatus, teacherStatus)
+
+  if (!hasSubmission && !reviewStatus && !hasProgress) {
+    return { status: 'pending_submit', reviewStatus: '' }
+  }
+  if (reviewStatus === 'passed') {
+    return { status: 'passed', reviewStatus }
+  }
+  if (reviewStatus === 'rejected') {
+    return { status: resubmitted ? 'pending_review' : 'rejected', reviewStatus }
+  }
+  if (reviewStatus === 'pending') {
+    return { status: 'pending_review', reviewStatus }
+  }
+  return { status: hasSubmission || hasProgress ? 'pending_review' : 'pending_submit', reviewStatus: reviewStatus || '' }
+}
+
+function resolveTeacherAssignmentStatus(options) {
+  const {
+    hasSubmission,
+    submissionStatus,
+    teacherStatus,
+    resubmitted
+  } = options || {}
+
+  const reviewStatus = normalizeReviewStatus(submissionStatus, teacherStatus)
+  if (!hasSubmission) {
+    return { status: 'pending_submit', reviewStatus }
+  }
+  if (reviewStatus === 'passed') {
+    return { status: 'passed', reviewStatus }
+  }
+  if (reviewStatus === 'rejected') {
+    return { status: resubmitted ? 'pending_review' : 'rejected', reviewStatus }
+  }
+  if (reviewStatus === 'pending') {
+    return { status: 'pending_review', reviewStatus }
+  }
+  return { status: 'pending_review', reviewStatus }
+}
+
 /**
  * 把 boundOpenIds 中加入当前 openId（去重）
  */
@@ -716,20 +775,26 @@ async function getAssignmentReview(openId, event) {
     const sub = subMap.get(m.studentNo)
     const rev = revMap.get(m.studentNo)
     const hasFinal = !!(prog && prog.isFinal)
-    let status
-    if (rev && rev.status) {
-      status = rev.status
-    } else if (hasFinal) {
-      status = 'pending'
-    } else {
-      status = 'unsubmitted'
-    }
+    const hasSubmission = !!sub || hasFinal
+    const submissionReviewStatus = sub ? String(sub.reviewStatus || '') : ''
+    const teacherReviewStatus = rev ? String(rev.status || '') : ''
+    const resubmitted = !!(sub && sub.resubmitted)
+
+    const resolved = resolveTeacherAssignmentStatus({
+      hasSubmission,
+      submissionStatus: submissionReviewStatus,
+      teacherStatus: teacherReviewStatus,
+      resubmitted
+    })
+
     return {
       id: m._id,
       studentNo: m.studentNo,
       studentName: stu.name || '',
       aiScore: sub && hasFinal ? (sub.aiScore != null ? sub.aiScore : 0) : 0,
-      status,
+      status: resolved.status,
+      reviewStatus: resolved.reviewStatus,
+      resubmitted,
       imageFileID: sub && hasFinal ? (sub.imageFileID || '') : ''
     }
   })
@@ -760,20 +825,31 @@ async function setReviewStatus(openId, event) {
   // 逐条 upsert，并统计真正写入成功的数量
   let updated = 0
   for (const studentNo of studentNos) {
-    const exist = await db.collection(COLL.reviews)
+    const reviewExist = await db.collection(COLL.reviews)
       .where({ assignmentId, studentNo })
       .limit(1).get()
-    const data = {
+    const submissionExist = await db.collection(COLL.submissions)
+      .where({ assignmentId, studentNo })
+      .limit(1).get()
+    const reviewData = {
       status,
       teacherDocId: teacher._id,
       reviewedAt: nowDate()
     }
-    if (exist.data && exist.data[0]) {
-      await db.collection(COLL.reviews).doc(exist.data[0]._id).update({ data })
+    const submissionReviewData = {
+      reviewStatus: status,
+      submittedAt: nowDate(),
+      resubmitted: !!(submissionExist.data && submissionExist.data[0] && submissionExist.data[0].resubmitted)
+    }
+    if (reviewExist.data && reviewExist.data[0]) {
+      await db.collection(COLL.reviews).doc(reviewExist.data[0]._id).update({ data: reviewData })
     } else {
       await db.collection(COLL.reviews).add({
-        data: Object.assign({ assignmentId, studentNo }, data)
+        data: Object.assign({ assignmentId, studentNo }, reviewData)
       })
+    }
+    if (submissionExist.data && submissionExist.data[0]) {
+      await db.collection(COLL.submissions).doc(submissionExist.data[0]._id).update({ data: submissionReviewData })
     }
 
     const verify = await db.collection(COLL.reviews)
@@ -905,28 +981,37 @@ async function getClassAssignments(openId, event) {
     const prog = progMap.get(a._id)
     const sub = subMap.get(a._id)
     const rev = revMap.get(a._id)
-    let status = 'pending'
-    let progressText = ''
-    if (rev && rev.status === 'passed') {
-      status = 'completed'
-    } else if (rev && rev.status === 'rejected') {
-      status = 'rejected'
-    } else if (prog && prog.isFinal) {
-      status = 'completed'
-    } else if (prog && Array.isArray(prog.successByPage) && prog.successByPage.length) {
-      const total = prog.totalPages || prog.successByPage.length
-      const cur = Math.max(1, Math.min(total, prog.currentPage || 1))
-      status = 'inprogress'
-      progressText = `进行中 ${cur - 1}/${total}`
+    const hasProgress = !!(prog && Array.isArray(prog.successByPage) && prog.successByPage.length)
+    const hasSubmitted = !!sub || !!(prog && prog.isFinal)
+    const reviewStatus = rev ? String(rev.status || '') : ''
+    const submissionReviewStatus = sub ? String(sub.reviewStatus || '') : ''
+    const resubmitted = !!(sub && sub.resubmitted)
+    const resolved = resolveStudentAssignmentStatus({
+      hasSubmission: hasSubmitted,
+      submissionStatus: submissionReviewStatus,
+      teacherStatus: reviewStatus,
+      resubmitted,
+      hasProgress
+    })
+
+    let progressText = '待提交'
+    if (resolved.status === 'passed') {
+      progressText = '已通过'
+    } else if (resolved.status === 'rejected') {
+      progressText = '已驳回，待重做'
+    } else if (resolved.status === 'pending_review') {
+      progressText = resubmitted ? '已重新提交，待批改' : '已提交，待批改'
     }
+
     return {
       id: a._id,
       title: a.title || '作业',
       date: a.date || '',
-      status,
+      status: resolved.status,
       progressText,
       score: sub && sub.aiScore != null ? sub.aiScore : null,
-      reviewStatus: rev ? rev.status || '' : '',
+      reviewStatus: resolved.reviewStatus,
+      resubmitted,
       requirements: a.requirements || '',
       scriptType: a.scriptType || 'mongolian',
       imageList: a.imageList || []
@@ -968,6 +1053,16 @@ async function getAssignmentForStudent(openId, event) {
   const rev = revRes.data && revRes.data[0]
 
   const cloudImageList = await resolveCloudFileURLs(assignment.imageList || [])
+  const submissionReviewStatus = sub ? String(sub.reviewStatus || '') : ''
+  const reviewStatus = rev ? String(rev.status || '') : ''
+  const resubmitted = !!(sub && sub.resubmitted)
+  const resolved = resolveStudentAssignmentStatus({
+    hasSubmission: !!sub || !!(prog && prog.isFinal),
+    submissionStatus: submissionReviewStatus,
+    teacherStatus: reviewStatus,
+    resubmitted,
+    hasProgress: !!prog
+  })
   console.log('[getAssignmentForStudent] assignmentId=', assignmentId)
   console.log('[getAssignmentForStudent] imageList=', JSON.stringify(cloudImageList))
   return {
@@ -988,7 +1083,9 @@ async function getAssignmentForStudent(openId, event) {
       aiScore: sub.aiScore || 0,
       imageFileID: sub.imageFileID || '',
       submittedAt: sub.submittedAt || null,
-      reviewStatus: rev ? rev.status || '' : ''
+      reviewStatus: resolved.reviewStatus,
+      status: resolved.status,
+      resubmitted
     } : null
   }
 }
@@ -1019,6 +1116,13 @@ async function submitWork(openId, event) {
   const totalPages = Number(event.totalPages) || 1
   const isFinal = !!event.isFinal
 
+  const existSub = await db.collection(COLL.submissions)
+    .where({ assignmentId, studentNo: stu.studentNo })
+    .limit(1).get()
+  const prevSub = existSub.data && existSub.data[0]
+  const hadReviewedBefore = !!(prevSub && prevSub.reviewStatus && prevSub.reviewStatus !== 'pending')
+  const reviewStatus = 'pending'
+
   // upsert progress
   const existProg = await db.collection(COLL.progress)
     .where({ assignmentId, studentNo: stu.studentNo })
@@ -1039,11 +1143,8 @@ async function submitWork(openId, event) {
     await db.collection(COLL.progress).add({ data: Object.assign({ assignmentId }, progData) })
   }
 
-  // upsert submission（仅在 isFinal 或附了图片时写）
-  if (isFinal || imageFileID) {
-    const existSub = await db.collection(COLL.submissions)
-      .where({ assignmentId, studentNo: stu.studentNo })
-      .limit(1).get()
+  // 只要提交过一次，就保存提交记录；重做再次提交时把状态重置为 pending
+  if (isFinal || imageFileID || prevSub) {
     const subData = {
       classId: assignment.classId,
       studentNo: stu.studentNo,
@@ -1051,10 +1152,12 @@ async function submitWork(openId, event) {
       studentName: stu.name,
       aiScore,
       imageFileID,
-      submittedAt: nowDate()
+      submittedAt: nowDate(),
+      reviewStatus,
+      resubmitted: hadReviewedBefore
     }
-    if (existSub.data && existSub.data[0]) {
-      await db.collection(COLL.submissions).doc(existSub.data[0]._id).update({ data: subData })
+    if (prevSub) {
+      await db.collection(COLL.submissions).doc(prevSub._id).update({ data: subData })
     } else {
       await db.collection(COLL.submissions).add({ data: Object.assign({ assignmentId }, subData) })
     }

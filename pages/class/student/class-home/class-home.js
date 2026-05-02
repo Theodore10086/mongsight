@@ -73,7 +73,7 @@ Page({
     if (!id) {
       return
     }
-    if (status === 'completed') {
+    if (status === 'passed') {
       wx.showModal({
         title: '作业已通过',
         content: '这份作业已经通过，无需再次提交。',
@@ -82,23 +82,17 @@ Page({
       })
       return
     }
-    if (status === 'rejected') {
+    if (status === 'pending_review') {
       wx.showModal({
-        title: '作业已驳回',
-        content: '这份作业需要重新完成后再提交，点击确认进入重做。',
-        confirmText: '重新完成',
-        cancelText: '取消',
-        success: (res) => {
-          if (!res.confirm) return
-          wx.navigateTo({
-            url: `/pages/class/student/canvas/canvas?id=${encodeURIComponent(id)}&mode=retry`
-          })
-        }
+        title: '已提交',
+        content: '作业已提交，正在等待教师批改，暂不能修改。',
+        showCancel: false,
+        confirmText: '知道了'
       })
       return
     }
     wx.navigateTo({
-      url: `/pages/class/student/canvas/canvas?id=${encodeURIComponent(id)}`
+      url: `/pages/class/student/canvas/canvas?id=${encodeURIComponent(id)}${status === 'rejected' ? '&mode=retry' : ''}`
     })
   }
 })

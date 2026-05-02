@@ -44,6 +44,9 @@ Page({
 
   onShow() {
     this.setData(getClassPageLayout())
+    if (this._assignmentId) {
+      this.loadReview()
+    }
   },
 
   async loadReview() {
@@ -54,15 +57,29 @@ Page({
       })
       wx.setNavigationBarTitle({ title: data.assignmentTitle || '作业批改' })
 
-      const list = (data.submissionList || []).map((s) => ({
-        id: s.studentNo,
-        studentNo: s.studentNo,
-        studentName: s.studentName || '',
-        aiScore: s.aiScore || 0,
-        status: s.status,
-        imageFileID: s.imageFileID || '',
-        imageUrl: ''
-      }))
+      const list = (data.submissionList || []).map((s) => {
+        const reviewStatus = s.reviewStatus || s.status
+        const displayStatus = s.status || reviewStatus
+        const statusText = reviewStatus === 'passed'
+          ? '已通过'
+          : (reviewStatus === 'rejected'
+            ? '已驳回'
+            : (displayStatus === 'pending_review' || reviewStatus === 'pending'
+              ? (s.resubmitted ? '重新提交，待批改' : '待批改')
+              : '未提交'))
+        return {
+          id: s.studentNo,
+          studentNo: s.studentNo,
+          studentName: s.studentName || '',
+          aiScore: s.aiScore || 0,
+          status: displayStatus,
+          reviewStatus,
+          resubmitted: !!s.resubmitted,
+          statusText,
+          imageFileID: s.imageFileID || '',
+          imageUrl: ''
+        }
+      })
 
       // 解析图片临时链接
       const fileIDs = list.map((s) => s.imageFileID).filter(Boolean)

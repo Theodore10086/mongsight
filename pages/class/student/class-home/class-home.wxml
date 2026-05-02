@@ -19,35 +19,35 @@
           <text class="card-date">布置时间：{{item.date}}</text>
         </view>
         <view class="card-right">
-          <block wx:if="{{item.status === 'pending'}}">
+          <block wx:if="{{item.status === 'pending_submit'}}">
             <view class="card-row-status">
-              <text class="tag-undone">未交</text>
+              <text class="tag-undone">待提交</text>
             </view>
-            <view class="btn btn-practice" hover-class="btn--hover">去练习</view>
+            <view class="btn btn-practice" hover-class="btn--hover">去提交</view>
           </block>
-          <block wx:elif="{{item.status === 'inprogress'}}">
-            <view class="card-row-status">
-              <text class="tag-progress">{{item.progressText}}</text>
-            </view>
-            <view class="btn btn-practice" hover-class="btn--hover">继续练习</view>
-          </block>
-          <block wx:elif="{{item.status === 'rejected'}}">
-            <view class="card-row-status">
-              <text class="tag-rejected">已驳回</text>
-            </view>
-            <view class="btn btn-practice" hover-class="btn--hover">重新完成</view>
-          </block>
-          <block wx:elif="{{item.status === 'completed'}}">
+          <block wx:elif="{{item.status === 'passed'}}">
             <view class="card-row-status">
               <text class="tag-done">已通过</text>
             </view>
             <view class="btn btn-outline btn-disabled">已完成</view>
           </block>
+          <block wx:elif="{{item.status === 'rejected'}}">
+            <view class="card-row-status">
+              <text class="tag-rejected">已驳回，待重做</text>
+            </view>
+            <view class="btn btn-practice" hover-class="btn--hover">重新完成</view>
+          </block>
+          <block wx:elif="{{item.status === 'pending_review'}}">
+            <view class="card-row-status">
+              <text class="tag-progress">已提交，待批改</text>
+            </view>
+            <view class="btn btn-outline btn-disabled">等待批改</view>
+          </block>
           <block wx:else>
             <view class="card-row-status">
-              <text class="tag-done">已完成</text>
+              <text class="tag-progress">{{item.progressText || '待提交'}}</text>
             </view>
-            <view class="btn btn-outline btn-disabled">等待批阅</view>
+            <view class="btn btn-outline btn-disabled">待提交</view>
           </block>
         </view>
       </view>

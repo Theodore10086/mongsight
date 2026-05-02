@@ -548,7 +548,7 @@ Page({
     if (mode === 'review') {
       wx.setNavigationBarTitle({ title: '作业回看' })
     } else if (mode === 'retry') {
-      wx.setNavigationBarTitle({ title: '重新完成作业' })
+      wx.setNavigationBarTitle({ title: '重新完成' })
     }
 
     if (!id) {
@@ -596,6 +596,41 @@ Page({
       return
     }
 
+    const reviewStatus = data.submission ? String(data.submission.reviewStatus || '') : ''
+    const resubmitted = !!(data.submission && data.submission.resubmitted)
+    const hasSubmitted = !!data.submission || !!(data.progress && data.progress.isFinal)
+    const isRetryMode = mode === 'retry'
+    if (reviewStatus === 'passed') {
+      wx.showModal({
+        title: '作业已通过',
+        content: '这份作业已经通过，无需再次修改。',
+        showCancel: false,
+        confirmText: '知道了',
+        success: () => wx.navigateBack({ delta: 1 })
+      })
+      return
+    }
+    if (reviewStatus === 'pending' && !isRetryMode) {
+      wx.showModal({
+        title: '已提交',
+        content: '作业已提交，正在等待教师批改，暂不能修改。',
+        showCancel: false,
+        confirmText: '知道了',
+        success: () => wx.navigateBack({ delta: 1 })
+      })
+      return
+    }
+    if (reviewStatus === 'rejected' && !isRetryMode && hasSubmitted && !resubmitted) {
+      wx.showModal({
+        title: '已驳回',
+        content: '作业已被驳回，请点击“重做”后再次提交。',
+        showCancel: false,
+        confirmText: '知道了',
+        success: () => wx.navigateBack({ delta: 1 })
+      })
+      return
+    }
+
     const slideList = buildSlideList(assignment.imageList)
     console.log('[canvas] slideList', JSON.stringify(slideList))
     const hasImg = slideList.length > 0
@@ -624,7 +659,6 @@ Page({
       ? slideList[restoredPage - 1].targetCount
       : this.data.defaultTargetCount
     const displaySuccess = successByPage[restoredPage - 1] || 0
-    const reviewStatus = data.submission && data.submission.reviewStatus ? data.submission.reviewStatus : ''
     console.log('[canvas] page init', {
       hasImg,
       totalPages,
