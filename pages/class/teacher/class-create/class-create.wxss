@@ -76,6 +76,12 @@
   margin-right: 20rpx;
 }
 
+.batch-entry-glyph {
+  width: 40rpx;
+  height: 40rpx;
+  margin-right: 20rpx;
+}
+
 .batch-entry-text {
   flex: 1;
   display: flex;
@@ -99,6 +105,11 @@
   font-size: 36rpx;
   color: rgba(139, 90, 43, 0.45);
   font-weight: 300;
+}
+
+.batch-entry-arrow-glyph {
+  width: 28rpx;
+  height: 28rpx;
 }
 
 .batch-panel {

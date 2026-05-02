@@ -1409,6 +1409,14 @@ page {
   font-size: 24rpx;
   margin-right: 12rpx;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.guide-icon-glyph {
+  width: 28rpx;
+  height: 28rpx;
 }
 
 .guide-capsule.collapsed .guide-icon {
@@ -3122,6 +3130,19 @@ page {
   font-size: 44rpx;
 }
 
+.tq-icon-glyph {
+  width: 44rpx;
+  height: 44rpx;
+  margin-right: 14rpx;
+}
+
+.tq-grade-glyph {
+  width: 24rpx;
+  height: 24rpx;
+  margin-right: 8rpx;
+  vertical-align: -4rpx;
+}
+
 .tq-title {
   font-size: 32rpx;
   font-weight: 700;
@@ -3181,6 +3202,13 @@ page {
 
 .tq-item-icon {
   font-size: 26rpx;
+  flex-shrink: 0;
+  margin-top: 2rpx;
+}
+
+.tq-item-glyph {
+  width: 28rpx;
+  height: 28rpx;
   flex-shrink: 0;
   margin-top: 2rpx;
 }
@@ -3313,6 +3341,11 @@ page {
 
 .mengbao-sheet-icon {
   font-size: 40rpx;
+}
+
+.mengbao-sheet-glyph {
+  width: 44rpx;
+  height: 44rpx;
 }
 
 .mengbao-sheet-title {
@@ -3853,6 +3886,12 @@ page {
   margin-bottom: 16rpx;
 }
 
+.method-glyph {
+  width: 56rpx;
+  height: 56rpx;
+  margin-bottom: 16rpx;
+}
+
 .method-name {
   font-size: 30rpx;
   font-weight: 700;
@@ -3899,7 +3938,9 @@ page {
 
 /* 打分结果方式标签 */
 .score-method-tag {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 8rpx;
   padding: 8rpx 24rpx;
   border-radius: 40rpx;
   font-size: 22rpx;
@@ -3914,6 +3955,11 @@ page {
   background: rgba(100, 200, 255, 0.12);
   color: #64c8ff;
   border-color: rgba(100, 200, 255, 0.3);
+}
+
+.score-method-tag-glyph {
+  width: 24rpx;
+  height: 24rpx;
 }
 
 .scoring-footer {
@@ -4056,6 +4102,12 @@ page {
 
 .action-btn .btn-icon {
   font-size: 32rpx;
+}
+
+.action-btn .btn-glyph {
+  width: 32rpx;
+  height: 32rpx;
+  margin-right: 10rpx;
 }
 
 .action-btn .btn-text {
@@ -7672,6 +7724,14 @@ page {
 
 .challenge-icon-large {
   font-size: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.challenge-icon-large-glyph {
+  width: 56rpx;
+  height: 56rpx;
 }
 
 .challenge-content {

@@ -104,6 +104,11 @@
   font-size: 28rpx;
 }
 
+.class-card-meta-glyph {
+  width: 24rpx;
+  height: 24rpx;
+}
+
 .class-card-meta-num {
   font-size: 24rpx;
   color: rgba(92, 64, 51, 0.75);

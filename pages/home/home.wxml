@@ -67,7 +67,7 @@
     </view>
     <view class="path-card-body">
       <view class="path-card-icon">
-        <text class="path-card-icon-text">📷</text>
+        <view class="zm-icon zm-icon-camera zm-icon-white path-card-icon-glyph"></view>
       </view>
       <view class="path-card-text">
         <view class="path-card-title-row">
@@ -97,21 +97,21 @@
   <view class="quick-grid">
     <view class="quick-tile" hover-class="quick-tile-hover" bindtap="onGoToMengbao">
       <view class="quick-tile-icon quick-tile-icon-purple">
-        <text class="quick-tile-emoji">🤖</text>
+        <view class="zm-icon zm-icon-sparkle zm-icon-white quick-tile-glyph"></view>
       </view>
       <text class="quick-tile-title">蒙宝AI</text>
       <text class="quick-tile-desc">书法对话</text>
     </view>
     <view class="quick-tile" hover-class="quick-tile-hover" bindtap="onGoToChallenge">
       <view class="quick-tile-icon quick-tile-icon-warm">
-        <text class="quick-tile-emoji">⚔️</text>
+        <view class="zm-icon zm-icon-flag zm-icon-white quick-tile-glyph"></view>
       </view>
       <text class="quick-tile-title">每日试炼</text>
       <text class="quick-tile-desc">赢取墨玉</text>
     </view>
     <view class="quick-tile" hover-class="quick-tile-hover" bindtap="onGoToWorks">
       <view class="quick-tile-icon quick-tile-icon-accent">
-        <text class="quick-tile-emoji">🖼️</text>
+        <view class="zm-icon zm-icon-frame zm-icon-white quick-tile-glyph"></view>
       </view>
       <text class="quick-tile-title">我的作品</text>
       <text class="quick-tile-desc">{{myWorksCount}}件珍藏</text>
@@ -125,19 +125,19 @@
 
   <view class="stats-card">
     <view class="stat-cell">
-      <text class="stat-cell-emoji">🔥</text>
+      <view class="zm-icon zm-icon-flame zm-icon-warm stat-cell-glyph"></view>
       <text class="stat-cell-num">{{streakDays}}</text>
       <text class="stat-cell-label">连续天数</text>
     </view>
     <view class="stat-cell-divider"></view>
     <view class="stat-cell">
-      <text class="stat-cell-emoji">⚡</text>
+      <view class="zm-icon zm-icon-bolt zm-icon-gold stat-cell-glyph"></view>
       <text class="stat-cell-num">{{totalXp}}</text>
       <text class="stat-cell-label">总经验</text>
     </view>
     <view class="stat-cell-divider"></view>
     <view class="stat-cell">
-      <text class="stat-cell-emoji">💎</text>
+      <view class="zm-icon zm-icon-gem zm-icon-secondary stat-cell-glyph"></view>
       <text class="stat-cell-num">{{inkJades}}</text>
       <text class="stat-cell-label">墨玉</text>
     </view>
@@ -146,7 +146,7 @@
   <!-- 蒙宝小贴士 -->
   <view class="tip-card">
     <view class="tip-card-mascot">
-      <text class="tip-card-mascot-emoji">🐑</text>
+      <view class="zm-icon zm-icon-bulb zm-icon-gold-dark tip-card-glyph"></view>
     </view>
     <view class="tip-card-content">
       <text class="tip-card-title">蒙宝小贴士</text>

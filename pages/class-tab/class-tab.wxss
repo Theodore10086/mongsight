@@ -43,6 +43,11 @@ page {
   line-height: 1;
 }
 
+.class-hero-glyph {
+  width: 56rpx;
+  height: 56rpx;
+}
+
 .class-hero-text {
   flex: 1;
   display: flex;

@@ -36,12 +36,12 @@
       <text class="section-label">学生名单</text>
 
       <view wx:if="{{!showBatchImport}}" class="batch-entry" bindtap="toggleBatchImport">
-        <text class="batch-entry-icon">📋</text>
+        <view class="zm-icon zm-icon-doc zm-icon-gold-dark batch-entry-glyph"></view>
         <view class="batch-entry-text">
           <text class="batch-entry-title">批量导入学生</text>
           <text class="batch-entry-sub">粘贴名单，一键解析姓名、学号与初始密码</text>
         </view>
-        <text class="batch-entry-arrow">›</text>
+        <view class="zm-icon zm-icon-chevron-right zm-icon-muted batch-entry-arrow-glyph"></view>
       </view>
 
       <block wx:if="{{showBatchImport}}">

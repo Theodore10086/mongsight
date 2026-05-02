@@ -11,15 +11,20 @@
           src="{{userProfile.avatarUrl}}"
           mode="aspectFill"
         ></image>
-        <view class="profile-avatar profile-avatar-emoji" wx:else>
-          <text>{{userProfile.avatar || '🎨'}}</text>
+        <view class="profile-avatar profile-avatar-emoji" wx:elif="{{userProfile.avatar}}">
+          <text>{{userProfile.avatar}}</text>
         </view>
-        <view class="profile-avatar-edit-icon">✎</view>
+        <view class="profile-avatar profile-avatar-default" wx:else>
+          <view class="zm-icon zm-icon-user zm-icon-gold-dark profile-avatar-glyph"></view>
+        </view>
+        <view class="profile-avatar-edit-icon">
+          <view class="zm-icon zm-icon-pencil zm-icon-white profile-avatar-edit-glyph"></view>
+        </view>
       </view>
       <view class="profile-info">
         <view class="profile-nickname-row" hover-class="profile-nickname-row-hover" hover-stay-time="80" bindtap="onEditNickname">
           <text class="profile-nickname">{{userProfile.nickName || userProfile.nickname || '墨客'}}</text>
-          <text class="profile-nickname-edit">✎</text>
+          <view class="zm-icon zm-icon-pencil profile-nickname-edit-glyph"></view>
         </view>
         <view class="profile-level-row">
           <view class="profile-level-pill">
@@ -27,7 +32,7 @@
             <text class="profile-level-title">· {{userProfile.title || '牧羊人'}}</text>
           </view>
           <view class="profile-jade-pill">
-            <text class="jade-emoji">💎</text>
+            <view class="zm-icon zm-icon-gem zm-icon-gold-dark jade-glyph"></view>
             <text class="jade-count">{{userProfile.inkJades || 0}}</text>
           </view>
         </view>
@@ -67,7 +72,7 @@
   <view class="checkin-card" hover-class="checkin-card-hover" hover-stay-time="80" bindtap="onDailyCheckin">
     <view class="checkin-left">
       <view class="checkin-icon">
-        <text class="checkin-icon-emoji">📅</text>
+        <view class="zm-icon zm-icon-calendar zm-icon-gold-dark checkin-icon-glyph"></view>
       </view>
       <view class="checkin-text">
         <text class="checkin-title">每日签到</text>
@@ -86,39 +91,39 @@
 
   <view class="menu-card">
     <view class="menu-item" hover-class="menu-item-hover" bindtap="onGoToMyWorks">
-      <view class="menu-icon menu-icon-accent"><text>🖼️</text></view>
+      <view class="menu-icon menu-icon-accent"><view class="zm-icon zm-icon-frame zm-icon-gold-dark menu-glyph"></view></view>
       <text class="menu-text">我的作品</text>
-      <text class="menu-arrow">›</text>
+      <view class="zm-icon zm-icon-chevron-right zm-icon-muted menu-arrow-glyph"></view>
     </view>
     <view class="menu-divider"></view>
     <view class="menu-item" hover-class="menu-item-hover" bindtap="onGoToMyPosts">
-      <view class="menu-icon menu-icon-primary"><text>📝</text></view>
+      <view class="menu-icon menu-icon-primary"><view class="zm-icon zm-icon-doc zm-icon-primary-dark menu-glyph"></view></view>
       <text class="menu-text">我的帖子</text>
-      <text class="menu-arrow">›</text>
+      <view class="zm-icon zm-icon-chevron-right zm-icon-muted menu-arrow-glyph"></view>
     </view>
     <view class="menu-divider"></view>
     <view class="menu-item" hover-class="menu-item-hover" bindtap="onGoToMyLikes">
-      <view class="menu-icon menu-icon-pink"><text>❤️</text></view>
+      <view class="menu-icon menu-icon-pink"><view class="zm-icon zm-icon-heart zm-icon-pink menu-glyph"></view></view>
       <text class="menu-text">我的点赞</text>
-      <text class="menu-arrow">›</text>
+      <view class="zm-icon zm-icon-chevron-right zm-icon-muted menu-arrow-glyph"></view>
     </view>
     <view class="menu-divider"></view>
     <view class="menu-item" hover-class="menu-item-hover" bindtap="onGoToMyCollections">
-      <view class="menu-icon menu-icon-warm"><text>⭐</text></view>
+      <view class="menu-icon menu-icon-warm"><view class="zm-icon zm-icon-bookmark zm-icon-warm-dark menu-glyph"></view></view>
       <text class="menu-text">我的收藏</text>
-      <text class="menu-arrow">›</text>
+      <view class="zm-icon zm-icon-chevron-right zm-icon-muted menu-arrow-glyph"></view>
     </view>
     <view class="menu-divider"></view>
     <view class="menu-item" hover-class="menu-item-hover" bindtap="onGoToAchievements">
-      <view class="menu-icon menu-icon-purple"><text>🏆</text></view>
+      <view class="menu-icon menu-icon-purple"><view class="zm-icon zm-icon-trophy zm-icon-purple menu-glyph"></view></view>
       <text class="menu-text">成就中心</text>
-      <text class="menu-arrow">›</text>
+      <view class="zm-icon zm-icon-chevron-right zm-icon-muted menu-arrow-glyph"></view>
     </view>
     <view class="menu-divider"></view>
     <view class="menu-item" hover-class="menu-item-hover" bindtap="onGoToSettings">
-      <view class="menu-icon menu-icon-secondary"><text>⚙️</text></view>
+      <view class="menu-icon menu-icon-secondary"><view class="zm-icon zm-icon-settings zm-icon-secondary menu-glyph"></view></view>
       <text class="menu-text">设置</text>
-      <text class="menu-arrow">›</text>
+      <view class="zm-icon zm-icon-chevron-right zm-icon-muted menu-arrow-glyph"></view>
     </view>
   </view>
 
@@ -146,7 +151,7 @@
         hover-class="upload-avatar-btn-hover"
         bindtap="onUploadAvatar"
       >
-        <text class="upload-avatar-emoji">📷</text>
+        <view class="zm-icon zm-icon-camera zm-icon-secondary-text upload-avatar-glyph"></view>
         <text class="upload-avatar-text">从相册上传</text>
       </view>
       <view class="upload-avatar-preview" wx:if="{{selectedAvatarIsImage}}">

@@ -63,6 +63,18 @@ page {
   font-size: 76rpx;
 }
 
+.profile-avatar-default {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #fff7e1 0%, #ffe9b8 100%);
+}
+
+.profile-avatar-glyph {
+  width: 64rpx;
+  height: 64rpx;
+}
+
 .profile-avatar-edit-icon {
   position: absolute;
   right: -2rpx;
@@ -78,6 +90,11 @@ page {
   justify-content: center;
   border: 3rpx solid #fff;
   box-shadow: 0 3rpx 0 var(--brand-primary-dark);
+}
+
+.profile-avatar-edit-glyph {
+  width: 22rpx;
+  height: 22rpx;
 }
 
 .profile-info {
@@ -114,6 +131,13 @@ page {
   color: rgba(90, 55, 0, 0.55);
 }
 
+.profile-nickname-edit-glyph {
+  width: 28rpx;
+  height: 28rpx;
+  background-color: rgba(90, 55, 0, 0.55);
+  opacity: 0.85;
+}
+
 .profile-level-row {
   display: flex;
   align-items: center;
@@ -146,6 +170,11 @@ page {
 .jade-emoji {
   font-size: 24rpx;
   line-height: 1;
+}
+
+.jade-glyph {
+  width: 26rpx;
+  height: 26rpx;
 }
 
 .jade-count {
@@ -240,6 +269,11 @@ page {
   line-height: 1;
 }
 
+.checkin-icon-glyph {
+  width: 44rpx;
+  height: 44rpx;
+}
+
 .checkin-text {
   display: flex;
   flex-direction: column;
@@ -311,6 +345,11 @@ page {
   font-size: 32rpx;
 }
 
+.menu-glyph {
+  width: 36rpx;
+  height: 36rpx;
+}
+
 .menu-icon-primary { background: var(--brand-primary-soft); }
 .menu-icon-secondary { background: var(--brand-secondary-soft); }
 .menu-icon-accent { background: var(--brand-accent-soft); }
@@ -329,6 +368,11 @@ page {
   font-size: 36rpx;
   color: var(--text-muted);
   line-height: 1;
+}
+
+.menu-arrow-glyph {
+  width: 28rpx;
+  height: 28rpx;
 }
 
 .menu-divider {
@@ -393,6 +437,11 @@ page {
 .upload-avatar-emoji {
   font-size: 36rpx;
   line-height: 1;
+}
+
+.upload-avatar-glyph {
+  width: 36rpx;
+  height: 36rpx;
 }
 
 .upload-avatar-text {

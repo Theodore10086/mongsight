@@ -18,7 +18,7 @@
         </view>
         <view class="class-card-side">
           <view class="class-card-meta">
-            <text class="class-card-meta-icon">👤</text>
+            <view class="zm-icon zm-icon-user zm-icon-muted class-card-meta-glyph"></view>
             <text class="class-card-meta-num">{{item.studentCount}}人</text>
           </view>
           <view

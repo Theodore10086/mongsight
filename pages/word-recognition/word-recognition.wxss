@@ -61,6 +61,11 @@ page {
   line-height: 1;
 }
 
+.hero-mascot-glyph {
+  width: 56rpx;
+  height: 56rpx;
+}
+
 .hero-text {
   flex: 1;
   display: flex;
@@ -120,6 +125,11 @@ page {
 .action-button-emoji {
   font-size: 36rpx;
   line-height: 1;
+}
+
+.action-button-glyph {
+  width: 40rpx;
+  height: 40rpx;
 }
 
 .action-button-text {
@@ -236,6 +246,11 @@ page {
 .error-title-emoji {
   font-size: 28rpx;
   line-height: 1;
+}
+
+.error-title-glyph {
+  width: 32rpx;
+  height: 32rpx;
 }
 
 .error-title {

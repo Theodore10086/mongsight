@@ -7,7 +7,7 @@
       <text class="comm-hero-subtitle">和同学一起交流学习心得</text>
     </view>
     <view class="comm-hero-cta" hover-class="comm-hero-cta-hover" hover-stay-time="80" bindtap="onOpenPostModal">
-      <text class="comm-hero-cta-icon">＋</text>
+      <view class="zm-icon zm-icon-plus zm-icon-white comm-hero-cta-glyph"></view>
       <text class="comm-hero-cta-text">发帖</text>
     </view>
   </view>
@@ -17,7 +17,7 @@
 
     <!-- 空状态 -->
     <view class="zm-empty" wx:if="{{!isLoadingPosts && communityPosts.length === 0}}">
-      <text class="zm-empty-emoji">📭</text>
+      <view class="zm-icon zm-icon-inbox zm-icon-muted zm-empty-icon"></view>
       <text class="zm-empty-text">还没有帖子，快来分享第一条吧~</text>
     </view>
 
@@ -35,8 +35,11 @@
           src="{{item.avatarUrl}}"
           mode="aspectFill"
         ></image>
-        <view class="post-avatar post-avatar-emoji" wx:else>
-          <text>{{item.avatarText || item.avatar || '🙂'}}</text>
+        <view class="post-avatar post-avatar-emoji" wx:elif="{{item.avatarText || item.avatar}}">
+          <text>{{item.avatarText || item.avatar}}</text>
+        </view>
+        <view class="post-avatar post-avatar-default" wx:else>
+          <view class="zm-icon zm-icon-user zm-icon-gold-dark post-avatar-glyph"></view>
         </view>
         <view class="post-user-info">
           <text class="post-nickname">{{item.nickname || '游客'}}</text>
@@ -69,11 +72,11 @@
           data-id="{{item.id}}"
           catchtap="onLikePost"
         >
-          <text class="post-action-icon">{{item.liked ? '❤️' : '🤍'}}</text>
+          <view class="zm-icon {{item.liked ? 'zm-icon-heart-fill zm-icon-pink' : 'zm-icon-heart zm-icon-secondary-text'}} post-action-glyph"></view>
           <text class="post-action-count">{{item.likes || 0}}</text>
         </view>
         <view class="post-action" data-id="{{item.id}}" catchtap="onOpenComment">
-          <text class="post-action-icon">💬</text>
+          <view class="zm-icon zm-icon-comment zm-icon-secondary-text post-action-glyph"></view>
           <text class="post-action-count">{{item.comments || 0}}</text>
         </view>
         <view
@@ -81,7 +84,7 @@
           data-id="{{item.id}}"
           catchtap="onToggleFavorite"
         >
-          <text class="post-action-icon">{{item.isFavorited ? '⭐' : '☆'}}</text>
+          <view class="zm-icon {{item.isFavorited ? 'zm-icon-bookmark-fill zm-icon-warm' : 'zm-icon-bookmark zm-icon-secondary-text'}} post-action-glyph"></view>
           <text class="post-action-count">{{item.isFavorited ? '已收藏' : '收藏'}}</text>
         </view>
       </view>
@@ -128,8 +131,11 @@
           src="{{item.avatarUrl}}"
           mode="aspectFill"
         ></image>
-        <view class="modal-comment-avatar modal-comment-avatar-emoji" wx:else>
-          <text>{{item.avatarText || item.avatar || '🙂'}}</text>
+        <view class="modal-comment-avatar modal-comment-avatar-emoji" wx:elif="{{item.avatarText || item.avatar}}">
+          <text>{{item.avatarText || item.avatar}}</text>
+        </view>
+        <view class="modal-comment-avatar modal-comment-avatar-default" wx:else>
+          <view class="zm-icon zm-icon-user zm-icon-gold-dark modal-comment-avatar-glyph"></view>
         </view>
         <view class="modal-comment-body">
           <text class="modal-comment-name">{{item.nickname || '游客'}}</text>
@@ -186,7 +192,7 @@
           bindtap="onAddPostImage"
           wx:if="{{postImages.length < 9}}"
         >
-          <text class="post-image-add-icon">＋</text>
+          <view class="zm-icon zm-icon-plus zm-icon-muted post-image-add-glyph"></view>
           <text class="post-image-add-text">添加图片</text>
         </view>
       </view>

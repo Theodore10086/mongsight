@@ -200,6 +200,11 @@ page {
   line-height: 1;
 }
 
+.path-card-icon-glyph {
+  width: 56rpx;
+  height: 56rpx;
+}
+
 .path-card-text {
   flex: 1;
   display: flex;
@@ -344,6 +349,11 @@ page {
   line-height: 1;
 }
 
+.quick-tile-glyph {
+  width: 48rpx;
+  height: 48rpx;
+}
+
 .quick-tile-title {
   font-size: 26rpx;
   font-weight: 700;
@@ -380,6 +390,12 @@ page {
 .stat-cell-emoji {
   font-size: 36rpx;
   line-height: 1;
+}
+
+.stat-cell-glyph {
+  width: 40rpx;
+  height: 40rpx;
+  margin-bottom: 2rpx;
 }
 
 .stat-cell-num {
@@ -427,6 +443,11 @@ page {
 .tip-card-mascot-emoji {
   font-size: 44rpx;
   line-height: 1;
+}
+
+.tip-card-glyph {
+  width: 44rpx;
+  height: 44rpx;
 }
 
 .tip-card-content {

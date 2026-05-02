@@ -4,7 +4,7 @@
   <!-- 顶部 Hero -->
   <view class="hero-card">
     <view class="hero-mascot">
-      <text class="hero-mascot-emoji">📷</text>
+      <view class="zm-icon zm-icon-camera zm-icon-gold-dark hero-mascot-glyph"></view>
     </view>
     <view class="hero-text">
       <text class="hero-title">拍照识别蒙古文</text>
@@ -15,11 +15,11 @@
   <!-- 主操作 -->
   <view class="action-grid">
     <button class="action-button primary" bindtap="onChooseFromCamera">
-      <text class="action-button-emoji">📸</text>
+      <view class="zm-icon zm-icon-camera zm-icon-white action-button-glyph"></view>
       <text class="action-button-text">拍照</text>
     </button>
     <button class="action-button" bindtap="onChooseFromAlbum">
-      <text class="action-button-emoji">🖼️</text>
+      <view class="zm-icon zm-icon-frame zm-icon-secondary-text action-button-glyph"></view>
       <text class="action-button-text">相册</text>
     </button>
   </view>
@@ -38,7 +38,7 @@
   <!-- 错误提示 -->
   <view class="error-card" wx:if="{{errorMessage}}">
     <view class="error-title-row">
-      <text class="error-title-emoji">⚠️</text>
+      <view class="zm-icon zm-icon-warning zm-icon-warm error-title-glyph"></view>
       <text class="error-title">自动识别未判稳</text>
     </view>
     <text class="error-message">{{errorMessage}}</text>

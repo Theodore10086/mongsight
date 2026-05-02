@@ -201,7 +201,7 @@
   <view class="coordinate-overlay" bindtap="onCloseMengbaoActionSheet"></view>
   <view class="mengbao-sheet-content">
     <view class="mengbao-sheet-header">
-      <text class="mengbao-sheet-icon">🤖</text>
+      <view class="zm-icon zm-icon-sparkle zm-icon-gold-dark mengbao-sheet-glyph"></view>
       <text class="mengbao-sheet-title">蒙宝AI</text>
       <text class="mengbao-sheet-subtitle">选择你现在要做的事</text>
     </view>
@@ -436,7 +436,9 @@
     <!-- 试炼内容 -->
     <scroll-view scroll-y class="tab-panel {{leftSidebarTab === 'shilian' ? 'active' : ''}}" wx:if="{{leftSidebarTab === 'shilian'}}">
       <view class="challenge-entry-large" bindtap="onOpenChallenge">
-        <view class="challenge-icon-large">⚔️</view>
+        <view class="challenge-icon-large">
+          <view class="zm-icon zm-icon-flag zm-icon-gold-dark challenge-icon-large-glyph"></view>
+        </view>
         <view class="challenge-content">
           <text class="challenge-title-large">每日试炼</text>
           <text class="challenge-desc-large">回答书法知识问题，赢取墨玉奖励</text>
@@ -513,7 +515,9 @@
       bindtap="onToggleTip"
       bindchange="onTipMove"
     >
-      <view class="guide-icon">💡</view>
+      <view class="guide-icon">
+        <view class="zm-icon zm-icon-bulb zm-icon-gold-dark guide-icon-glyph"></view>
+      </view>
       <text class="guide-text" wx:if="{{!isTipCollapsed}}">{{currentLesson.tips || '暂无运笔提示'}}</text>
     </movable-view>
   </movable-area>
@@ -637,12 +641,12 @@
       <view class="scoring-method-hint">两种方式任意一种达到 <text class="scoring-method-highlight">90分</text> 即可提交</view>
       <view class="scoring-method-btns">
         <view class="scoring-method-btn" bindtap="onSelectTrajectoryScoring">
-          <text class="method-icon">✏️</text>
+          <view class="zm-icon zm-icon-pencil zm-icon-gold-dark method-glyph"></view>
           <text class="method-name">轨迹打分</text>
           <text class="method-desc">比对书写轨迹{{'\n'}}笔顺 · 结构 · 流畅</text>
         </view>
         <view class="scoring-method-btn visual" bindtap="onSelectVisualScoring">
-          <text class="method-icon">👁</text>
+          <view class="zm-icon zm-icon-camera zm-icon-secondary method-glyph"></view>
           <text class="method-name">视觉打分</text>
           <text class="method-desc">对比字形外观{{'\n'}}形态 · 轮廓 · 相似度</text>
         </view>
@@ -662,7 +666,8 @@
     <view wx:if="{{scoringPhase === 'result'}}">
       <view class="scoring-body">
         <view class="score-method-tag {{scoringDetail.method === 'visual' ? 'visual' : ''}}">
-          {{scoringDetail.method === 'visual' ? '👁 视觉打分' : '✏️ 轨迹打分'}}
+          <view class="zm-icon {{scoringDetail.method === 'visual' ? 'zm-icon-camera zm-icon-secondary' : 'zm-icon-pencil zm-icon-gold-dark'}} score-method-tag-glyph"></view>
+          <text>{{scoringDetail.method === 'visual' ? '视觉打分' : '轨迹打分'}}</text>
         </view>
         <view class="score-circle">
           <view class="score-circle-inner">
@@ -919,7 +924,7 @@
 
     <!-- 标题 -->
     <view class="tq-header">
-      <text class="tq-icon">🔍</text>
+      <view class="zm-icon zm-icon-search zm-icon-gold-dark tq-icon-glyph"></view>
       <text class="tq-title">轨迹质量检测报告</text>
     </view>
 
@@ -927,14 +932,15 @@
     <view class="tq-grade-row">
       <text class="tq-grade-label">总体评级</text>
       <view class="tq-grade-badge {{trajectoryQuality.grade}}">
-        <text>{{trajectoryQuality.grade === 'good' ? '✅ 优质' : trajectoryQuality.grade === 'ok' ? '⚠️ 可用' : '❌ 较差'}}</text>
+        <view class="zm-icon {{trajectoryQuality.grade === 'good' ? 'zm-icon-check-circle zm-icon-primary' : trajectoryQuality.grade === 'ok' ? 'zm-icon-warning zm-icon-warm' : 'zm-icon-x-circle zm-icon-pink'}} tq-grade-glyph"></view>
+        <text>{{trajectoryQuality.grade === 'good' ? '优质' : trajectoryQuality.grade === 'ok' ? '可用' : '较差'}}</text>
       </view>
     </view>
 
     <!-- 检测项列表 -->
     <view class="tq-items">
       <view class="tq-item" wx:for="{{trajectoryQuality.items}}" wx:key="index">
-        <text class="tq-item-icon">{{item.pass === 'good' ? '✅' : item.pass === 'ok' ? '⚠️' : '❌'}}</text>
+        <view class="zm-icon {{item.pass === 'good' ? 'zm-icon-check-circle zm-icon-primary' : item.pass === 'ok' ? 'zm-icon-warning zm-icon-warm' : 'zm-icon-x-circle zm-icon-pink'}} tq-item-glyph"></view>
         <text class="tq-item-text">{{item.text}}</text>
       </view>
     </view>
@@ -987,11 +993,11 @@
     
     <view class="coordinate-actions">
       <view class="action-btn copy-btn" bindtap="onCopyCoordinates">
-        <text class="btn-icon">📋</text>
+        <view class="zm-icon zm-icon-copy zm-icon-secondary-text btn-glyph"></view>
         <text class="btn-text">复制数据</text>
       </view>
       <view class="action-btn download-btn" bindtap="onDownloadCoordinates">
-        <text class="btn-icon">💾</text>
+        <view class="zm-icon zm-icon-save zm-icon-gold-dark btn-glyph"></view>
         <text class="btn-text">保存文件</text>
       </view>
       <view class="action-btn submit-btn" bindtap="onSubmitCollectionSampleFromExport">

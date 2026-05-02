@@ -3,7 +3,7 @@
   <!-- 顶部欢迎条 -->
   <view class="class-hero">
     <view class="class-hero-mascot">
-      <text class="class-hero-emoji">🎓</text>
+      <view class="zm-icon zm-icon-graduation zm-icon-gold-dark class-hero-glyph"></view>
     </view>
     <view class="class-hero-text">
       <text class="class-hero-title">班级教学</text>
