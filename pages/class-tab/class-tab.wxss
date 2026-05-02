@@ -1,0 +1,100 @@
+page {
+  background: var(--bg-page);
+  min-height: 100vh;
+}
+
+.class-tab-page {
+  padding: 28rpx 28rpx calc(48rpx + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 28rpx;
+  box-sizing: border-box;
+  min-height: 100vh;
+}
+
+/* ──────────────────────── HERO ──────────────────────── */
+
+.class-hero {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 32rpx 28rpx;
+  background: linear-gradient(135deg, #fff5d3 0%, #ffd47a 100%);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 8rpx 0 var(--brand-accent-dark);
+  position: relative;
+  overflow: hidden;
+}
+
+.class-hero-mascot {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: inset 0 -6rpx 0 rgba(0, 0, 0, 0.06);
+}
+
+.class-hero-emoji {
+  font-size: 56rpx;
+  line-height: 1;
+}
+
+.class-hero-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+  min-width: 0;
+}
+
+.class-hero-title {
+  font-size: 36rpx;
+  font-weight: 800;
+  color: #5a3700;
+  letter-spacing: 1rpx;
+}
+
+.class-hero-subtitle {
+  font-size: 24rpx;
+  color: rgba(90, 55, 0, 0.78);
+  line-height: 1.45;
+}
+
+/* ──────────────────────── LOGIN CTA ──────────────────────── */
+
+.login-cta {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 28rpx 24rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  box-shadow: var(--shadow-card);
+  border: 1rpx solid var(--border-soft);
+}
+
+.login-cta-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.login-cta-title {
+  font-size: 30rpx;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.login-cta-desc {
+  font-size: 24rpx;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.login-cta-btn {
+  width: 100%;
+}

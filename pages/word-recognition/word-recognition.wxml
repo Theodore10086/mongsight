@@ -1,0 +1,96 @@
+<view class="page">
+  <canvas canvas-id="cropCanvas" class="hidden-crop-canvas"></canvas>
+
+  <!-- 顶部 Hero -->
+  <view class="hero-card">
+    <view class="hero-mascot">
+      <text class="hero-mascot-emoji">📷</text>
+    </view>
+    <view class="hero-text">
+      <text class="hero-title">拍照识别蒙古文</text>
+      <text class="hero-subtitle">先用算法分析图像，再从词库候选里确认你想要的词</text>
+    </view>
+  </view>
+
+  <!-- 主操作 -->
+  <view class="action-grid">
+    <button class="action-button primary" bindtap="onChooseFromCamera">
+      <text class="action-button-emoji">📸</text>
+      <text class="action-button-text">拍照</text>
+    </button>
+    <button class="action-button" bindtap="onChooseFromAlbum">
+      <text class="action-button-emoji">🖼️</text>
+      <text class="action-button-text">相册</text>
+    </button>
+  </view>
+
+  <!-- 图片预览 -->
+  <view class="preview-card" wx:if="{{imageTempPath}}">
+    <image class="preview-image" src="{{imageTempPath}}" mode="aspectFit"></image>
+    <view class="preview-actions">
+      <button class="minor-button primary" bindtap="onRecognize" loading="{{isRecognizing}}" disabled="{{isRecognizing}}">
+        {{isRecognizing ? '识别中...' : '开始识别'}}
+      </button>
+      <button class="minor-button ghost" bindtap="onReset">重置</button>
+    </view>
+  </view>
+
+  <!-- 错误提示 -->
+  <view class="error-card" wx:if="{{errorMessage}}">
+    <view class="error-title-row">
+      <text class="error-title-emoji">⚠️</text>
+      <text class="error-title">自动识别未判稳</text>
+    </view>
+    <text class="error-message">{{errorMessage}}</text>
+  </view>
+
+  <!-- 候选词 -->
+  <view class="result-card" wx:if="{{candidateWords.length}}">
+    <view class="result-header">
+      <view>
+        <text class="result-title">猜你想要的是</text>
+        <text class="result-subtitle">从三个词里选一个</text>
+      </view>
+    </view>
+    <view class="candidate-grid">
+      <button
+        wx:for="{{candidateWords}}"
+        wx:key="wordKey"
+        class="candidate-button"
+        data-word-key="{{item.wordKey}}"
+        bindtap="onSelectCandidate"
+        loading="{{isRecognizing}}"
+        disabled="{{isRecognizing}}"
+      >
+        <text class="candidate-chinese">{{item.chinese}}</text>
+        <text class="candidate-trans">{{item.transliteration}}</text>
+        <text class="candidate-score" wx:if="{{item.scoreText}}">{{item.scoreText}}</text>
+      </button>
+    </view>
+  </view>
+
+  <!-- 识别结果 -->
+  <view class="result-card" wx:if="{{recognizedWord}}">
+    <view class="result-header">
+      <view class="result-title-block">
+        <text class="result-title">{{recognizedWord.chinese}}</text>
+        <text class="result-subtitle">{{recognizedWord.transliteration}}</text>
+      </view>
+      <text class="result-time">{{recognizedAtText}}</text>
+    </view>
+    <text class="result-mongolian">{{recognizedWord.mongolian}}</text>
+    <image class="result-preview" src="{{imageTempPath}}" mode="aspectFill"></image>
+
+    <view class="player-card" wx:if="{{hasTrajectory}}">
+      <view class="player-header">
+        <text class="player-title">标准笔顺预览</text>
+        <text class="player-status">{{animationStatus}}</text>
+      </view>
+      <canvas canvas-id="recognitionPlayback" class="player-canvas"></canvas>
+      <view class="player-actions">
+        <button class="minor-button" bindtap="onReplay">重新播放</button>
+        <button class="minor-button primary" bindtap="onGoToHomePlayback">去临摹</button>
+      </view>
+    </view>
+  </view>
+</view>

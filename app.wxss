@@ -1,6 +1,69 @@
 /* app.wxss — 班级流安全区/平板布局（从根目录单一路径引用，子页面不再各自 @import 以免相对路径易错） */
 @import './pages/class/class-surface.wxss';
 
+/* ============================================================
+   Design Tokens — 统一前端 UI 设计语言
+   Duolingo / 百词斩 风格 + 蒙古文化金色 (智墨穿梭)
+   ============================================================ */
+page {
+  /* —— 主色 —— */
+  --brand-primary: #58cc02;          /* Duolingo 风格主行动色 */
+  --brand-primary-dark: #47a302;
+  --brand-primary-soft: #d7f5b1;
+
+  --brand-secondary: #1cb0f6;        /* 探索 / 识别 */
+  --brand-secondary-dark: #1899d6;
+  --brand-secondary-soft: #cef0fe;
+
+  --brand-accent: #c49a3c;           /* 蒙古金 — 等级 / 传承感 */
+  --brand-accent-dark: #a17a22;
+  --brand-accent-soft: #f6e6b8;
+
+  --brand-warm: #ff9600;             /* 火焰 / 连击 */
+  --brand-warm-dark: #e08300;
+
+  --brand-purple: #ce82ff;           /* 成就徽章 */
+  --brand-pink: #ff4b4b;             /* 心 / 提示 */
+
+  /* —— 背景 —— */
+  --bg-page: #fff9ef;                /* 暖米色书纸 */
+  --bg-card: #ffffff;
+  --bg-soft: #f5f0e8;
+  --bg-muted: #f0ebe0;
+
+  /* —— 文字 —— */
+  --text-primary: #1f1410;
+  --text-secondary: #555050;
+  --text-muted: #8a8480;
+  --text-inverse: #ffffff;
+
+  /* —— 边框 —— */
+  --border-soft: rgba(31, 20, 16, 0.08);
+  --border-medium: rgba(31, 20, 16, 0.15);
+
+  /* —— 阴影（Duolingo 风格底部偏移阴影） —— */
+  --shadow-card: 0 6rpx 18rpx rgba(31, 20, 16, 0.06);
+  --shadow-card-hover: 0 10rpx 28rpx rgba(31, 20, 16, 0.1);
+  --shadow-press-primary: 0 6rpx 0 var(--brand-primary-dark);
+  --shadow-press-secondary: 0 6rpx 0 var(--brand-secondary-dark);
+  --shadow-press-accent: 0 6rpx 0 var(--brand-accent-dark);
+  --shadow-press-warm: 0 6rpx 0 var(--brand-warm-dark);
+
+  /* —— 圆角 —— */
+  --radius-sm: 12rpx;
+  --radius-md: 18rpx;
+  --radius-lg: 24rpx;
+  --radius-xl: 32rpx;
+  --radius-pill: 999rpx;
+
+  /* —— 间距 —— */
+  --space-xs: 8rpx;
+  --space-sm: 16rpx;
+  --space-md: 24rpx;
+  --space-lg: 32rpx;
+  --space-xl: 48rpx;
+}
+
 /**app.wxss**/
 .container {
   height: 100%;
@@ -65,4 +128,244 @@
 .product-modal-buy {
   margin-top: auto;
   margin-bottom: calc(100rpx + env(safe-area-inset-bottom));
-} 
+}
+
+/* ============================================================
+   Common Reusable Components — 跨 tab 统一
+   ============================================================ */
+
+/* 通用屏幕容器 */
+.zm-page {
+  min-height: 100vh;
+  padding: 28rpx 28rpx calc(48rpx + env(safe-area-inset-bottom));
+  background: var(--bg-page);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 28rpx;
+}
+
+/* 标题 */
+.zm-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4rpx 4rpx 0;
+}
+
+.zm-section-title-text {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 1rpx;
+}
+
+.zm-section-title-aside {
+  font-size: 24rpx;
+  color: var(--text-muted);
+}
+
+/* 通用卡片 */
+.zm-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 28rpx 24rpx;
+  box-shadow: var(--shadow-card);
+}
+
+/* 主行动按钮（带 3D 底阴影） */
+.zm-btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 96rpx;
+  line-height: 96rpx;
+  padding: 0 36rpx;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: var(--text-inverse);
+  background: var(--brand-primary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-press-primary);
+  letter-spacing: 2rpx;
+  border: none;
+}
+
+.zm-btn-primary::after { border: none; }
+
+.zm-btn-primary:active {
+  transform: translateY(4rpx);
+  box-shadow: 0 2rpx 0 var(--brand-primary-dark);
+}
+
+.zm-btn-secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 96rpx;
+  line-height: 96rpx;
+  padding: 0 36rpx;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: var(--text-inverse);
+  background: var(--brand-secondary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-press-secondary);
+  letter-spacing: 2rpx;
+  border: none;
+}
+
+.zm-btn-secondary::after { border: none; }
+
+.zm-btn-secondary:active {
+  transform: translateY(4rpx);
+  box-shadow: 0 2rpx 0 var(--brand-secondary-dark);
+}
+
+.zm-btn-ghost {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 96rpx;
+  line-height: 96rpx;
+  padding: 0 36rpx;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: var(--text-secondary);
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  border: 2rpx solid var(--border-medium);
+}
+
+.zm-btn-ghost::after { border: none; }
+
+.zm-btn-ghost:active {
+  background: var(--bg-soft);
+}
+
+/* ============================================================
+   Unified Modal & Bottom Sheet — 跨页面统一交互
+   ============================================================ */
+
+/* 遮罩 — 始终在 DOM 中，只通过 active 类切换可见性
+   保证渐入/渐出动画顺滑 */
+.modal-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(31, 20, 16, 0);
+  z-index: 99;
+  pointer-events: none;
+  transition: background 0.25s ease;
+}
+
+.modal-mask-active {
+  background: rgba(31, 20, 16, 0.5);
+  pointer-events: auto;
+}
+
+/* 底部弹窗 — 始终在 DOM 中，通过 transform 上滑/下滑 */
+.bottom-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-card);
+  border-top-left-radius: var(--radius-xl);
+  border-top-right-radius: var(--radius-xl);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh;
+  transform: translateY(100%);
+  transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+  padding-bottom: env(safe-area-inset-bottom);
+  pointer-events: none;
+  box-shadow: 0 -10rpx 30rpx rgba(31, 20, 16, 0.18);
+}
+
+.bottom-sheet-active {
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* 弹窗顶部 handle bar */
+.bottom-sheet::before {
+  content: '';
+  position: absolute;
+  top: 12rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 64rpx;
+  height: 6rpx;
+  border-radius: 3rpx;
+  background: var(--border-medium);
+}
+
+.sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32rpx 28rpx 20rpx;
+  border-bottom: 1rpx solid var(--border-soft);
+}
+
+.sheet-title {
+  font-size: 30rpx;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: 1rpx;
+}
+
+.sheet-close {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  background: var(--bg-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  color: var(--text-secondary);
+}
+
+.sheet-close:active { background: var(--bg-muted); }
+
+.sheet-footer {
+  padding: 20rpx 28rpx 32rpx;
+  border-top: 1rpx solid var(--border-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+/* 通用空状态 */
+.zm-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16rpx;
+  padding: 120rpx 40rpx;
+  color: var(--text-muted);
+}
+
+.zm-empty.zm-empty-small {
+  padding: 60rpx 40rpx;
+}
+
+.zm-empty-emoji {
+  font-size: 96rpx;
+  line-height: 1;
+}
+
+.zm-empty-text {
+  font-size: 26rpx;
+  color: var(--text-muted);
+}
+
+/* 通用加载提示 */
+.zm-loading {
+  text-align: center;
+  padding: 32rpx 0;
+  color: var(--text-muted);
+  font-size: 24rpx;
+}

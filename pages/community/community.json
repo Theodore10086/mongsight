@@ -1,0 +1,9 @@
+{
+  "navigationBarTitleText": "社区",
+  "navigationBarBackgroundColor": "#fff9ef",
+  "navigationBarTextStyle": "black",
+  "backgroundColor": "#fff9ef",
+  "backgroundTextStyle": "dark",
+  "enablePullDownRefresh": true,
+  "onReachBottomDistance": 200
+}

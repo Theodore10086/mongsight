@@ -1,0 +1,200 @@
+<view class="community-page">
+
+  <!-- 顶部 Hero -->
+  <view class="comm-hero">
+    <view class="comm-hero-text">
+      <text class="comm-hero-title">学习社区</text>
+      <text class="comm-hero-subtitle">和同学一起交流学习心得</text>
+    </view>
+    <view class="comm-hero-cta" hover-class="comm-hero-cta-hover" hover-stay-time="80" bindtap="onOpenPostModal">
+      <text class="comm-hero-cta-icon">＋</text>
+      <text class="comm-hero-cta-text">发帖</text>
+    </view>
+  </view>
+
+  <!-- Feed 主体 -->
+  <view class="comm-feed">
+
+    <!-- 空状态 -->
+    <view class="zm-empty" wx:if="{{!isLoadingPosts && communityPosts.length === 0}}">
+      <text class="zm-empty-emoji">📭</text>
+      <text class="zm-empty-text">还没有帖子，快来分享第一条吧~</text>
+    </view>
+
+    <!-- 帖子卡片 -->
+    <view
+      class="post-card"
+      wx:for="{{communityPosts}}"
+      wx:key="id"
+    >
+      <!-- 用户头部 -->
+      <view class="post-user">
+        <image
+          class="post-avatar"
+          wx:if="{{item.avatarIsImage}}"
+          src="{{item.avatarUrl}}"
+          mode="aspectFill"
+        ></image>
+        <view class="post-avatar post-avatar-emoji" wx:else>
+          <text>{{item.avatarText || item.avatar || '🙂'}}</text>
+        </view>
+        <view class="post-user-info">
+          <text class="post-nickname">{{item.nickname || '游客'}}</text>
+          <text class="post-time" wx:if="{{item.create_time_str}}">{{item.create_time_str}}</text>
+        </view>
+      </view>
+
+      <!-- 内容 -->
+      <text class="post-content" wx:if="{{item.content}}">{{item.content}}</text>
+
+      <!-- 图片 -->
+      <view class="post-images" wx:if="{{item.images && item.images.length}}">
+        <image
+          class="post-image post-image-{{item.images.length}}"
+          wx:for="{{item.images}}"
+          wx:for-item="img"
+          wx:key="*this"
+          src="{{img}}"
+          mode="aspectFill"
+          data-src="{{img}}"
+          data-list="{{item.images}}"
+          catchtap="onPreviewImage"
+        ></image>
+      </view>
+
+      <!-- 操作栏 -->
+      <view class="post-actions">
+        <view
+          class="post-action {{item.liked ? 'post-action-liked' : ''}}"
+          data-id="{{item.id}}"
+          catchtap="onLikePost"
+        >
+          <text class="post-action-icon">{{item.liked ? '❤️' : '🤍'}}</text>
+          <text class="post-action-count">{{item.likes || 0}}</text>
+        </view>
+        <view class="post-action" data-id="{{item.id}}" catchtap="onOpenComment">
+          <text class="post-action-icon">💬</text>
+          <text class="post-action-count">{{item.comments || 0}}</text>
+        </view>
+        <view
+          class="post-action {{item.isFavorited ? 'post-action-favorited' : ''}}"
+          data-id="{{item.id}}"
+          catchtap="onToggleFavorite"
+        >
+          <text class="post-action-icon">{{item.isFavorited ? '⭐' : '☆'}}</text>
+          <text class="post-action-count">{{item.isFavorited ? '已收藏' : '收藏'}}</text>
+        </view>
+      </view>
+
+      <!-- 内联评论列表（最多2条） -->
+      <view
+        class="post-inline-comments"
+        wx:if="{{item.commentsList && item.commentsList.length}}"
+      >
+        <view
+          class="inline-comment"
+          wx:for="{{item.commentsList}}"
+          wx:for-item="cmt"
+          wx:key="id"
+        >
+          <text class="inline-comment-name">{{cmt.nickname}}：</text>
+          <text class="inline-comment-text">{{cmt.content}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 加载状态 -->
+    <view class="zm-loading" wx:if="{{isLoadingPosts}}">
+      <text>加载中…</text>
+    </view>
+    <view class="zm-loading" wx:if="{{!hasMorePosts && communityPosts.length > 0 && !isLoadingPosts}}">
+      <text>—— 已经到底啦 ——</text>
+    </view>
+
+  </view>
+
+  <!-- ─────────── 评论弹窗（始终渲染以保证动画） ─────────── -->
+  <view class="modal-mask {{showCommentModal ? 'modal-mask-active' : ''}}" bindtap="onCloseCommentModal"></view>
+  <view class="bottom-sheet {{showCommentModal ? 'bottom-sheet-active' : ''}}" catchtap="">
+    <view class="sheet-header">
+      <text class="sheet-title">评论</text>
+      <view class="sheet-close" bindtap="onCloseCommentModal">✕</view>
+    </view>
+    <scroll-view scroll-y class="sheet-comments" enhanced="{{true}}" show-scrollbar="{{false}}">
+      <view class="modal-comment" wx:for="{{currentComments}}" wx:key="id">
+        <image
+          class="modal-comment-avatar"
+          wx:if="{{item.avatarIsImage}}"
+          src="{{item.avatarUrl}}"
+          mode="aspectFill"
+        ></image>
+        <view class="modal-comment-avatar modal-comment-avatar-emoji" wx:else>
+          <text>{{item.avatarText || item.avatar || '🙂'}}</text>
+        </view>
+        <view class="modal-comment-body">
+          <text class="modal-comment-name">{{item.nickname || '游客'}}</text>
+          <text class="modal-comment-text">{{item.content}}</text>
+        </view>
+      </view>
+      <view class="zm-empty zm-empty-small" wx:if="{{!currentComments.length}}">
+        <text class="zm-empty-text">还没有评论，快来抢沙发~</text>
+      </view>
+    </scroll-view>
+    <view class="sheet-input-bar">
+      <input
+        class="sheet-input"
+        placeholder="说点什么…"
+        value="{{commentText}}"
+        bindinput="onCommentInput"
+        confirm-type="send"
+        cursor-spacing="20"
+        bindconfirm="onSendComment"
+      />
+      <button class="zm-btn-primary sheet-send-btn" size="mini" bindtap="onSendComment">发送</button>
+    </view>
+  </view>
+
+  <!-- ─────────── 发帖弹窗 ─────────── -->
+  <view class="modal-mask {{showPostModal ? 'modal-mask-active' : ''}}" bindtap="onClosePostModal"></view>
+  <view class="bottom-sheet {{showPostModal ? 'bottom-sheet-active' : ''}}" catchtap="">
+    <view class="sheet-header">
+      <text class="sheet-title">发布新帖</text>
+      <view class="sheet-close" bindtap="onClosePostModal">✕</view>
+    </view>
+    <scroll-view scroll-y class="post-form" enhanced="{{true}}" show-scrollbar="{{false}}">
+      <textarea
+        class="post-content-input"
+        placeholder="分享你的学习心得…"
+        value="{{postContent}}"
+        bindinput="onPostContentInput"
+        maxlength="500"
+        cursor-spacing="20"
+        auto-height
+      ></textarea>
+      <view class="post-images-grid">
+        <view
+          class="post-image-item"
+          wx:for="{{postImages}}"
+          wx:key="*this"
+        >
+          <image class="post-image-thumb" src="{{item}}" mode="aspectFill"></image>
+          <view class="post-image-remove" data-index="{{index}}" catchtap="onRemovePostImage">✕</view>
+        </view>
+        <view
+          class="post-image-add"
+          hover-class="post-image-add-hover"
+          bindtap="onAddPostImage"
+          wx:if="{{postImages.length < 9}}"
+        >
+          <text class="post-image-add-icon">＋</text>
+          <text class="post-image-add-text">添加图片</text>
+        </view>
+      </view>
+      <text class="post-form-tip">最多9张图片 · {{postContent.length}}/500</text>
+    </scroll-view>
+    <view class="sheet-footer">
+      <button class="zm-btn-primary post-submit-btn" bindtap="onSubmitPost">发布</button>
+    </view>
+  </view>
+
+</view>

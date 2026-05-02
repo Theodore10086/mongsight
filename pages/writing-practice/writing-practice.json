@@ -1,0 +1,7 @@
+{
+  "disableScroll": true,
+  "navigationBarTitleText": "书写练习",
+  "usingComponents": {
+    "guide": "/pages/index/guide/guide"
+  }
+}

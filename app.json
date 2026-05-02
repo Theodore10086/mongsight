@@ -1,5 +1,12 @@
 {
   "pages": [
+    "pages/splash/splash",
+    "pages/home/home",
+    "pages/class-tab/class-tab",
+    "pages/community/community",
+    "pages/profile/profile",
+    "pages/writing-practice/writing-practice",
+    "pages/word-recognition/word-recognition",
     "pages/index/index",
     "pages/scan/scan",
     "pages/logs/logs",
@@ -16,7 +23,20 @@
   "window": {
     "navigationBarTextStyle": "black",
     "navigationBarTitleText": "智墨穿梭",
-    "navigationBarBackgroundColor": "#ffffff"
+    "navigationBarBackgroundColor": "#fff9ef",
+    "backgroundColor": "#fff9ef"
+  },
+  "tabBar": {
+    "color": "#8a8480",
+    "selectedColor": "#47a302",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      { "pagePath": "pages/home/home", "text": "首页" },
+      { "pagePath": "pages/class-tab/class-tab", "text": "班级" },
+      { "pagePath": "pages/community/community", "text": "社区" },
+      { "pagePath": "pages/profile/profile", "text": "我" }
+    ]
   },
   "style": "v2",
   "componentFramework": "glass-easel",

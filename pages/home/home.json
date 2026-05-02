@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "智墨穿梭",
+  "navigationBarBackgroundColor": "#fff9ef",
+  "navigationBarTextStyle": "black",
+  "backgroundColor": "#fff9ef",
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "dark"
+}

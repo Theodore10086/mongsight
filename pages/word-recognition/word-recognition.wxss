@@ -1,0 +1,396 @@
+/* ============================================================
+   单词识别页 — 与首页统一的设计语言（Duolingo / 百词斩 风格）
+   ============================================================ */
+
+page {
+  background: var(--bg-page);
+  min-height: 100vh;
+}
+
+.page {
+  min-height: 100vh;
+  padding: 28rpx 28rpx calc(48rpx + env(safe-area-inset-bottom));
+  background: var(--bg-page);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+/* 离屏画布 */
+.hidden-crop-canvas {
+  position: fixed;
+  left: -9999rpx;
+  top: -9999rpx;
+  width: 540px;
+  height: 900px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ──────────────────────── HERO ──────────────────────── */
+
+.hero-card {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 24rpx 24rpx;
+  background: linear-gradient(135deg, #ffffff 0%, #effaff 100%);
+  border-radius: var(--radius-xl);
+  border-left: 8rpx solid var(--brand-secondary);
+  box-shadow: var(--shadow-card);
+  border-top: 1rpx solid var(--border-soft);
+  border-right: 1rpx solid var(--border-soft);
+  border-bottom: 1rpx solid var(--border-soft);
+}
+
+.hero-mascot {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--brand-secondary-soft) 0%, var(--brand-secondary) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6rpx 0 var(--brand-secondary-dark);
+  flex-shrink: 0;
+}
+
+.hero-mascot-emoji {
+  font-size: 56rpx;
+  line-height: 1;
+}
+
+.hero-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+  min-width: 0;
+}
+
+.hero-title {
+  font-size: 36rpx;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: 1rpx;
+  line-height: 1.25;
+}
+
+.hero-subtitle {
+  font-size: 24rpx;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ──────────────────────── ACTION ROW ──────────────────────── */
+
+.action-grid {
+  display: flex;
+  gap: 16rpx;
+}
+
+.action-button,
+.minor-button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  border-radius: var(--radius-md);
+  border: none;
+  padding: 0 24rpx;
+  letter-spacing: 1rpx;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-weight: 700;
+  border: 2rpx solid var(--border-medium);
+}
+
+.action-button {
+  height: 112rpx;
+  font-size: 30rpx;
+}
+
+.action-button::after,
+.minor-button::after {
+  border: none;
+}
+
+.action-button-emoji {
+  font-size: 36rpx;
+  line-height: 1;
+}
+
+.action-button-text {
+  font-size: 30rpx;
+  letter-spacing: 1rpx;
+}
+
+.action-button.primary {
+  background: var(--brand-secondary);
+  color: #fff;
+  border: none;
+  box-shadow: var(--shadow-press-secondary);
+}
+
+.action-button.primary:active {
+  transform: translateY(4rpx);
+  box-shadow: 0 2rpx 0 var(--brand-secondary-dark);
+}
+
+.action-button:active {
+  background: var(--bg-soft);
+}
+
+.minor-button {
+  height: 88rpx;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.minor-button.primary {
+  background: var(--brand-primary);
+  color: #fff;
+  border: none;
+  box-shadow: var(--shadow-press-primary);
+}
+
+.minor-button.primary:active {
+  transform: translateY(4rpx);
+  box-shadow: 0 2rpx 0 var(--brand-primary-dark);
+}
+
+.minor-button.ghost {
+  background: transparent;
+  border: 2rpx solid var(--border-medium);
+  color: var(--text-secondary);
+}
+
+.minor-button.ghost:active {
+  background: var(--bg-soft);
+}
+
+.minor-button[loading] { opacity: 0.55; }
+.action-button[loading] { opacity: 0.55; }
+
+/* ──────────────────────── CARDS ──────────────────────── */
+
+.preview-card,
+.error-card,
+.result-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1rpx solid var(--border-soft);
+  padding: 24rpx;
+  box-shadow: var(--shadow-card);
+}
+
+.preview-card {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+/* 图片 */
+.preview-image,
+.result-preview {
+  width: 100%;
+  border-radius: var(--radius-md);
+  background: var(--bg-soft);
+  display: block;
+}
+
+.preview-image {
+  height: 520rpx;
+}
+
+.result-preview {
+  height: 280rpx;
+  margin-top: 20rpx;
+}
+
+.preview-actions,
+.player-actions {
+  display: flex;
+  gap: 16rpx;
+}
+
+/* ──────────────────────── ERROR ──────────────────────── */
+
+.error-card {
+  background: #fff5f5;
+  border: 1rpx solid #fed4d4;
+  border-left: 6rpx solid var(--brand-pink);
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.error-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.error-title-emoji {
+  font-size: 28rpx;
+  line-height: 1;
+}
+
+.error-title {
+  font-size: 28rpx;
+  font-weight: 800;
+  color: var(--brand-pink);
+  letter-spacing: 1rpx;
+}
+
+.error-message {
+  font-size: 24rpx;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* ──────────────────────── RESULT ──────────────────────── */
+
+.result-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.result-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16rpx;
+  margin-bottom: 12rpx;
+}
+
+.result-title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.result-title {
+  display: block;
+  font-size: 36rpx;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: 1rpx;
+  line-height: 1.25;
+}
+
+.result-subtitle {
+  display: block;
+  font-size: 24rpx;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.result-time {
+  font-size: 22rpx;
+  color: var(--text-muted);
+}
+
+.result-mongolian {
+  display: block;
+  margin: 24rpx 0 8rpx;
+  color: var(--text-primary);
+  font-size: 80rpx;
+  writing-mode: vertical-rl;
+  min-height: 240rpx;
+  letter-spacing: 12rpx;
+  text-align: center;
+}
+
+/* ──────────────────────── CANDIDATE ──────────────────────── */
+
+.candidate-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14rpx;
+  margin-top: 14rpx;
+}
+
+.candidate-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4rpx;
+  padding: 20rpx 6rpx;
+  border-radius: var(--radius-md);
+  background: var(--bg-soft);
+  border: 2rpx solid transparent;
+  height: auto;
+  min-height: 130rpx;
+  line-height: 1.2;
+  font-size: 26rpx;
+  color: var(--text-primary);
+}
+
+.candidate-button::after { border: none; }
+
+.candidate-button:active {
+  background: var(--brand-secondary-soft);
+  border-color: var(--brand-secondary);
+}
+
+.candidate-chinese {
+  font-size: 28rpx;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.candidate-trans {
+  font-size: 22rpx;
+  color: var(--text-muted);
+}
+
+.candidate-score {
+  font-size: 20rpx;
+  color: var(--brand-secondary-dark);
+  font-weight: 700;
+  margin-top: 2rpx;
+}
+
+/* ──────────────────────── PLAYER ──────────────────────── */
+
+.player-card {
+  background: var(--bg-soft);
+  border-radius: var(--radius-md);
+  border: 1rpx solid var(--border-soft);
+  padding: 20rpx;
+  margin-top: 20rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.player-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.player-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.player-status {
+  font-size: 22rpx;
+  color: var(--text-muted);
+}
+
+.player-canvas {
+  width: 100%;
+  height: 420rpx;
+  background: #fff;
+  border-radius: var(--radius-sm);
+  border: 1rpx solid var(--border-soft);
+  display: block;
+}

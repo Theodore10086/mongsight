@@ -1,0 +1,157 @@
+<view class="home-page">
+
+  <!-- 今日学习目标 — 进度环 + XP -->
+  <view class="goal-card">
+    <view class="goal-info">
+      <text class="goal-title">今日学习目标</text>
+      <text class="goal-subtitle">{{goalSubtitle}}</text>
+      <view class="goal-bar">
+        <view class="goal-bar-fill" style="width: {{goalPercent}}%;"></view>
+      </view>
+      <view class="goal-bar-meta">
+        <text class="goal-bar-current">{{todayXp}} XP</text>
+        <text class="goal-bar-target">/ {{dailyGoalXp}} XP</text>
+      </view>
+    </view>
+    <view class="goal-medal" hover-class="goal-medal-hover" bindtap="onTapDailyGoal">
+      <view class="goal-medal-ring"></view>
+      <text class="goal-medal-percent">{{goalPercent}}%</text>
+    </view>
+  </view>
+
+  <!-- 学习中心 -->
+  <view class="zm-section-title">
+    <text class="zm-section-title-text">学习中心</text>
+    <text class="zm-section-title-aside">挑一个开始练习</text>
+  </view>
+
+  <!-- 主路径：书写练习 -->
+  <view class="path-card path-card-primary" hover-class="path-card-hover" bindtap="onGoToWriting">
+    <view class="path-card-bg">
+      <view class="path-card-blob path-blob-a"></view>
+      <view class="path-card-blob path-blob-b"></view>
+    </view>
+    <view class="path-card-body">
+      <view class="path-card-icon">
+        <text class="path-card-icon-text">书</text>
+      </view>
+      <view class="path-card-text">
+        <view class="path-card-title-row">
+          <text class="path-card-title">书写练习</text>
+        </view>
+        <text class="path-card-desc">临摹蒙古文字帖、自由书写、蒙宝AI实时评分</text>
+        <view class="path-card-stats">
+          <view class="path-card-stat">
+            <text class="stat-num">{{writingProgress.completed}}</text>
+            <text class="stat-label">已完成</text>
+          </view>
+          <view class="path-card-divider"></view>
+          <view class="path-card-stat">
+            <text class="stat-num">{{writingProgress.total}}</text>
+            <text class="stat-label">字帖</text>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class="path-card-cta">
+      <text class="cta-text">开始</text>
+      <text class="cta-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 次路径：单词识别 -->
+  <view class="path-card path-card-secondary" hover-class="path-card-hover" bindtap="onGoToRecognition">
+    <view class="path-card-bg">
+      <view class="path-card-blob path-blob-a"></view>
+      <view class="path-card-blob path-blob-b"></view>
+    </view>
+    <view class="path-card-body">
+      <view class="path-card-icon">
+        <text class="path-card-icon-text">📷</text>
+      </view>
+      <view class="path-card-text">
+        <view class="path-card-title-row">
+          <text class="path-card-title">单词识别</text>
+        </view>
+        <text class="path-card-desc">拍照识别蒙古文词汇，自动跳转结果回放</text>
+        <view class="path-card-stats">
+          <view class="path-card-stat">
+            <text class="stat-num">{{todayReviewWords}}</text>
+            <text class="stat-label">待复习</text>
+          </view>
+          <view class="path-card-divider"></view>
+          <view class="path-card-stat">
+            <text class="stat-num">{{recognitionTotal}}</text>
+            <text class="stat-label">词条</text>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class="path-card-cta cta-blue">
+      <text class="cta-text">前往</text>
+      <text class="cta-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 三宫格快捷入口（蒙宝AI / 每日试炼 / 收藏） -->
+  <view class="quick-grid">
+    <view class="quick-tile" hover-class="quick-tile-hover" bindtap="onGoToMengbao">
+      <view class="quick-tile-icon quick-tile-icon-purple">
+        <text class="quick-tile-emoji">🤖</text>
+      </view>
+      <text class="quick-tile-title">蒙宝AI</text>
+      <text class="quick-tile-desc">书法对话</text>
+    </view>
+    <view class="quick-tile" hover-class="quick-tile-hover" bindtap="onGoToChallenge">
+      <view class="quick-tile-icon quick-tile-icon-warm">
+        <text class="quick-tile-emoji">⚔️</text>
+      </view>
+      <text class="quick-tile-title">每日试炼</text>
+      <text class="quick-tile-desc">赢取墨玉</text>
+    </view>
+    <view class="quick-tile" hover-class="quick-tile-hover" bindtap="onGoToWorks">
+      <view class="quick-tile-icon quick-tile-icon-accent">
+        <text class="quick-tile-emoji">🖼️</text>
+      </view>
+      <text class="quick-tile-title">我的作品</text>
+      <text class="quick-tile-desc">{{myWorksCount}}件珍藏</text>
+    </view>
+  </view>
+
+  <!-- 数据概览 -->
+  <view class="zm-section-title">
+    <text class="zm-section-title-text">数据概览</text>
+  </view>
+
+  <view class="stats-card">
+    <view class="stat-cell">
+      <text class="stat-cell-emoji">🔥</text>
+      <text class="stat-cell-num">{{streakDays}}</text>
+      <text class="stat-cell-label">连续天数</text>
+    </view>
+    <view class="stat-cell-divider"></view>
+    <view class="stat-cell">
+      <text class="stat-cell-emoji">⚡</text>
+      <text class="stat-cell-num">{{totalXp}}</text>
+      <text class="stat-cell-label">总经验</text>
+    </view>
+    <view class="stat-cell-divider"></view>
+    <view class="stat-cell">
+      <text class="stat-cell-emoji">💎</text>
+      <text class="stat-cell-num">{{inkJades}}</text>
+      <text class="stat-cell-label">墨玉</text>
+    </view>
+  </view>
+
+  <!-- 蒙宝小贴士 -->
+  <view class="tip-card">
+    <view class="tip-card-mascot">
+      <text class="tip-card-mascot-emoji">🐑</text>
+    </view>
+    <view class="tip-card-content">
+      <text class="tip-card-title">蒙宝小贴士</text>
+      <text class="tip-card-text">{{dailyTip}}</text>
+    </view>
+  </view>
+
+</view>
