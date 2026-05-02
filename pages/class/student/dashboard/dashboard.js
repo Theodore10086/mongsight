@@ -43,10 +43,11 @@ Page({
       wx.showLoading({ title: '加载中', mask: true })
     }
     try {
-      const data = await callClassService('getMyJoinedClasses')
-      if (!silent) wx.hideLoading()
       const session = getStudentSession() || {}
-      // 同步姓名（云端为准）
+      const data = await callClassService('getStudentJoinedClassesByStudentId', {
+        studentDocId: session.studentDocId
+      })
+      if (!silent) wx.hideLoading()
       if (data.studentName && data.studentName !== session.name) {
         setStudentSession({ ...session, name: data.studentName })
       }

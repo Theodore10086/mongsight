@@ -78,6 +78,23 @@ function genId(prefix) {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`
 }
 
+async function unbindOpenIdFromCollection(collectionName, openId) {
+  const res = await db.collection(collectionName)
+    .where({ boundOpenIds: _.in([openId]) })
+    .get()
+  const docs = res.data || []
+  await Promise.all(docs.map((doc) => db.collection(collectionName).doc(doc._id).update({
+    data: {
+      boundOpenIds: _.pull(openId)
+    }
+  })))
+}
+
+async function bindOpenIdExclusive(collectionName, docId, openId) {
+  await unbindOpenIdFromCollection(collectionName, openId)
+  await bindOpenIdToDoc(collectionName, docId, openId)
+}
+
 function normalizeReviewStatus(submissionStatus, teacherStatus) {
   const sub = trimStr(submissionStatus)
   const rev = trimStr(teacherStatus)
@@ -165,6 +182,33 @@ async function resolveTeacherByOpenId(openId) {
   return doc
 }
 
+async function resolveTeacherByName(name) {
+  const teacherName = trimStr(name)
+  if (!teacherName) {
+    throw new Error('请输入姓名')
+  }
+  const res = await db.collection(COLL.teachers)
+    .where({ name: teacherName })
+    .limit(1)
+    .get()
+  return res.data && res.data[0]
+}
+
+async function getStudentByIdentity(studentNo, name) {
+  const no = trimStr(studentNo)
+  const stuName = trimStr(name)
+  if (!no || !stuName) {
+    throw new Error('请填写姓名、学号与密码')
+  }
+  const res = await db.collection(COLL.students).where({ studentNo: no }).limit(1).get()
+  const stu = res.data && res.data[0]
+  if (!stu) return null
+  if (stu.name !== stuName) {
+    throw new Error('学号与姓名不匹配')
+  }
+  return stu
+}
+
 /**
  * 通过 openId 反查学生档案
  */
@@ -211,14 +255,12 @@ async function registerOrLoginTeacher(openId, event) {
     throw new Error('请输入密码')
   }
 
-  const exists = await db.collection(COLL.teachers).where({ name }).limit(1).get()
-  const existed = exists.data && exists.data[0]
-
+  const existed = await resolveTeacherByName(name)
   if (existed) {
     if (existed.password !== password) {
-      throw new Error('名称已占用')
+      throw new Error('密码错误')
     }
-    await bindOpenIdToDoc(COLL.teachers, existed._id, openId)
+    await bindOpenIdExclusive(COLL.teachers, existed._id, openId)
     return {
       teacherDocId: existed._id,
       name: existed.name,
@@ -234,11 +276,6 @@ async function registerOrLoginTeacher(openId, event) {
       createdAt: nowDate(),
       lastLoginAt: nowDate()
     }
-  }).catch((err) => {
-    if (/duplicate/i.test(err.errMsg || '') || err.errCode === 11000) {
-      throw new Error('名称已占用')
-    }
-    throw err
   })
 
   return {
@@ -270,18 +307,22 @@ async function loginStudent(openId, event) {
   const res = await db.collection(COLL.students).where({ studentNo }).limit(1).get()
   const stu = res.data && res.data[0]
   if (!stu) {
-    throw new Error('账号或密码错误')
+    throw new Error('学号不存在，请联系教师导入')
   }
-  if (stu.name !== name || stu.password !== password) {
-    throw new Error('账号或密码错误')
+  if (stu.name !== name) {
+    throw new Error('学号与姓名不匹配')
+  }
+  if (stu.password !== password) {
+    throw new Error('密码错误')
   }
 
-  await bindOpenIdToDoc(COLL.students, stu._id, openId)
+  await bindOpenIdExclusive(COLL.students, stu._id, openId)
 
   return {
     studentDocId: stu._id,
     studentNo: stu.studentNo,
-    name: stu.name
+    name: stu.name,
+    isNew: false
   }
 }
 
@@ -329,7 +370,6 @@ async function teacherSetStudentPassword(openId, event) {
     throw new Error('未找到该学生')
   }
 
-  // 校验该学生确实在当前教师所属的某个班级里
   const myClasses = await db.collection(COLL.classes).where({ teacherDocId: teacher._id }).get()
   const myClassIds = (myClasses.data || []).map((c) => c._id)
   if (myClassIds.length === 0) {
@@ -540,13 +580,13 @@ async function ingestStudents(classId, rawList) {
     const name = trimStr(row && row.name)
     const studentNo = trimStr(row && row.studentNo)
     const password = trimStr(row && row.password)
-    if (!name || !studentNo) return
+    if (!name || !studentNo || !password) return
     if (seen.has(studentNo)) return
     seen.add(studentNo)
     sanitized.push({
       name,
       studentNo,
-      password: password || DEFAULT_STUDENT_PASSWORD
+      password
     })
   })
   if (sanitized.length === 0) {
@@ -560,7 +600,6 @@ async function ingestStudents(classId, rawList) {
   const existMap = new Map()
   ;(existRes.data || []).forEach((s) => existMap.set(s.studentNo, s))
 
-  // 过滤已在该班的成员
   const memRes = await db.collection(COLL.memberships)
     .where({ classId, studentNo: _.in(studentNos) })
     .get()
@@ -571,11 +610,21 @@ async function ingestStudents(classId, rawList) {
   let duplicated = 0
 
   for (const row of sanitized) {
+    const existing = existMap.get(row.studentNo)
+    if (existing) {
+      if (existing.name !== row.name) {
+        throw new Error(`学号 ${row.studentNo} 已存在于其他姓名：${existing.name}`)
+      }
+      if (existing.password !== row.password) {
+        throw new Error(`学号 ${row.studentNo} 的账号密码不一致`)
+      }
+    }
+
     if (existedInClass.has(row.studentNo)) {
       duplicated += 1
       continue
     }
-    const existing = existMap.get(row.studentNo)
+
     if (!existing) {
       try {
         await db.collection(COLL.students).add({
@@ -590,7 +639,6 @@ async function ingestStudents(classId, rawList) {
         added += 1
       } catch (e) {
         if (/duplicate/i.test(e.errMsg || '') || e.errCode === 11000) {
-          // 极少数并发：当作复用
           reused += 1
         } else {
           throw e
@@ -599,6 +647,7 @@ async function ingestStudents(classId, rawList) {
     } else {
       reused += 1
     }
+
     try {
       await db.collection(COLL.memberships).add({
         data: {
@@ -625,6 +674,74 @@ async function appendStudents(openId, event) {
   await requireOwnedClass(classId, teacher)
   const result = await ingestStudents(classId, event.students || [])
   return result
+}
+
+async function getStudentJoinedClassesByStudentId(studentDocId) {
+  const stuDocId = trimStr(studentDocId)
+  if (!stuDocId) {
+    throw new Error('缺少学生 id')
+  }
+  const stuDoc = await db.collection(COLL.students).doc(stuDocId).get().catch(() => null)
+  if (!stuDoc || !stuDoc.data) {
+    throw new Error('学生不存在')
+  }
+  const stu = stuDoc.data
+  const memRes = await db.collection(COLL.memberships)
+    .where({ studentNo: stu.studentNo })
+    .orderBy('joinedAt', 'desc')
+    .get()
+  const memberships = memRes.data || []
+  if (memberships.length === 0) {
+    return { studentName: stu.name, classes: [] }
+  }
+  const classIds = memberships.map((m) => m.classId)
+  const cRes = await db.collection(COLL.classes)
+    .where({ _id: _.in(classIds) })
+    .get()
+  const cMap = new Map()
+  ;(cRes.data || []).forEach((c) => cMap.set(c._id, c))
+
+  const aRes = await db.collection(COLL.assignments)
+    .where({ classId: _.in(classIds) })
+    .get()
+  const totalByClass = {}
+  const allAssignmentIds = []
+  ;(aRes.data || []).forEach((a) => {
+    totalByClass[a.classId] = (totalByClass[a.classId] || 0) + 1
+    allAssignmentIds.push(a._id)
+  })
+
+  let myProgress = []
+  if (allAssignmentIds.length > 0) {
+    const pRes = await db.collection(COLL.progress)
+      .where({ assignmentId: _.in(allAssignmentIds), studentNo: stu.studentNo, isFinal: true })
+      .get()
+    myProgress = pRes.data || []
+  }
+  const finalByAssignment = new Set(myProgress.map((p) => p.assignmentId))
+  const finalByClass = {}
+  ;(aRes.data || []).forEach((a) => {
+    if (finalByAssignment.has(a._id)) {
+      finalByClass[a.classId] = (finalByClass[a.classId] || 0) + 1
+    }
+  })
+
+  return {
+    studentName: stu.name,
+    classes: memberships
+      .filter((m) => cMap.has(m.classId))
+      .map((m) => {
+        const c = cMap.get(m.classId)
+        return {
+          id: c._id,
+          name: c.name,
+          desc: c.desc || '',
+          teacherName: c.teacherName || '',
+          totalAssignments: totalByClass[c._id] || 0,
+          finalAssignments: finalByClass[c._id] || 0
+        }
+      })
+  }
 }
 
 async function deleteStudents(openId, event) {
@@ -870,65 +987,8 @@ async function setReviewStatus(openId, event) {
 /* ───────── 学生端读 / 写 ───────── */
 
 async function getMyJoinedClasses(openId) {
-  const stu = await resolveStudentByOpenId(openId)
-  const memRes = await db.collection(COLL.memberships)
-    .where({ studentNo: stu.studentNo })
-    .orderBy('joinedAt', 'desc')
-    .get()
-  const memberships = memRes.data || []
-  if (memberships.length === 0) {
-    return { studentName: stu.name, classes: [] }
-  }
-  const classIds = memberships.map((m) => m.classId)
-  const cRes = await db.collection(COLL.classes)
-    .where({ _id: _.in(classIds) })
-    .get()
-  const cMap = new Map()
-  ;(cRes.data || []).forEach((c) => cMap.set(c._id, c))
-
-  // 顺便每班拉作业总数 / 已完成数
-  const aRes = await db.collection(COLL.assignments)
-    .where({ classId: _.in(classIds) })
-    .get()
-  const totalByClass = {}
-  const allAssignmentIds = []
-  ;(aRes.data || []).forEach((a) => {
-    totalByClass[a.classId] = (totalByClass[a.classId] || 0) + 1
-    allAssignmentIds.push(a._id)
-  })
-
-  let myProgress = []
-  if (allAssignmentIds.length > 0) {
-    const pRes = await db.collection(COLL.progress)
-      .where({ assignmentId: _.in(allAssignmentIds), studentNo: stu.studentNo, isFinal: true })
-      .get()
-    myProgress = pRes.data || []
-  }
-  // 把 finalCount 按 classId 聚合
-  const finalByAssignment = new Set(myProgress.map((p) => p.assignmentId))
-  const finalByClass = {}
-  ;(aRes.data || []).forEach((a) => {
-    if (finalByAssignment.has(a._id)) {
-      finalByClass[a.classId] = (finalByClass[a.classId] || 0) + 1
-    }
-  })
-
-  return {
-    studentName: stu.name,
-    classes: memberships
-      .filter((m) => cMap.has(m.classId))
-      .map((m) => {
-        const c = cMap.get(m.classId)
-        return {
-          id: c._id,
-          name: c.name,
-          desc: c.desc || '',
-          teacherName: c.teacherName || '',
-          totalAssignments: totalByClass[c._id] || 0,
-          finalAssignments: finalByClass[c._id] || 0
-        }
-      })
-  }
+  const sessionStu = await resolveStudentByOpenId(openId)
+  return getStudentJoinedClassesByStudentId(sessionStu._id)
 }
 
 async function getClassAssignments(openId, event) {
@@ -1209,6 +1269,8 @@ exports.main = async (event) => {
         return { success: true, data: await setReviewStatus(openId, event) }
       case 'getMyJoinedClasses':
         return { success: true, data: await getMyJoinedClasses(openId) }
+      case 'getStudentJoinedClassesByStudentId':
+        return { success: true, data: await getStudentJoinedClassesByStudentId(event.studentDocId) }
       case 'getClassAssignments':
         return { success: true, data: await getClassAssignments(openId, event) }
       case 'getAssignmentForStudent':

@@ -23,6 +23,8 @@ Page({
 
   _assignmentId: '',
   _classId: '',
+  _loadingReview: false,
+  _loadedOnce: false,
 
   onLoad(options) {
     this.setData(getClassPageLayout())
@@ -44,13 +46,20 @@ Page({
 
   onShow() {
     this.setData(getClassPageLayout())
-    if (this._assignmentId) {
-      this.loadReview()
+    if (this._assignmentId && this._loadedOnce) {
+      this.loadReview({ silent: true })
     }
   },
 
-  async loadReview() {
-    wx.showLoading({ title: '加载中', mask: true })
+  async loadReview(opts) {
+    const silent = opts && opts.silent
+    if (this._loadingReview) {
+      return
+    }
+    this._loadingReview = true
+    if (!silent) {
+      wx.showLoading({ title: '加载中', mask: true })
+    }
     try {
       const data = await callClassService('getAssignmentReview', {
         assignmentId: this._assignmentId
@@ -58,7 +67,7 @@ Page({
       wx.setNavigationBarTitle({ title: data.assignmentTitle || '作业批改' })
 
       const list = (data.submissionList || []).map((s) => {
-        const reviewStatus = s.reviewStatus || s.status
+        const reviewStatus = s.reviewStatus || s.status || ''
         const displayStatus = s.status || reviewStatus
         const statusText = reviewStatus === 'passed'
           ? '已通过'
@@ -81,7 +90,6 @@ Page({
         }
       })
 
-      // 解析图片临时链接
       const fileIDs = list.map((s) => s.imageFileID).filter(Boolean)
       let urlMap = {}
       if (fileIDs.length > 0) {
@@ -97,11 +105,15 @@ Page({
         }
       })
 
-      wx.hideLoading()
+      this._loadedOnce = true
       this._refreshStats(list, data.assignmentTitle)
     } catch (err) {
-      wx.hideLoading()
       wx.showToast({ title: err.message || '加载失败', icon: 'none' })
+    } finally {
+      this._loadingReview = false
+      if (!silent) {
+        wx.hideLoading()
+      }
     }
   },
 
@@ -145,7 +157,7 @@ Page({
       const list = this.data.submissionList.slice()
       const idx = list.findIndex((s) => s.studentNo === id)
       if (idx >= 0) {
-        list[idx] = { ...list[idx], status: newStatus }
+        list[idx] = { ...list[idx], status: newStatus, reviewStatus: newStatus }
       }
       this._refreshStats(list)
       wx.showToast({
@@ -183,7 +195,7 @@ Page({
           })
           wx.hideLoading()
           const newList = list.map((s) =>
-            s.status === 'pending' ? { ...s, status: 'passed' } : s
+            s.status === 'pending' ? { ...s, status: 'passed', reviewStatus: 'passed' } : s
           )
           this._refreshStats(newList)
           wx.showToast({ title: '操作成功', icon: 'success' })
