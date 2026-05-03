@@ -5,6 +5,16 @@
   overflow: visible;
 }
 
+.class-login-bg-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.72;
+  z-index: 0;
+  pointer-events: none;
+}
+
 /* 角色 Tab */
 .role-tabs {
   display: flex;
@@ -44,7 +54,7 @@
   width: 72rpx;
   height: 6rpx;
   border-radius: 3rpx;
-  background: linear-gradient(90deg, #d4af37 0%, #8b5a2b 100%);
+  background: #9a7040;
 }
 
 /* 表单区：独立层叠 + 隔离，减少安卓/WebView 下子元素命中异常 */

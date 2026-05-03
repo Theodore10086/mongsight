@@ -2,6 +2,7 @@
 
   <!-- 今日学习目标 — 进度环 + XP -->
   <view class="goal-card">
+    <image class="home-note-image" src="/assets/images/ui/home-note-bg.png" mode="aspectFill"></image>
     <view class="goal-info">
       <text class="goal-title">今日学习目标</text>
       <text class="goal-subtitle">{{goalSubtitle}}</text>
@@ -27,6 +28,7 @@
 
   <!-- 主路径：书写练习 -->
   <view class="path-card path-card-primary" hover-class="path-card-hover" bindtap="onGoToWriting">
+    <image class="path-card-image" src="/assets/images/ui/home-writing-card-bg.png" mode="aspectFill"></image>
     <view class="path-card-bg">
       <view class="path-card-blob path-blob-a"></view>
       <view class="path-card-blob path-blob-b"></view>
@@ -61,6 +63,7 @@
 
   <!-- 次路径：单词识别 -->
   <view class="path-card path-card-secondary" hover-class="path-card-hover" bindtap="onGoToRecognition">
+    <image class="path-card-image" src="/assets/images/ui/home-recognition-card-bg.png" mode="aspectFill"></image>
     <view class="path-card-bg">
       <view class="path-card-blob path-blob-a"></view>
       <view class="path-card-blob path-blob-b"></view>
@@ -145,6 +148,7 @@
 
   <!-- 蒙宝小贴士 -->
   <view class="tip-card">
+    <image class="home-note-image" src="/assets/images/ui/home-note-bg.png" mode="aspectFill"></image>
     <view class="tip-card-mascot">
       <view class="zm-icon zm-icon-bulb zm-icon-gold-dark tip-card-glyph"></view>
     </view>

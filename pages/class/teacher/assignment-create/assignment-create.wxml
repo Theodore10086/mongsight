@@ -59,6 +59,19 @@
       >
         <image class="sheet-thumb" src="{{item.url}}" mode="aspectFill" />
         <view class="sheet-mid">
+          <text class="sheet-label">SCC3 Label</text>
+          <input
+            class="sheet-label-input"
+            type="text"
+            value="{{item.datasetLabel}}"
+            placeholder="narasu"
+            placeholder-class="field-ph"
+            data-index="{{idx}}"
+            adjust-position="{{true}}"
+            hold-keyboard="{{true}}"
+            cursor-spacing="{{cursorSpacing}}"
+            bindinput="handleDatasetLabelInput"
+          />
           <text class="sheet-label">书写次数：</text>
           <input
             class="sheet-count-input"

@@ -319,11 +319,11 @@
 }
 
 .bottom-btn--pass {
-  background: linear-gradient(135deg, #2a7d6f, #1d6557);
+  background: #2a7d6f;
 }
 
 .bottom-btn--export {
-  background: linear-gradient(135deg, #2a4d7c, #1e3760);
+  background: #2a4d7c;
 }
 
 .bottom-btn--hover {

@@ -3,8 +3,13 @@ const STUDENT_DASHBOARD = '/pages/class/student/dashboard/dashboard'
 
 const { callClassService } = require('../../../utils/classCloud.js')
 const {
+  getStudentSession,
   setStudentSession,
-  setTeacherSession
+  clearStudentSession,
+  getTeacherSession,
+  setTeacherSession,
+  clearTeacherSession,
+  getLastClassRole
 } = require('../../../utils/classStudentAuth.js')
 const { getClassPageLayout } = require('../../../utils/classLayout.js')
 
@@ -27,6 +32,30 @@ Page({
 
   onLoad() {
     this.setData(getClassPageLayout())
+    this.routeToActiveSession()
+  },
+
+  routeToActiveSession() {
+    const student = getStudentSession()
+    const teacher = getTeacherSession()
+    const lastRole = getLastClassRole()
+    if (lastRole === 'teacher' && teacher) {
+      wx.redirectTo({ url: TEACHER_DASHBOARD })
+      return true
+    }
+    if (lastRole === 'student' && student) {
+      wx.redirectTo({ url: STUDENT_DASHBOARD })
+      return true
+    }
+    if (student) {
+      wx.redirectTo({ url: STUDENT_DASHBOARD })
+      return true
+    }
+    if (teacher) {
+      wx.redirectTo({ url: TEACHER_DASHBOARD })
+      return true
+    }
+    return false
   },
 
   onResize() {
@@ -87,8 +116,10 @@ Page({
         const data = await callClassService('registerOrLoginTeacher', { name, password })
         setTeacherSession({
           teacherDocId: data.teacherDocId,
-          name: data.name
+          name: data.name,
+          password
         })
+        clearStudentSession()
         const app = getApp()
         if (app && app.globalData) {
           app.globalData.classRole = 'teacher'
@@ -130,8 +161,10 @@ Page({
         setStudentSession({
           studentDocId: data.studentDocId,
           name: data.name,
-          studentNo: data.studentNo
+          studentNo: data.studentNo,
+          password
         })
+        clearTeacherSession()
         const app = getApp()
         if (app && app.globalData) {
           app.globalData.classRole = 'student'

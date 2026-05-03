@@ -72,6 +72,10 @@ function genImageRowId() {
   return `img_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
 }
 
+function normalizeDatasetLabel(value) {
+  return String(value || '').trim().toLowerCase()
+}
+
 Page({
   data: {
     layoutClass: '',
@@ -159,6 +163,7 @@ Page({
         paths.map((url) => ({
           id: genImageRowId(),
           url,
+          datasetLabel: '',
           count: 1
         }))
       )
@@ -230,6 +235,18 @@ Page({
     this.setData({ imageList: list })
   },
 
+  handleDatasetLabelInput(e) {
+    const index = Number(e.currentTarget.dataset.index)
+    if (Number.isNaN(index) || index < 0) {
+      return
+    }
+    const value = normalizeDatasetLabel(e.detail.value)
+    const list = this.data.imageList.map((item, i) =>
+      i === index ? { ...item, datasetLabel: value } : item
+    )
+    this.setData({ imageList: list })
+  },
+
   deleteImage(e) {
     const index = Number(e.currentTarget.dataset.index)
     if (Number.isNaN(index) || index < 0) {
@@ -256,6 +273,15 @@ Page({
 
     for (let i = 0; i < this.data.imageList.length; i++) {
       const row = this.data.imageList[i]
+      const label = normalizeDatasetLabel(row && row.datasetLabel)
+      if (!label) {
+        wx.showToast({ title: 'SCC3 label required', icon: 'none' })
+        return
+      }
+      if (!/^[a-z0-9'-]+$/.test(label)) {
+        wx.showToast({ title: 'Use a-z, 0-9 only', icon: 'none' })
+        return
+      }
       const t = String(row && row.count !== undefined && row.count !== null ? row.count : '').trim()
       if (t === '' || Number.isNaN(parseInt(t, 10))) {
         wx.showToast({ title: '请输入书写次数', icon: 'none' })
@@ -296,6 +322,7 @@ Page({
         const fileID = await uploadFile(normalizedPath || item.url, cloudPath)
         uploadedList.push({
           fileID,
+          datasetLabel: normalizeDatasetLabel(item.datasetLabel),
           count: Math.max(1, Math.min(999, parseInt(String(item.count).trim(), 10) || 1))
         })
       }

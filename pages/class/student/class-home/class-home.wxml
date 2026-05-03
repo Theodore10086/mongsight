@@ -1,5 +1,6 @@
 <view class="page class-flow {{layoutClass}}">
   <view class="banner">
+    <image class="class-workbench-image" src="/assets/images/ui/class-workbench-bg.png" mode="aspectFill"></image>
     <text class="banner__name">{{className}}</text>
     <text class="banner__hint">点击作业进入练习</text>
   </view>

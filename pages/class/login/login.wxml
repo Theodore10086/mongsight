@@ -1,4 +1,5 @@
 <view class="page class-flow class-flow--login {{layoutClass}}">
+  <image class="class-login-bg-image" src="/assets/images/ui/class-login-bg.png" mode="aspectFill"></image>
   <!-- 角色选择 -->
   <view class="role-tabs">
     <view

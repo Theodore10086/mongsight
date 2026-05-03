@@ -1,6 +1,7 @@
 <view class="page class-flow--teacher-dash {{layoutClass}}">
   <!-- 顶部欢迎 -->
   <view class="welcome">
+    <image class="class-workbench-image" src="/assets/images/ui/class-workbench-bg.png" mode="aspectFill"></image>
     <text class="welcome-text">欢迎您，{{teacherDisplayName}} 老师</text>
   </view>
 

@@ -196,7 +196,8 @@ function buildSlideList(imageList) {
       return
     }
     const targetCount = Math.max(1, Number(it.count) || 1)
-    slides.push({ url: u, fileID, tempFileURL, legacyUrl, targetCount })
+    const datasetLabel = String(it.datasetLabel || '').trim().toLowerCase()
+    slides.push({ url: u, fileID, tempFileURL, legacyUrl, targetCount, datasetLabel })
   })
   return slides
 }
@@ -1271,6 +1272,9 @@ Page({
     if (slides.length > 0 && slides[idx]) {
       targetNeed = slides[idx].targetCount
     }
+    const currentSlide = slides.length > 0 && slides[idx] ? slides[idx] : null
+    const datasetLabel = currentSlide ? String(currentSlide.datasetLabel || '').trim().toLowerCase() : ''
+    const templateFileID = currentSlide ? String(currentSlide.fileID || '').trim() : ''
     const reachedPageGoal = successByPage[idx] >= targetNeed
     const isLastPage = page >= this.data.totalPages
     const isFinal = reachedPageGoal && isLastPage
@@ -1288,7 +1292,8 @@ Page({
     let imageFileID = ''
     try {
       if (tempPath) {
-        const cloudPath = `class/submissions/${assignmentId}/${session.studentNo}_p${page}_${Date.now()}.png`
+        const pathLabel = datasetLabel || 'unlabeled'
+        const cloudPath = `class/submissions/${assignmentId}/${pathLabel}/${session.studentNo}_p${page}_${Date.now()}.png`
         try {
           imageFileID = await uploadFile(tempPath, cloudPath)
         } catch (uploadErr) {
@@ -1302,6 +1307,9 @@ Page({
         assignmentId,
         aiScore: score,
         imageFileID,
+        datasetLabel,
+        templateFileID,
+        pageIndex: page,
         successByPage,
         currentPage: page,
         totalPages: this.data.totalPages,

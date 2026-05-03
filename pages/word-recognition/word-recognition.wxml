@@ -3,6 +3,7 @@
 
   <!-- 顶部 Hero -->
   <view class="hero-card">
+    <image class="hero-card-image" src="/assets/images/ui/word-recognition-hero-bg.png" mode="aspectFill"></image>
     <view class="hero-mascot">
       <view class="zm-icon zm-icon-camera zm-icon-gold-dark hero-mascot-glyph"></view>
     </view>

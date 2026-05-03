@@ -19,11 +19,30 @@ page {
   align-items: center;
   gap: 20rpx;
   padding: 32rpx 28rpx;
-  background: linear-gradient(135deg, #fff5d3 0%, #ffd47a 100%);
+  background: #f4ead6;
   border-radius: var(--radius-xl);
-  box-shadow: 0 8rpx 0 var(--brand-accent-dark);
+  box-shadow: 0 8rpx 24rpx rgba(31, 20, 16, 0.1);
+  border: 1rpx solid rgba(31, 20, 16, 0.08);
   position: relative;
   overflow: hidden;
+}
+
+.class-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 249, 239, 0.42);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.class-hero-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
 }
 
 .class-hero-mascot {
@@ -36,6 +55,8 @@ page {
   justify-content: center;
   flex-shrink: 0;
   box-shadow: inset 0 -6rpx 0 rgba(0, 0, 0, 0.06);
+  position: relative;
+  z-index: 2;
 }
 
 .class-hero-emoji {
@@ -54,6 +75,8 @@ page {
   flex-direction: column;
   gap: 6rpx;
   min-width: 0;
+  position: relative;
+  z-index: 2;
 }
 
 .class-hero-title {
@@ -80,6 +103,9 @@ page {
   gap: 16rpx;
   box-shadow: var(--shadow-card);
   border: 1rpx solid var(--border-soft);
+  box-sizing: border-box;
+  width: 100%;
+  overflow: hidden;
 }
 
 .login-cta-text {
@@ -102,4 +128,107 @@ page {
 
 .login-cta-btn {
   width: 100%;
+}
+
+.session-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16rpx;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.session-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  height: 80rpx;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-size: 28rpx;
+  font-weight: 700;
+  color: var(--text-primary);
+  background: #ffffff;
+  border: 1rpx solid var(--border-soft);
+  border-radius: var(--radius-md);
+  text-align: center;
+  overflow: hidden;
+}
+
+.session-btn::after {
+  border: none;
+}
+
+.session-btn--danger {
+  color: #a05040;
+}
+
+.account-panel {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 24rpx;
+  box-sizing: border-box;
+  box-shadow: var(--shadow-card);
+  border: 1rpx solid var(--border-soft);
+}
+
+.account-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
+
+.account-panel__title {
+  font-size: 30rpx;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.account-panel__hint {
+  font-size: 24rpx;
+  color: var(--text-secondary);
+}
+
+.account-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+  padding: 20rpx 0;
+  border-top: 1rpx solid var(--border-soft);
+}
+
+.account-row--active {
+  color: var(--brand-primary);
+}
+
+.account-row__main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.account-row__name {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-row__meta {
+  font-size: 24rpx;
+  color: var(--text-secondary);
+}
+
+.account-row__status {
+  flex-shrink: 0;
+  font-size: 26rpx;
+  color: var(--brand-primary);
 }

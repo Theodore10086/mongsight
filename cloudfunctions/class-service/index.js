@@ -47,6 +47,10 @@ function normalizeFileID(value) {
   return v || ''
 }
 
+function normalizeDatasetLabel(value) {
+  return trimStr(value).toLowerCase()
+}
+
 async function resolveCloudFileURLs(imageList) {
   const rows = Array.isArray(imageList) ? imageList : []
   const fileIDs = rows.map((it) => normalizeFileID(it && (it.fileID || it.url))).filter(Boolean)
@@ -54,6 +58,7 @@ async function resolveCloudFileURLs(imageList) {
     return rows.map((it) => ({
       fileID: normalizeFileID(it && (it.fileID || it.url)),
       count: Math.max(1, Math.min(999, Number(it && it.count) || 1)),
+      datasetLabel: normalizeDatasetLabel(it && it.datasetLabel),
       tempFileURL: ''
     }))
   }
@@ -69,6 +74,7 @@ async function resolveCloudFileURLs(imageList) {
     return {
       fileID,
       count: Math.max(1, Math.min(999, Number(it && it.count) || 1)),
+      datasetLabel: normalizeDatasetLabel(it && it.datasetLabel),
       tempFileURL: map.get(fileID) || ''
     }
   })
@@ -792,10 +798,20 @@ async function createAssignment(openId, event) {
 
   const safeImageList = imageList.map((it) => ({
     fileID: trimStr(it && it.fileID),
+    datasetLabel: normalizeDatasetLabel(it && it.datasetLabel),
     count: Math.max(1, Math.min(999, Number(it && it.count) || 1))
   })).filter((it) => !!it.fileID)
   if (safeImageList.length === 0) {
     throw new Error('字帖图未上传成功')
+  }
+
+  const missingLabelIndex = safeImageList.findIndex((it) => !it.datasetLabel)
+  if (missingLabelIndex >= 0) {
+    throw new Error(`第 ${missingLabelIndex + 1} 张字帖缺少 SCC3 训练标签`)
+  }
+  const invalidLabel = safeImageList.find((it) => !/^[a-z0-9'-]+$/.test(it.datasetLabel))
+  if (invalidLabel) {
+    throw new Error('SCC3 训练标签仅支持小写字母、数字、撇号和连字符')
   }
 
   const addRes = await db.collection(COLL.assignments).add({
@@ -1171,6 +1187,9 @@ async function submitWork(openId, event) {
 
   const aiScore = Number(event.aiScore) || 0
   const imageFileID = trimStr(event.imageFileID)
+  const datasetLabel = normalizeDatasetLabel(event.datasetLabel)
+  const templateFileID = normalizeFileID(event.templateFileID)
+  const pageIndex = Math.max(1, Number(event.pageIndex) || Number(event.currentPage) || 1)
   const successByPage = Array.isArray(event.successByPage) ? event.successByPage.map((n) => Number(n) || 0) : []
   const currentPage = Number(event.currentPage) || 1
   const totalPages = Number(event.totalPages) || 1
@@ -1205,13 +1224,33 @@ async function submitWork(openId, event) {
 
   // 只要提交过一次，就保存提交记录；重做再次提交时把状态重置为 pending
   if (isFinal || imageFileID || prevSub) {
+    const prevImages = Array.isArray(prevSub && prevSub.submissionImages) ? prevSub.submissionImages : []
+    const submissionImages = imageFileID
+      ? prevImages.concat([{
+        imageFileID,
+        datasetLabel,
+        templateFileID,
+        pageIndex,
+        aiScore,
+        submittedAt: nowDate()
+      }])
+      : prevImages
+    const latestImageFileID = imageFileID || (prevSub && prevSub.imageFileID) || ''
+    const latestDatasetLabel = imageFileID ? datasetLabel : ((prevSub && prevSub.datasetLabel) || datasetLabel)
+    const latestTemplateFileID = imageFileID ? templateFileID : ((prevSub && prevSub.templateFileID) || templateFileID)
+    const latestPageIndex = imageFileID ? pageIndex : ((prevSub && prevSub.pageIndex) || pageIndex)
+    const latestAiScore = imageFileID ? aiScore : ((prevSub && prevSub.aiScore != null) ? prevSub.aiScore : aiScore)
     const subData = {
       classId: assignment.classId,
       studentNo: stu.studentNo,
       studentDocId: stu._id,
       studentName: stu.name,
-      aiScore,
-      imageFileID,
+      aiScore: latestAiScore,
+      imageFileID: latestImageFileID,
+      datasetLabel: latestDatasetLabel,
+      templateFileID: latestTemplateFileID,
+      pageIndex: latestPageIndex,
+      submissionImages,
       submittedAt: nowDate(),
       reviewStatus,
       resubmitted: hadReviewedBefore

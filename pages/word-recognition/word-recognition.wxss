@@ -35,25 +35,45 @@ page {
   align-items: center;
   gap: 20rpx;
   padding: 24rpx 24rpx;
-  background: linear-gradient(135deg, #ffffff 0%, #effaff 100%);
+  background: #f1eadc;
   border-radius: var(--radius-xl);
-  border-left: 8rpx solid var(--brand-secondary);
-  box-shadow: var(--shadow-card);
-  border-top: 1rpx solid var(--border-soft);
-  border-right: 1rpx solid var(--border-soft);
-  border-bottom: 1rpx solid var(--border-soft);
+  box-shadow: 0 8rpx 24rpx rgba(31, 20, 16, 0.1);
+  border: 1rpx solid rgba(31, 20, 16, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 249, 239, 0.46);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hero-card-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
 }
 
 .hero-mascot {
   width: 100rpx;
   height: 100rpx;
   border-radius: var(--radius-md);
-  background: linear-gradient(135deg, var(--brand-secondary-soft) 0%, var(--brand-secondary) 100%);
+  background: rgba(255, 255, 255, 0.74);
+  border: 2rpx solid rgba(31, 20, 16, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6rpx 0 var(--brand-secondary-dark);
+  box-shadow: inset 0 -4rpx 0 rgba(31, 20, 16, 0.06);
   flex-shrink: 0;
+  position: relative;
+  z-index: 2;
 }
 
 .hero-mascot-emoji {
@@ -64,6 +84,7 @@ page {
 .hero-mascot-glyph {
   width: 56rpx;
   height: 56rpx;
+  background-color: var(--brand-secondary-dark);
 }
 
 .hero-text {
@@ -72,6 +93,8 @@ page {
   flex-direction: column;
   gap: 8rpx;
   min-width: 0;
+  position: relative;
+  z-index: 2;
 }
 
 .hero-title {

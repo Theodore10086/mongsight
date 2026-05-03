@@ -1,23 +1,51 @@
 <view class="class-tab-page">
 
-  <!-- 顶部欢迎条 -->
   <view class="class-hero">
+    <image class="class-hero-image" src="/assets/images/ui/class-hero-bg.png" mode="aspectFill"></image>
     <view class="class-hero-mascot">
       <view class="zm-icon zm-icon-graduation zm-icon-gold-dark class-hero-glyph"></view>
     </view>
     <view class="class-hero-text">
       <text class="class-hero-title">班级教学</text>
-      <text class="class-hero-subtitle">教师布置作业，学生提交并由蒙宝AI评分</text>
+      <text class="class-hero-subtitle">教师布置作业，学生提交书写图片并进入审核</text>
     </view>
   </view>
 
-  <!-- 单一入口：进入班级登录 -->
   <view class="login-cta">
     <view class="login-cta-text">
-      <text class="login-cta-title">进入班级</text>
-      <text class="login-cta-desc">在登录页选择"教师"或"学生"身份后进入对应工作台</text>
+      <text class="login-cta-title">{{hasSession ? roleText : '进入班级'}}</text>
+      <text wx:if="{{hasSession}}" class="login-cta-desc">当前账号：{{accountName}}</text>
+      <text wx:else class="login-cta-desc">选择教师或学生身份后进入对应工作台</text>
     </view>
-    <button class="zm-btn-primary login-cta-btn" bindtap="onGoToClassLogin">进入班级登录</button>
+
+    <button class="zm-btn-primary login-cta-btn" bindtap="onGoToClassLogin">
+      {{hasSession ? '继续进入' : '进入班级登录'}}
+    </button>
+
+    <view wx:if="{{hasSession}}" class="session-actions">
+      <view class="session-btn" bindtap="onSwitchAccount">登录新账号</view>
+      <view class="session-btn session-btn--danger" bindtap="onLogout">退出当前</view>
+    </view>
+  </view>
+
+  <view wx:if="{{accountList.length > 0}}" class="account-panel">
+    <view class="account-panel__head">
+      <text class="account-panel__title">最近账号</text>
+      <text class="account-panel__hint">点击可切换</text>
+    </view>
+    <view
+      wx:for="{{accountList}}"
+      wx:key="key"
+      class="account-row {{item.active ? 'account-row--active' : ''}}"
+      data-key="{{item.key}}"
+      bindtap="onUseHistoryAccount"
+    >
+      <view class="account-row__main">
+        <text class="account-row__name">{{item.name}}</text>
+        <text class="account-row__meta">{{item.roleText}}{{item.studentNo ? ' · ' + item.studentNo : ''}}</text>
+      </view>
+      <text class="account-row__status">{{item.active ? '当前' : '切换'}}</text>
+    </view>
   </view>
 
 </view>

@@ -163,6 +163,18 @@
   color: #3d2e28;
 }
 
+.sheet-label-input {
+  width: 220rpx;
+  height: 56rpx;
+  padding: 0 16rpx;
+  box-sizing: border-box;
+  font-size: 26rpx;
+  color: #3d2e28;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 10rpx;
+  border: 1rpx solid rgba(139, 90, 43, 0.22);
+}
+
 .sheet-count-input {
   width: 120rpx;
   height: 56rpx;

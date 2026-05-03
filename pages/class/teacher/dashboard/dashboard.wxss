@@ -5,18 +5,32 @@
 .welcome {
   padding: 40rpx 36rpx 36rpx;
   background-color: #efe9df;
-  background-image: repeating-linear-gradient(
-      90deg,
-      rgba(139, 90, 43, 0.04) 0,
-      rgba(139, 90, 43, 0.04) 2rpx,
-      transparent 2rpx,
-      transparent 24rpx
-    ),
-    linear-gradient(180deg, #f2ebe0 0%, #ebe4d8 100%);
   border-bottom: 1rpx solid rgba(92, 64, 51, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.welcome::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 249, 239, 0.36);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.class-workbench-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
 }
 
 .welcome-text {
+  position: relative;
+  z-index: 2;
   font-size: 34rpx;
   font-weight: 600;
   color: #2c3e50;
@@ -144,7 +158,7 @@
   height: 72rpx;
   border-radius: 50%;
   border: 6rpx solid #8b5a2b;
-  background: linear-gradient(145deg, #fdf9f3 0%, #e8dcc8 100%);
+  background: #efe4d2;
   box-sizing: border-box;
 }
 
@@ -155,7 +169,7 @@
   transform: translateX(-50%);
   width: 112rpx;
   height: 52rpx;
-  background: linear-gradient(180deg, #faf6ef 0%, #efe9df 100%);
+  background: #f6efe4;
   border-radius: 8rpx;
   border: 3rpx solid rgba(139, 90, 43, 0.35);
   box-shadow: 0 4rpx 12rpx rgba(92, 64, 51, 0.12);

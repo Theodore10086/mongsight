@@ -1,6 +1,7 @@
 <view class="page class-flow {{layoutClass}}">
   <view class="profile">
     <view class="profile-card">
+      <image class="class-workbench-image" src="/assets/images/ui/class-workbench-bg.png" mode="aspectFill"></image>
       <view class="profile-paper" aria-hidden="true"></view>
       <view class="profile-row">
         <view class="profile-text">

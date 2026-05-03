@@ -2,6 +2,7 @@
 
   <!-- 个人信息卡 -->
   <view class="profile-hero">
+    <image class="profile-hero-image" src="/assets/images/ui/profile-hero-bg.png" mode="aspectFill"></image>
     <view class="profile-hero-bg"></view>
     <view class="profile-hero-body">
       <view class="profile-avatar-wrap" hover-class="profile-avatar-wrap-hover" hover-stay-time="80" bindtap="onEditAvatar">
@@ -70,6 +71,7 @@
 
   <!-- 签到卡 -->
   <view class="checkin-card" hover-class="checkin-card-hover" hover-stay-time="80" bindtap="onDailyCheckin">
+    <image class="checkin-card-image" src="/assets/images/ui/profile-checkin-bg.png" mode="aspectFill"></image>
     <view class="checkin-left">
       <view class="checkin-icon">
         <view class="zm-icon zm-icon-calendar zm-icon-gold-dark checkin-icon-glyph"></view>
