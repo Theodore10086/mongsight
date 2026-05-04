@@ -67,8 +67,8 @@
 
       <!-- 右侧：状态 + 操作按钮 -->
       <view class="card__right">
-        <view class="status-tag status-tag--{{item.status === 'pending_review' ? 'pending' : item.status}}">
-          <text class="status-tag__text">{{item.status === 'pending_review' ? '待批改' : statusLabel[item.status]}}</text>
+        <view class="status-tag status-tag--{{item.status === 'pending_review' || item.status === 'pending' ? 'pending' : item.status}}">
+          <text class="status-tag__text">{{statusLabel[item.status] || (item.status === 'pending_review' || item.status === 'pending' ? '待批改' : '')}}</text>
         </view>
         <text class="card__unsub-hint">{{item.statusText}}</text>
         <block wx:if="{{item.status === 'pending' || item.status === 'pending_review'}}">

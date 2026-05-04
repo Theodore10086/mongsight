@@ -3,7 +3,6 @@
     "pages/splash/splash",
     "pages/home/home",
     "pages/class-tab/class-tab",
-    "pages/community/community",
     "pages/profile/profile",
     "pages/writing-practice/writing-practice",
     "pages/word-recognition/word-recognition",
@@ -34,7 +33,6 @@
     "list": [
       { "pagePath": "pages/home/home", "text": "首页" },
       { "pagePath": "pages/class-tab/class-tab", "text": "班级" },
-      { "pagePath": "pages/community/community", "text": "社区" },
       { "pagePath": "pages/profile/profile", "text": "我" }
     ]
   },

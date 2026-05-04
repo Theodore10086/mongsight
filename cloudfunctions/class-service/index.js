@@ -146,7 +146,7 @@ function resolveTeacherAssignmentStatus(options) {
 
   const reviewStatus = normalizeReviewStatus(submissionStatus, teacherStatus)
   if (!hasSubmission) {
-    return { status: 'pending_submit', reviewStatus }
+    return { status: 'pending_submit', reviewStatus: '' }
   }
   if (reviewStatus === 'passed') {
     return { status: 'passed', reviewStatus }
@@ -157,7 +157,7 @@ function resolveTeacherAssignmentStatus(options) {
   if (reviewStatus === 'pending') {
     return { status: 'pending_review', reviewStatus }
   }
-  return { status: 'pending_review', reviewStatus }
+  return { status: 'pending_review', reviewStatus: reviewStatus || 'pending' }
 }
 
 /**
@@ -928,7 +928,11 @@ async function getAssignmentReview(openId, event) {
       status: resolved.status,
       reviewStatus: resolved.reviewStatus,
       resubmitted,
-      imageFileID: sub && hasFinal ? (sub.imageFileID || '') : ''
+      imageFileID: sub && hasFinal ? (sub.imageFileID || '') : '',
+      hasSubmission,
+      hasFinal,
+      submissionReviewStatus,
+      teacherReviewStatus
     }
   })
 

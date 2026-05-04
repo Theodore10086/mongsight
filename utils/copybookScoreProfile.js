@@ -64,14 +64,18 @@ function getCopybookScoreParams(scriptType) {
   const t = normalizeScriptType(scriptType)
 
   // ── 算法 A：回鹘文（宽笔画描红，像素精确匹配）──────────────────────
+  // 仅在权重层面强调墨迹质量：
+  // - coverage：模板是否被填满
+  // - precision：墨迹是否溢出到模板外
+  // 不调整公共算法本身
   if (t === 'uighur') {
     return {
       useGridScoring: false,
-      dilatePasses: 2,
-      templateLumaThreshold: 215,
-      precisionWeight: 0.7,
-      coverageWeight: 0.3,
-      minStudentInkPx: 100,
+      dilatePasses: 1,
+      templateLumaThreshold: 232,
+      precisionWeight: 0.5,
+      coverageWeight: 0.5,
+      minStudentInkPx: 160,
       coverageBoost: 0
     }
   }

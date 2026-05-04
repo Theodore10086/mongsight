@@ -236,6 +236,7 @@ class MongolVisualScorer {
 
     if (areaT === 0) return { score: 0, error: '底图无可识别字迹' };
     if (areaU === 0) return { score: 0, error: '未检测到书写轨迹' };
+    if (areaU < 32) return { score: 0, error: '笔迹过少，无法评分' };
 
     // 五项原始指标 ---------------------------------------------------
     const coverage = matchedT / areaT;          // 模板被覆盖率
@@ -244,41 +245,40 @@ class MongolVisualScorer {
     const cxT = sumXt / areaT, cyT = sumYt / areaT;
     const cxU = sumXu / areaU, cyU = sumYu / areaU;
     const cdist = Math.sqrt((cxT - cxU) ** 2 + (cyT - cyU) ** 2);
-    const Dmax = N * 0.14;                       // 适度放宽，小偏移不过分扣分
+    const Dmax = N * 0.055;
     const centroidSim = Math.max(0, 1 - cdist / Dmax);
 
     const angleT = this.pcaAngle(tBin, N, N, areaT);
     const angleU = this.pcaAngle(uBin, N, N, areaU);
     let dAngle = Math.abs(angleT - angleU);
     if (dAngle > Math.PI / 2) dAngle = Math.PI - dAngle;
-    const angleSim = Math.max(0, 1 - dAngle / (Math.PI / 4));
+    const angleSim = Math.max(0, 1 - dAngle / (Math.PI / 10));
 
-    // 墨量比 → 高斯衰减（µ=1, σ=0.6 in log space，v2.1 放宽）
-    // R=1 → 1.00   R=0.5 → 0.68   R=2.0 → 0.68   R=0.33 → 0.41
+    // 墨量比 → 更严格衰减，偏多/偏少都会明显扣分
     const Rink = areaU / areaT;
-    const sigma = 0.6;
-    const lr = Math.log(Math.max(0.05, Rink));
+    const sigma = 0.28;
+    const lr = Math.log(Math.max(0.08, Rink));
     const inkBalance = Math.exp(-lr * lr / (2 * sigma * sigma));
 
     // 复杂度得分：C=1.0 → 0；C=2.5 → 1.0
     const complexityScore = Math.min(1, Math.max(0, (complexity - 1.0) / 1.5));
 
     // 真三维子分 ---------------------------------------------------
-    const structure = (coverage * 0.55 + centroidSim * 0.30 + angleSim * 0.15) * 100;
-    const fluency = (precision * 0.55 + complexityScore * 0.30 + inkBalance * 0.15) * 100;
+    const structure = (coverage * 0.50 + centroidSim * 0.30 + angleSim * 0.20) * 100;
+    const fluency = (precision * 0.60 + complexityScore * 0.20 + inkBalance * 0.20) * 100;
     const rhythm = (
-      Math.min(coverage, precision) * 0.45 +
-      inkBalance * 0.40 +
+      Math.min(coverage, precision) * 0.60 +
+      inkBalance * 0.25 +
       angleSim * 0.15
     ) * 100;
 
-    // 总分：几何平均 + 温和幂曲线（v2.1 适度放宽）
-    // geo  0.60 → 71     0.70 → 78     0.80 → 86     0.88 → 91     0.95 → 96
+    // 总分：强惩罚模式，只有极高匹配才可能进入 90+
     const sNorm = Math.max(0.01, structure / 100);
     const fNorm = Math.max(0.01, fluency / 100);
     const rNorm = Math.max(0.01, rhythm / 100);
     const geo = Math.pow(sNorm * fNorm * rNorm, 1 / 3);
-    const totalRaw = Math.pow(geo, 0.70) * 100;
+    const gate = Math.min(coverage, precision, centroidSim, angleSim, inkBalance);
+    const totalRaw = Math.pow(geo, 1.45) * Math.pow(Math.max(0, gate), 2.1) * 100;
     const finalScore = Math.max(0, Math.min(100, Math.round(totalRaw)));
 
     return {
@@ -295,7 +295,8 @@ class MongolVisualScorer {
         angle: (angleSim * 100).toFixed(1),
         complexity: complexity.toFixed(2),
         inkRatio: Rink.toFixed(2),
-        inkBalance: (inkBalance * 100).toFixed(1)
+        inkBalance: (inkBalance * 100).toFixed(1),
+        gate: (Math.min(coverage, precision, centroidSim, angleSim, inkBalance) * 100).toFixed(1)
       }
     };
   }

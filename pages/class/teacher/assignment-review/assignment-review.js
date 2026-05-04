@@ -4,9 +4,14 @@ const { getClassPageLayout } = require('../../../../utils/classLayout.js')
 
 const STATUS_LABEL = {
   pending: '待批改',
+  pending_review: '待批改',
   passed: '已通过',
   rejected: '已驳回',
   unsubmitted: '未提交'
+}
+
+function isPendingReviewStatus(status) {
+  return status === 'pending' || status === 'pending_review'
 }
 
 Page({
@@ -69,11 +74,12 @@ Page({
       const list = (data.submissionList || []).map((s) => {
         const reviewStatus = s.reviewStatus || s.status || ''
         const displayStatus = s.status || reviewStatus
+        const isPending = isPendingReviewStatus(displayStatus) || isPendingReviewStatus(reviewStatus)
         const statusText = reviewStatus === 'passed'
           ? '已通过'
           : (reviewStatus === 'rejected'
             ? '已驳回'
-            : (displayStatus === 'pending_review' || reviewStatus === 'pending'
+            : (isPending
               ? (s.resubmitted ? '重新提交，待批改' : '待批改')
               : '未提交'))
         return {
@@ -118,8 +124,8 @@ Page({
   },
 
   _refreshStats(list, title) {
-    const submittedCount = list.filter((s) => s.status !== 'unsubmitted').length
-    const pendingCount = list.filter((s) => s.status === 'pending').length
+    const submittedCount = list.filter((s) => s.status && s.status !== 'unsubmitted' && s.status !== 'pending_submit').length
+    const pendingCount = list.filter((s) => isPendingReviewStatus(s.status)).length
     const passedCount = list.filter((s) => s.status === 'passed').length
     this.setData({
       assignmentTitle: title != null ? title : this.data.assignmentTitle,
@@ -173,9 +179,9 @@ Page({
 
   handlePassAll() {
     const list = this.data.submissionList || []
-    const pendingItems = list.filter((s) => s.status === 'pending')
+    const pendingItems = list.filter((s) => isPendingReviewStatus(s.status) || isPendingReviewStatus(s.reviewStatus))
     if (pendingItems.length === 0) {
-      wx.showToast({ title: '没有待批改项', icon: 'none' })
+      wx.showToast({ title: '没有检测到待批改作业', icon: 'none' })
       return
     }
     wx.showModal({
@@ -195,7 +201,9 @@ Page({
           })
           wx.hideLoading()
           const newList = list.map((s) =>
-            s.status === 'pending' ? { ...s, status: 'passed', reviewStatus: 'passed' } : s
+            (isPendingReviewStatus(s.status) || isPendingReviewStatus(s.reviewStatus))
+              ? { ...s, status: 'passed', reviewStatus: 'passed' }
+              : s
           )
           this._refreshStats(newList)
           wx.showToast({ title: '操作成功', icon: 'success' })
