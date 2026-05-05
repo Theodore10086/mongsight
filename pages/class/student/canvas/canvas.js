@@ -1,6 +1,7 @@
-const PEN_THIN = 3
-const PEN_MID = 5
-const PEN_THICK = 10
+/** 逻辑像素线宽：最小 / 默认 / 最大（最大放宽便于回鹘文大面积填涂） */
+const PEN_WIDTH_MIN = 2
+const PEN_WIDTH_DEFAULT = 6
+const PEN_WIDTH_MAX = 28
 
 const INK_ALPHA_MIN = 50
 
@@ -204,11 +205,12 @@ function buildSlideList(imageList) {
 
 // ════════════════════════════════════════════════════════════════════
 //  算法 A：像素精确匹配（回鹘文专用，宽笔画描红）
-//  不修改此函数！
 // ════════════════════════════════════════════════════════════════════
 /**
- * precision = 学生原始笔迹 ∩ 膨胀模板 / 学生笔迹总量
- * coverage  = 学生原始笔迹 ∩ 膨胀模板 / 原始模板总量
+ * precision         = 学生墨迹 ∩ 膨胀模板 / 学生墨迹总量（轮廓是否贴在范字带内）
+ * templateCoverage  = 范字笔画像素中，有多少被「膨胀后的学生墨迹」盖住（是否填满）
+ *
+ * 旧版用「学生像素数 / 模板像素数」冒充覆盖率，粗笔会虚高；现改为按模板像素统计漏涂。
  */
 function scorePixelsAgainstMask(
   writeCtx, writeCanvas,
@@ -227,6 +229,7 @@ function scorePixelsAgainstMask(
   const w = img.width
   const h = img.height
   const d = img.data
+  const studentMask = new Uint8Array(w * h)
   let hitCount = 0
   let missCount = 0
   for (let py = 0; py < h; py++) {
@@ -234,6 +237,7 @@ function scorePixelsAgainstMask(
       const idx = py * w + px
       const i = idx * 4
       if (!isStudentInk(d[i], d[i + 1], d[i + 2], d[i + 3])) continue
+      studentMask[idx] = 1
       if (idx < dilated.length && dilated[idx]) hitCount++
       else missCount++
     }
@@ -241,11 +245,61 @@ function scorePixelsAgainstMask(
   const totalInk = hitCount + missCount
   if (totalInk < p.minStudentInkPx) return 0
   const precision = hitCount / totalInk
-  const denomT = targetTotal > 0 ? targetTotal : 1
-  let coverage = targetTotal > 0 ? hitCount / denomT : 0
-  if (p.coverageBoost > 0) coverage = Math.min(1, coverage + p.coverageBoost)
-  const score = (precision * p.precisionWeight + coverage * p.coverageWeight) * 100
-  return Math.round(Math.max(0, Math.min(100, score)))
+
+  let templateCoverage = 0
+  if (targetTotal > 0 && rawMask && rawMask.length >= w * h) {
+    const inkPasses = p.studentInkDilatePasses != null ? p.studentInkDilatePasses : 2
+    const studentDilated =
+      inkPasses > 0 ? runDilate(studentMask, w, h, inkPasses) : studentMask
+    let covered = 0
+    for (let idx = 0; idx < rawMask.length; idx++) {
+      if (!rawMask[idx]) continue
+      if (studentDilated[idx]) covered++
+    }
+    templateCoverage = covered / targetTotal
+  }
+
+  let coverageForBlend = templateCoverage
+  if (p.coverageBoost > 0) {
+    coverageForBlend = Math.min(1, coverageForBlend + p.coverageBoost)
+  }
+
+  let linear01
+  if (p.useHarmonicBlend) {
+    const den = precision + coverageForBlend
+    linear01 =
+      den > 1e-9
+        ? (2 * precision * coverageForBlend) / den
+        : 0
+  } else {
+    linear01 =
+      precision * p.precisionWeight + coverageForBlend * p.coverageWeight
+  }
+  let score01 = linear01
+  const gamma = p.scoreStrictGamma
+  if (gamma && gamma > 1 && linear01 > 0) {
+    score01 = Math.pow(linear01, gamma)
+  }
+
+  let score = score01 * 100
+
+  const minCov =
+    p.minTemplateCoverageForPass != null ? p.minTemplateCoverageForPass : 0.94
+  const minPrec =
+    p.minPrecisionForPass != null ? p.minPrecisionForPass : 0.85
+  // 填涂不完整或轮廓严重偏离：一律压在 90 分以下（与 submitWork 门槛一致）
+  if (templateCoverage < minCov || precision < minPrec) {
+    score = Math.min(score, 89)
+  }
+
+  const rounded = Math.round(Math.max(0, Math.min(100, score)))
+  console.log('[score][uighur]', {
+    precision: precision.toFixed(3),
+    templateCoverage: templateCoverage.toFixed(3),
+    linear01: linear01.toFixed(3),
+    score: rounded
+  })
+  return rounded
 }
 
 // ════════════════════════════════════════════════════════════════════
@@ -500,10 +554,9 @@ function scoreWithCellGrid(writeCtx, writeCanvas, rawMask, mw, mh, params) {
 Page({
   data: {
     currentTool: 'pen',
-    lineWidth: PEN_MID,
-    penThin: PEN_THIN,
-    penMid: PEN_MID,
-    penThick: PEN_THICK,
+    lineWidth: PEN_WIDTH_DEFAULT,
+    penWidthMin: PEN_WIDTH_MIN,
+    penWidthMax: PEN_WIDTH_MAX,
     showPenMenu: false,
     currentPage: 1,
     totalPages: 10,
@@ -993,11 +1046,14 @@ Page({
     })
   },
 
-  selectLineWidth(e) {
-    const w = Number(e.currentTarget.dataset.width)
-    if (!w || Number.isNaN(w)) {
+  onPenWidthSlider(e) {
+    const raw = Number(e.detail && e.detail.value)
+    if (Number.isNaN(raw)) {
       return
     }
+    const w = Math.round(
+      Math.max(PEN_WIDTH_MIN, Math.min(PEN_WIDTH_MAX, raw))
+    )
     this.setData({ lineWidth: w, currentTool: 'pen' })
   },
 

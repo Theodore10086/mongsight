@@ -19,21 +19,24 @@
           <text class="tool-label">画笔</text>
         </view>
         <view wx:if="{{showPenMenu}}" class="pen-menu" catchtap="preventClose">
-          <view
-            class="pen-opt {{lineWidth === penThin ? 'pen-opt--on' : ''}}"
-            data-width="{{penThin}}"
-            bindtap="selectLineWidth"
-          >细</view>
-          <view
-            class="pen-opt {{lineWidth === penMid ? 'pen-opt--on' : ''}}"
-            data-width="{{penMid}}"
-            bindtap="selectLineWidth"
-          >中</view>
-          <view
-            class="pen-opt {{lineWidth === penThick ? 'pen-opt--on' : ''}}"
-            data-width="{{penThick}}"
-            bindtap="selectLineWidth"
-          >粗</view>
+          <text class="pen-menu__title">笔触粗细</text>
+          <slider
+            class="pen-menu__slider"
+            min="{{penWidthMin}}"
+            max="{{penWidthMax}}"
+            value="{{lineWidth}}"
+            step="1"
+            show-value
+            activeColor="#5c4033"
+            backgroundColor="#e5dfd4"
+            block-color="#5c4033"
+            bindchanging="onPenWidthSlider"
+            bindchange="onPenWidthSlider"
+          />
+          <view class="pen-menu__ticks">
+            <text>细</text>
+            <text>粗</text>
+          </view>
         </view>
       </view>
 
