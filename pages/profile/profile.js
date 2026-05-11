@@ -250,6 +250,9 @@ Page({
   },
 
   /* ──────────────── 菜单跳转（部分功能尚未实现 → toast） ──────────────── */
+  onGoToMyClass() {
+    wx.navigateTo({ url: '/pages/class-tab/class-tab' })
+  },
   onGoToMyWorks() {
     wx.showToast({ title: '我的作品 即将上线', icon: 'none' })
   },

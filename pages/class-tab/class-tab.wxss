@@ -59,11 +59,6 @@ page {
   z-index: 2;
 }
 
-.class-hero-emoji {
-  font-size: 56rpx;
-  line-height: 1;
-}
-
 .class-hero-glyph {
   width: 56rpx;
   height: 56rpx;

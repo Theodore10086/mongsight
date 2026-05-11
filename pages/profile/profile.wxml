@@ -92,6 +92,12 @@
   </view>
 
   <view class="menu-card">
+    <view class="menu-item" hover-class="menu-item-hover" bindtap="onGoToMyClass">
+      <view class="menu-icon menu-icon-accent"><view class="zm-icon zm-icon-graduation zm-icon-gold-dark menu-glyph"></view></view>
+      <text class="menu-text">我的班级</text>
+      <view class="zm-icon zm-icon-chevron-right zm-icon-muted menu-arrow-glyph"></view>
+    </view>
+    <view class="menu-divider"></view>
     <view class="menu-item" hover-class="menu-item-hover" bindtap="onGoToMyWorks">
       <view class="menu-icon menu-icon-accent"><view class="zm-icon zm-icon-frame zm-icon-gold-dark menu-glyph"></view></view>
       <text class="menu-text">我的作品</text>
