@@ -43,11 +43,6 @@
 
   <!-- 统计 -->
   <view class="stats-row">
-    <view class="stats-cell" hover-class="stats-cell-hover" bindtap="onGoToMyWorks">
-      <text class="stats-cell-num">{{myWorksCount}}</text>
-      <text class="stats-cell-label">作品</text>
-    </view>
-    <view class="stats-cell-divider"></view>
     <view class="stats-cell" hover-class="stats-cell-hover" bindtap="onGoToMyPosts">
       <text class="stats-cell-num">{{myPostCount}}</text>
       <text class="stats-cell-label">帖子</text>
@@ -92,12 +87,6 @@
   </view>
 
   <view class="menu-card">
-    <view class="menu-item" hover-class="menu-item-hover" bindtap="onGoToMyWorks">
-      <view class="menu-icon menu-icon-accent"><view class="zm-icon zm-icon-frame zm-icon-gold-dark menu-glyph"></view></view>
-      <text class="menu-text">我的作品</text>
-      <view class="zm-icon zm-icon-chevron-right zm-icon-muted menu-arrow-glyph"></view>
-    </view>
-    <view class="menu-divider"></view>
     <view class="menu-item" hover-class="menu-item-hover" bindtap="onGoToMyPosts">
       <view class="menu-icon menu-icon-primary"><view class="zm-icon zm-icon-doc zm-icon-primary-dark menu-glyph"></view></view>
       <text class="menu-text">我的帖子</text>
@@ -116,9 +105,9 @@
       <view class="zm-icon zm-icon-chevron-right zm-icon-muted menu-arrow-glyph"></view>
     </view>
     <view class="menu-divider"></view>
-    <view class="menu-item" hover-class="menu-item-hover" bindtap="onGoToAchievements">
-      <view class="menu-icon menu-icon-purple"><view class="zm-icon zm-icon-trophy zm-icon-purple menu-glyph"></view></view>
-      <text class="menu-text">成就中心</text>
+    <view class="menu-item" hover-class="menu-item-hover" bindtap="onGoToHistory">
+      <view class="menu-icon menu-icon-secondary"><view class="zm-icon zm-icon-clock zm-icon-menu menu-glyph" style="background-color:#5c8a5c;"></view></view>
+      <text class="menu-text">浏览历史</text>
       <view class="zm-icon zm-icon-chevron-right zm-icon-muted menu-arrow-glyph"></view>
     </view>
     <view class="menu-divider"></view>

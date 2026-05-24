@@ -3,6 +3,15 @@ const {
   normalizeTrajectoryPayload,
   storePendingRecognitionPlayback
 } = require('../../utils/trajectory-utils.js');
+const {
+  addWordToReview,
+  isWordInReview,
+  syncTodayReviewCount
+} = require('../../utils/review-manager.js');
+const {
+  ARCHIVE_PRIMER_POINTS,
+  ARCHIVE_SOURCE_ASSETS
+} = require('../../utils/archive-knowledge.js');
 
 Page({
   data: {
@@ -15,9 +24,12 @@ Page({
     candidateWords: [],
     recognizedAtText: '',
     hasTrajectory: false,
-    animationStatus: '等待播放',
+    animationStatus: 'Waiting',
     confidenceText: '',
-    scoreRows: []
+    scoreRows: [],
+    reviewSaved: false,
+    archivePrimerPoints: ARCHIVE_PRIMER_POINTS,
+    studyNoteImage: ARCHIVE_SOURCE_ASSETS.studyNote
   },
 
   async getCanvasSize() {
@@ -69,9 +81,10 @@ Page({
           candidateWords: [],
           recognizedAtText: '',
           hasTrajectory: false,
-          animationStatus: '等待播放',
+          animationStatus: 'Waiting',
           confidenceText: '',
-          scoreRows: []
+          scoreRows: [],
+          reviewSaved: false
         });
       }
     });
@@ -140,7 +153,7 @@ Page({
 
   async onRecognize() {
     if (!this.data.compressedImagePath) {
-      wx.showToast({ title: '请先选择图片', icon: 'none' });
+      wx.showToast({ title: 'Please choose an image first', icon: 'none' });
       return;
     }
 
@@ -150,9 +163,10 @@ Page({
       recognizedWord: null,
       candidateWords: [],
       hasTrajectory: false,
-      animationStatus: '识别中...',
+      animationStatus: 'Recognizing...',
       confidenceText: '',
-      scoreRows: []
+      scoreRows: [],
+      reviewSaved: false
     });
 
     try {
@@ -165,7 +179,7 @@ Page({
 
       if (!result.success) {
         this.setData({
-          errorMessage: '自动识别未判稳，我先给你三个候选，你点一个就直接播放。',
+          errorMessage: 'Auto recognition is still unsure. Pick one of the likely words and continue learning from there.',
           candidateWords: this.getDefaultCandidates()
         });
         return;
@@ -185,12 +199,12 @@ Page({
         candidateWords: this.mapCandidates(candidates),
         scoreRows,
         confidenceText,
-        errorMessage: '自动识别未判稳，我先给你三个候选，你点一个就直接播放。'
+        errorMessage: 'Recognition is close but not final. Choose the best candidate and we will load the study view directly.'
       });
     } catch (error) {
       console.error('[Recognition] recognize failed:', error);
       this.setData({
-        errorMessage: '识别请求失败，我先给你三个候选，你点一个就直接播放。',
+        errorMessage: 'Recognition request failed. You can still continue from the candidate words below.',
         candidateWords: this.getDefaultCandidates()
       });
     } finally {
@@ -228,12 +242,12 @@ Page({
   formatConfidence(confidence) {
     const value = Math.round(Number(confidence || 0) * 100);
     if (value >= 75) {
-      return `识别置信度高（${value}%）`;
+      return `High confidence ${value}%`;
     }
     if (value >= 45) {
-      return `识别置信度中等（${value}%）`;
+      return `Medium confidence ${value}%`;
     }
-    return `识别置信度偏低（${value}%）`;
+    return `Low confidence ${value}%`;
   },
 
   shouldAutoSelect(resultData = {}) {
@@ -279,7 +293,7 @@ Page({
       const result = response?.result || {};
       if (!result.success) {
         this.setData({
-          errorMessage: '这个词加载失败了，请再点一次。'
+          errorMessage: 'Failed to load this candidate. Try again once.'
         });
         return;
       }
@@ -292,7 +306,7 @@ Page({
     } catch (error) {
       console.error('[Recognition] manual select failed:', error);
       this.setData({
-        errorMessage: '这个词加载失败了，请再点一次。'
+        errorMessage: 'Failed to load this candidate. Try again once.'
       });
     } finally {
       this.setData({ isRecognizing: false });
@@ -317,9 +331,10 @@ Page({
       candidateWords: [],
       recognizedAtText,
       hasTrajectory: normalizedTrajectory.length > 0,
-      animationStatus: normalizedTrajectory.length > 0 ? '自动播放中' : '无可播放轨迹',
+      animationStatus: normalizedTrajectory.length > 0 ? 'Auto playing' : 'No trajectory available',
       confidenceText: extras.confidenceText || this.formatConfidence(data?.confidence),
-      scoreRows: extras.scoreRows || this.formatScoreRows(data?.candidates || [])
+      scoreRows: extras.scoreRows || this.formatScoreRows(data?.candidates || []),
+      reviewSaved: !!(recognizedWord && isWordInReview(recognizedWord.wordKey))
     });
 
     if (normalizedTrajectory.length > 0) {
@@ -373,12 +388,12 @@ Page({
       index += 1;
 
       if (index > segments.length) {
-        this.setData({ animationStatus: '播放完成' });
+        this.setData({ animationStatus: 'Playback finished' });
         this.stopPlayback();
       }
     };
 
-    this.setData({ animationStatus: '自动播放中' });
+    this.setData({ animationStatus: 'Auto playing' });
     redraw();
     this.playbackTimer = setInterval(redraw, 24);
   },
@@ -463,6 +478,27 @@ Page({
     });
   },
 
+  onAddToReview() {
+    const recognizedWord = this.data.recognizedWord;
+    if (!recognizedWord) {
+      return;
+    }
+
+    const result = addWordToReview(recognizedWord);
+    syncTodayReviewCount();
+    this.setData({ reviewSaved: true });
+    wx.showToast({
+      title: result.added ? 'Saved to review' : 'Already in review',
+      icon: 'none'
+    });
+  },
+
+  onGoToReview() {
+    wx.navigateTo({
+      url: '/pages/review/review'
+    });
+  },
+
   onReset() {
     this.stopPlayback();
     this.playbackPayload = null;
@@ -477,9 +513,10 @@ Page({
       candidateWords: [],
       recognizedAtText: '',
       hasTrajectory: false,
-      animationStatus: '等待播放',
+      animationStatus: 'Waiting',
       confidenceText: '',
-      scoreRows: []
+      scoreRows: [],
+      reviewSaved: false
     });
   },
 

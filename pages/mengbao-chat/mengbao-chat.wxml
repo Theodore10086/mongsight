@@ -1,0 +1,56 @@
+<view class="chat-page">
+
+  <scroll-view
+    scroll-y
+    class="chat-body"
+    scroll-into-view="{{scrollToId}}"
+    scroll-with-animation="{{true}}"
+  >
+    <view
+      class="chat-msg {{item.role === 'ai' ? 'chat-msg-ai' : 'chat-msg-user'}}"
+      wx:for="{{messages}}"
+      wx:key="id"
+      id="msg-{{item.id}}"
+    >
+      <view class="chat-avatar" wx:if="{{item.role === 'ai'}}">
+        <text class="chat-avatar-emoji">🤖</text>
+      </view>
+      <view class="chat-bubble {{item.role === 'ai' ? 'chat-bubble-ai' : 'chat-bubble-user'}}">
+        <text class="chat-bubble-text">{{item.content}}</text>
+        <text class="chat-bubble-time">{{item.time}}</text>
+      </view>
+      <view class="chat-avatar" wx:if="{{item.role === 'user'}}">
+        <text class="chat-avatar-emoji">🙂</text>
+      </view>
+    </view>
+
+    <view class="chat-typing" wx:if="{{isLoading}}">
+      <view class="chat-avatar">
+        <text class="chat-avatar-emoji">🤖</text>
+      </view>
+      <view class="chat-bubble chat-bubble-ai">
+        <view class="typing-dots">
+          <view class="typing-dot"></view>
+          <view class="typing-dot"></view>
+          <view class="typing-dot"></view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="chat-input-bar">
+    <input
+      class="chat-input"
+      type="text"
+      placeholder="和蒙宝聊聊书法..."
+      value="{{inputText}}"
+      bindinput="onInputText"
+      confirm-type="send"
+      bindconfirm="onSend"
+      cursor-spacing="16"
+      maxlength="200"
+    />
+    <button class="chat-send-btn" bindtap="onSend" disabled="{{isLoading}}">发送</button>
+  </view>
+
+</view>

@@ -1,4 +1,5 @@
 const PAGE_SIZE = 20
+const { callCommunity, normalizePosts } = require('../../utils/community-cloud.js')
 
 Page({
   data: {
@@ -6,6 +7,14 @@ Page({
     isLoadingPosts: false,
     hasMorePosts: true,
     currentPage: 1,
+
+    // 搜索
+    searchKeyword: '',
+    searchTab: 'posts',
+    searchPosts: [],
+    searchUsers: [],
+    searching: false,
+    searchTimer: null,
 
     // 评论
     showCommentModal: false,
@@ -321,6 +330,73 @@ Page({
       current: src,
       urls: Array.isArray(list) && list.length ? list : [src]
     })
+  },
+
+  /* ──────────────── 搜索 ──────────────── */
+  onSearchInput(e) {
+    const keyword = (e.detail.value || '').trim()
+    this.setData({ searchKeyword: e.detail.value || '' })
+    if (this.data.searchTimer) clearTimeout(this.data.searchTimer)
+    if (!keyword) {
+      this.setData({ searchPosts: [], searchUsers: [] })
+      return
+    }
+    this.data.searchTimer = setTimeout(() => {
+      this.performSearch(keyword)
+    }, 400)
+  },
+
+  onSearchConfirm() {
+    const keyword = this.data.searchKeyword.trim()
+    if (!keyword) return
+    this.performSearch(keyword)
+  },
+
+  onClearSearch() {
+    if (this.data.searchTimer) clearTimeout(this.data.searchTimer)
+    this.setData({
+      searchKeyword: '',
+      searchPosts: [],
+      searchUsers: [],
+      searchTab: 'posts'
+    })
+  },
+
+  onSwitchSearchTab(e) {
+    const tab = e.currentTarget.dataset.tab
+    if (!tab || tab === this.data.searchTab) return
+    this.setData({ searchTab: tab })
+  },
+
+  async performSearch(keyword) {
+    if (!keyword) return
+    this.setData({ searching: true })
+    try {
+      const data = await callCommunity('search', { keyword })
+      const posts = normalizePosts(data.posts || [])
+      const users = data.users || []
+      this.setData({
+        searchPosts: posts,
+        searchUsers: users,
+        searching: false
+      })
+    } catch (err) {
+      this.setData({ searching: false })
+      console.warn('[community] search failed', err)
+    }
+  },
+
+  /* ──────────────── 导航 ──────────────── */
+  onGoToPostDetail(e) {
+    const id = e.currentTarget.dataset.id
+    if (!id) return
+    wx.navigateTo({ url: `/pages/post-detail/post-detail?id=${id}` })
+  },
+
+  onGoToUserHome(e) {
+    const openId = e.currentTarget.dataset.openid
+    if (!openId) return
+    wx.navigateTo({ url: `/pages/user-home/user-home?openId=${encodeURIComponent(openId)}` })
   },
 
   /* ──────────────── 公共 ──────────────── */

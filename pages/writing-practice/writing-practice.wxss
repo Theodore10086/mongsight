@@ -5627,6 +5627,13 @@ page {
   filter: drop-shadow(0 2rpx 4rpx rgba(0, 0, 0, 0.1));
 }
 
+.lesson-icon-text {
+  font-size: 34rpx;
+  font-weight: 800;
+  color: #8b4513;
+  letter-spacing: 2rpx;
+}
+
 .lesson-name {
   font-size: 28rpx;
   font-weight: 600;

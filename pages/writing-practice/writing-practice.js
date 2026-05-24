@@ -1,4 +1,4 @@
-const { getWordByKey } = require('../../utils/recognition-catalog.js')
+﻿const { getWordByKey, getArchiveStarterWords } = require('../../utils/recognition-catalog.js')
 const {
   normalizeTrajectoryPayload,
   getPendingRecognitionPlayback,
@@ -141,7 +141,13 @@ const calligraphyMap = {
   }
 };
 
-const LESSON_LIST = Object.values(LESSON_DATA);
+const LESSON_LIST = [
+  LESSON_DATA.narasu,
+  LESSON_DATA.hair,
+  LESSON_DATA.huch,
+  ...getArchiveStarterWords(8),
+  LESSON_DATA.collectionLab
+];
 LESSON_DATA.songshu = LESSON_DATA.narasu;
 
 Page({
@@ -358,244 +364,9 @@ Page({
     showColorPicker: false, // 控制颜色选择器展开/收起
     // -------------------------
     
-    // --- 新增：挑战系统相关 ---
-    isChallengeMode: false, // 挑战模式状态
-    challengeScore: 0, // 挑战得分
-    currentChallengeIndex: 0, // 当前挑战题号
-    currentQuizQuestions: [], // 当前挑战的题目集
-    challengeCorrectCount: 0, // 挑战答对数量
-    showChallengeResult: false, // 显示挑战结果弹窗
+    fullQuizLibrary: [],
     // -------------------------
-    
-    // --- 核心题库定义 ---
-    fullQuizLibrary: [
-      {
-        id: 1,
-        type: '基础篇',
-        question: '蒙古文书法书写"Өлзий түмэн（祖国）"时，标准的书写字序为？',
-        options: ['从右到左横排', '从上到下竖排', '从左到右横排', '从下到上竖排'],
-        answer: 1,
-        explanation: '传统与规范蒙古文书法的标准字序为从上到下竖排，列序从左到右。'
-      },
-      {
-        id: 2,
-        type: '基础篇',
-        question: '蒙语"холт（山）"在蒙古文书法竖排书写时，字母的连接方式为？',
-        options: ['左右平连', '上下叠连', '内外环绕', '无固定连接'],
-        answer: 1,
-        explanation: '蒙古文为竖排书写体系，所有字母均采用上下叠连的连接方式。'
-      },
-      {
-        id: 3,
-        type: '基础篇',
-        question: '蒙古文斜体字书写"сүнс холт（松山）"时，整体的书写斜度为？',
-        options: ['30°左右', '45°左右', '60°左右', '无固定斜度'],
-        answer: 1,
-        explanation: '蒙古文斜体字的标准书写斜度为45°左右，兼顾书写流畅性与视觉美观性。'
-      },
-      {
-        id: 4,
-        type: '基础篇',
-        question: '传统蒙古文竹笔书法书写"сүнс（松树）"时，竹笔的笔尖通常为？',
-        options: ['单锋', '双锋', '三锋', '多锋'],
-        answer: 1,
-        explanation: '蒙古文竹笔为草原特色书写工具，标准笔尖为双锋，能精准表现圆转与方折笔画。'
-      },
-      {
-        id: 5,
-        type: '基础篇',
-        question: '草原蒙古文书法中，传统书写工具的笔杆多采用哪种木材？',
-        options: ['松木', '桦木', '杨木', '榆木'],
-        answer: 1,
-        explanation: '草原桦木质轻、纹理直、易打磨，适配蒙古文竖写的握持习惯。'
-      },
-      {
-        id: 6,
-        type: '基础篇',
-        question: '为了体现"松树"苍劲坚韧的意象，书法墨色应采用？',
-        options: ['淡墨', '浓墨', '宿墨', '焦墨淡染'],
-        answer: 1,
-        explanation: '浓墨色泽厚重、力透纸背，能精准表现松树苍劲坚韧的意象。'
-      },
-      {
-        id: 7,
-        type: '基础篇',
-        question: '传统蒙古文硬笔书法中，硬笔的材质通常为？',
-        options: ['铜质', '铁质', '骨质', '木质'],
-        answer: 2,
-        explanation: '草原传统蒙古文硬笔以兽骨为材质，质地坚硬且书写顺滑。'
-      },
-      {
-        id: 8,
-        type: '基础篇',
-        question: '传统蒙古文书法书写"祖国"等长幅作品时，标准书写姿势为？',
-        options: ['坐写', '站写', '跪写', '蹲写'],
-        answer: 1,
-        explanation: '传统蒙古文书法为竖排长幅书写，标准姿势为站写，能保证笔势舒展。'
-      },
-      {
-        id: 9,
-        type: '基础篇',
-        question: '蒙语"холтын урсгал（山谷）"的书写中，后缀"тын"的位置应在？',
-        options: ['主体词上方', '主体词下方', '主体词左侧', '主体词右侧'],
-        answer: 1,
-        explanation: '蒙古文的辅音后缀均书写在主体词字母的下方。'
-      },
-      {
-        id: 10,
-        type: '基础篇',
-        question: '在蒙古文沙地书法中，常用的书写工具是？',
-        options: ['毛笔', '竹笔', '树枝', '硬笔'],
-        answer: 2,
-        explanation: '蒙古文沙地书法就地取材，以树枝为工具，适配草原开阔的书写场景。'
-      },
-      {
-        id: 11,
-        type: '进阶篇',
-        question: '蒙古文书法中，核心词汇"祖国"的字母比例通常要求为？',
-        options: ['黄金比例', '1:1', '2:1', '1:2'],
-        answer: 0,
-        explanation: '蒙古文书法中核心词汇的字母比例要求为黄金比例（1:0.618），保证视觉美观。'
-      },
-      {
-        id: 12,
-        type: '进阶篇',
-        question: '蒙语"ᠰᠦᠨᠳᠡᠷ（祖国）"的蒙古文书写，由几个核心字母拼合而成？',
-        options: ['5个', '6个', '7个', '8个'],
-        answer: 0,
-        explanation: '由ᠰ、ᠦ、ᠨ、ᠳ、ᠡ、ᠷ这6个核心字母拼合而成。'
-      },
-      {
-        id: 13,
-        type: '进阶篇',
-        question: '"松树"（сүнс）的蒙古文首字母形态为？',
-        options: ['圆形', '方形', '弧形', '斜线形'],
-        answer: 2,
-        explanation: '首字母с在蒙古文书写中的标准形态为弧形。'
-      },
-      {
-        id: 14,
-        type: '进阶篇',
-        question: '蒙古文硬笔书法的标准执笔法是？',
-        options: ['三指执笔法', '五指执笔法', '两指执笔法', '握拳执笔法'],
-        answer: 0,
-        explanation: '标准为三指执笔法（拇指、食指捏笔，中指托笔）。'
-      },
-      {
-        id: 15,
-        type: '进阶篇',
-        question: '书写"金山"（Алтан холт）时，"金"（Алтан）的墨色可选用？',
-        options: ['黑色', '红色', '金色', '蓝色'],
-        answer: 2,
-        explanation: '"Алтан"意为金，书写时用金色墨汁契合语义与文化意象。'
-      },
-      {
-        id: 16,
-        type: '进阶篇',
-        question: '蒙古文篆体书写"山"（холт）时，笔画的核心特征是？',
-        options: ['圆转均匀', '方折刚劲', '连笔繁多', '笔画纤细'],
-        answer: 0,
-        explanation: '蒙古文篆体核心特征为笔画圆转均匀、粗细一致。'
-      },
-      {
-        id: 17,
-        type: '进阶篇',
-        question: '在草原祭典中，蒙古文书法作品通常采用哪种形式？',
-        options: ['册页', '条幅', '斗方', '手卷'],
-        answer: 1,
-        explanation: '草原祭典多采用条幅形式，竖幅舒展，契合庄重场景。'
-      },
-      {
-        id: 18,
-        type: '进阶篇',
-        question: '蒙古文书法中，松、山意象词与"祖国"组合时，修饰词应位于？',
-        options: ['祖国词左侧', '祖国词右侧', '祖国词上方', '祖国词下方'],
-        answer: 3,
-        explanation: '遵循"主题在上、修饰在下"的章法，意象修饰词位于核心主题词下方。'
-      },
-      {
-        id: 19,
-        type: '进阶篇',
-        question: '书写"松山"等自然意象词时，收笔通常采用什么笔法？',
-        options: ['露锋', '藏锋', '折锋', '扫锋'],
-        answer: 1,
-        explanation: '采用藏锋收笔，能体现意象的厚重感。'
-      },
-      {
-        id: 20,
-        type: '进阶篇',
-        question: '蒙古文书法传统上的核心传承方式是？',
-        options: ['口传心授', '书本传承', '网络传承', '师徒手传'],
-        answer: 3,
-        explanation: '传统传承方式为师徒手传，手把手教学笔法与章法。'
-      },
-      {
-        id: 21,
-        type: '高阶篇',
-        question: '现代蒙古文字母形态主要源自古代的？',
-        options: ['回鹘式蒙古文', '八思巴文', '托忒蒙古文', '锡伯文'],
-        answer: 0,
-        explanation: '现代蒙古文的字母形态核心溯源是回鹘式蒙古文。'
-      },
-      {
-        id: 22,
-        type: '高阶篇',
-        question: '元代蒙古文书法碑刻体现了哪种草原文化特征？',
-        options: ['粗犷豪放', '婉约柔美', '纤细灵动', '平淡简约'],
-        answer: 0,
-        explanation: '受草原游牧文化影响，字体融合了粗犷豪放的特征，笔画刚劲。'
-      },
-      {
-        id: 23,
-        type: '高阶篇',
-        question: '草原祭天仪式中，家国主题书法作品的悬挂方向应为？',
-        options: ['向东', '向南', '向西', '向北'],
-        answer: 3,
-        explanation: '蒙古族祭天仪式中正北为尊位，家国主题作品悬挂于正北。'
-      },
-      {
-        id: 24,
-        type: '高阶篇',
-        question: '蒙古文书法碑刻作品中，碑石的首选材料通常是？',
-        options: ['青石', '白石', '红石', '黑石'],
-        answer: 0,
-        explanation: '草原青石质地坚硬、耐风化，是蒙古文碑刻的核心选材。'
-      },
-      {
-        id: 25,
-        type: '高阶篇',
-        question: '蒙古文书法的"飞白体"中，飞白笔画主要出现在？',
-        options: ['首字母', '中间长笔画', '尾字母', '所有笔画'],
-        answer: 1,
-        explanation: '主要出现在中间的长笔画处，既有艺术效果又不影响识别。'
-      },
-      {
-        id: 26,
-        type: '高阶篇',
-        question: '蒙古文书法主题作品中，钤印的印章形状标准为？',
-        options: ['方形', '圆形', '椭圆形', '不规则形'],
-        answer: 0,
-        explanation: '方形在蒙古族文化中象征庄重，适配主题作品。'
-      },
-      {
-        id: 27,
-        type: '高阶篇',
-        question: '蒙古文书法史中，笔画演变的整体趋势是？',
-        options: ['繁化', '简化', '不变', '随机变化'],
-        answer: 1,
-        explanation: '整体趋势为简化，删减装饰性笔画，保留核心轮廓。'
-      },
-      {
-        id: 28,
-        type: '高阶篇',
-        question: '松、山、祖国相关蒙语词的书写，融合了哪种草原文化核心？',
-        options: ['自然崇拜', '图腾崇拜', '祖先崇拜', '神灵崇拜'],
-        answer: 0,
-        explanation: '松、山为自然崇拜的核心意象，与祖国词组合融合了这一核心。'
-      }
-    ],
-    // -------------------------
-    
+
     // --- 新增：智能导学图层相关 ---
     showGuideLayer: false, // 控制导学图层显示
     capsuleOpacity: 1, // 底部胶囊透明度
@@ -629,7 +400,7 @@ Page({
     hasMoreDialog: false, // 是否还有更多对话
     // --------------------
 
-    currentLesson: LESSON_DATA.collectionLab,
+    currentLesson: LESSON_DATA.narasu,
     
     // --- 新增：用户数据和赛季系统 ---
     userProfile: {
@@ -640,8 +411,7 @@ Page({
       season: 'S1 启牧'
     },
     showUserStatus: false, // 控制个人状态栏显示
-    showChallengeModal: false, // 控制挑战弹窗显示
-    
+
     // 坐标数据导出相关
     showCoordinateModal: false, // 控制坐标数据弹窗显示
     coordinateData: null, // 导出的坐标数据
@@ -692,41 +462,6 @@ Page({
     lastScoringScore: 0, // 最近一次得分（用于提交门槛判断）
     lastScoringMethod: '', // 'trajectory' | 'visual'
     
-    // 题库
-    quizBank: [
-      {
-        question: '"松树"在蒙古文书法中通常代表？',
-        options: ['坚韧', '财富', '速度'],
-        answer: 0
-      },
-      {
-        question: '蒙古文书写的方向是？',
-        options: ['从左往右纵书', '从右往左横书', '从上往下横书'],
-        answer: 0
-      },
-      {
-        question: '"苍狼"在蒙古文化中是什么地位？',
-        options: ['图腾', '宠物', '普通动物'],
-        answer: 0
-      },
-      {
-        question: '蒙文书法的笔触轻重主要通过什么控制？',
-        options: ['压力与速度', '颜色', '屏幕亮度'],
-        answer: 0
-      },
-      {
-        question: 'S1赛季的名称是？',
-        options: ['启牧', '闭环', '开天'],
-        answer: 0
-      }
-    ],
-    challengeData: {
-      question: '"松树"在蒙古文书法中通常代表？',
-      options: ['坚韧', '财富', '速度'],
-      answer: 0
-    },
-    showResultPanel: false, // 控制结算面板显示
-
     // -------------------------
   },
 
@@ -2839,7 +2574,7 @@ Page({
   },
 
   changeLesson(lessonId) {
-     const newLesson = LESSON_DATA[lessonId];
+     const newLesson = LESSON_DATA[lessonId] || getWordByKey(lessonId);
      if (!newLesson) {
        wx.showToast({ title: '课程开发中...', icon: 'none' });
        return;
@@ -2862,9 +2597,9 @@ Page({
          icon: 'none'
        });
 
-       if (this.innerAudioContext) {
-         this.innerAudioContext.src = newLesson.audioSrc;
-       }
+        if (this.innerAudioContext && newLesson.audioSrc) {
+          this.innerAudioContext.src = newLesson.audioSrc;
+        }
      });
    },
 
@@ -2884,7 +2619,7 @@ Page({
       this.changeLesson(lessonId);
       this.setData({
         showLessonPicker: false,
-        showTemplate: true,
+        showTemplate: lessonId !== 'collectionLab',
         showLeftSidebar: false
       });
     }
@@ -4201,19 +3936,6 @@ Page({
     this.setData({
       isPlaying: false,
       showResultPanel: false,
-      showChallengeModal: false,
-      userQuizAnswers: [],
-      challengeData: {
-        question: '松树的正确笔顺是？',
-        options: [
-          { id: '1', text: '竖', correct: true, order: 1 },
-          { id: '2', text: '横', correct: false },
-          { id: '3', text: '撇', correct: true, order: 2 },
-          { id: '4', text: '捺', correct: true, order: 3 }
-        ],
-        userAnswers: [],
-        correctOrder: [1, 3, 4]
-      },
       currentQuiz: {
         id: 'q1',
         parts: [
@@ -5149,199 +4871,6 @@ Page({
   // 从导出弹窗中提交采集（复用 onSubmitCollectionSample 逻辑）
   async onSubmitCollectionSampleFromExport() {
     await this.onSubmitCollectionSample()
-  },
-
-  // 打开挑战弹窗 - 五题连续挑战模式
-  onOpenChallenge() {
-    // 从完整题库中随机抽取5道题
-    const fullLibrary = this.data.fullQuizLibrary;
-    
-    // 随机打乱题库并选取5题
-    const shuffled = [...fullLibrary].sort(() => Math.random() - 0.5);
-    const selectedQuestions = shuffled.slice(0, 5);
-    
-    // 重置挑战数据
-    this.setData({
-      showChallengeModal: true,
-      currentQuizQuestions: selectedQuestions,
-      currentChallengeIndex: 0,
-      challengeCorrectCount: 0,
-      showChallengeResult: false,
-      showResultPanel: false,
-      userQuizAnswers: []
-    })
-    
-    // 显示第一题
-    this.showNextChallengeQuestion();
-  },
-  
-  // 显示下一题
-  showNextChallengeQuestion() {
-    const { currentQuizQuestions, currentChallengeIndex } = this.data;
-    
-    // 深度重置答题状态，防止选项状态残留
-    if (currentChallengeIndex < currentQuizQuestions.length) {
-      const newQuestion = currentQuizQuestions[currentChallengeIndex];
-      
-      // 统一处理选项格式：确保为字符串数组
-      const cleanOptions = Array.isArray(newQuestion.options) ? 
-        newQuestion.options.map(opt => {
-          // 如果是对象，提取text字段；如果是字符串，直接使用
-          return typeof opt === 'object' && opt !== null ? opt.text || opt : opt;
-        }) : newQuestion.options;
-      
-      // 强制重置所有视觉状态
-      const resetOptions = cleanOptions.map((opt, index) => ({
-        text: opt,
-        className: '',    // 清空高亮类名
-        scale: 1.0,       // 强制缩放归位
-        checked: false,   // 重置选中状态
-        isCorrect: false, // 重置正确状态
-        isWrong: false    // 重置错误状态
-      }));
-      
-      this.setData({
-        selectedIndex: -1, // 重置选中状态
-        isAnswered: false, // 重置答题锁
-        showResult: false, // 重置结果显示
-        challengeData: {
-          ...newQuestion,
-          options: cleanOptions, // 用于显示
-          optionObjects: resetOptions // 用于状态管理
-        }
-      }, () => {
-        // 在回调中稍微延迟一点再允许点击，防止误触
-        setTimeout(() => {
-          this.setData({
-            isAnsweringEnabled: true
-          });
-        }, 100);
-      });
-    }
-  },
-  
-  // 选择挑战选项 - 连续答题流
-  onSelectOption(e) {
-    const selectedIndex = parseInt(e.currentTarget.dataset.index);
-    const { challengeData, currentChallengeIndex, currentQuizQuestions, challengeCorrectCount, userQuizAnswers } = this.data;
-    
-    // 震动反馈
-    wx.vibrateShort({ type: 'light' });
-    
-    // 验证答案
-    const isCorrect = selectedIndex === challengeData.answer;
-    
-    // 记录答案
-    const newAnswers = [...userQuizAnswers, {
-      questionId: challengeData.id,
-      selectedIndex: selectedIndex,
-      isCorrect: isCorrect
-    }];
-    
-    // 更新答对数量
-    const newCorrectCount = isCorrect ? challengeCorrectCount + 1 : challengeCorrectCount;
-    
-    // 显示即时反馈
-    if (isCorrect) {
-      wx.showToast({
-        title: '回答正确！',
-        icon: 'success',
-        duration: 500
-      });
-    } else {
-      wx.showToast({
-        title: '回答错误',
-        icon: 'error',
-        duration: 500
-      });
-    }
-    
-    // 更新数据并延迟进入下一题
-    this.setData({
-      userQuizAnswers: newAnswers,
-      challengeCorrectCount: newCorrectCount
-    });
-    
-    // 延迟0.5秒后显示下一题或结算
-    setTimeout(() => {
-      const nextIndex = currentChallengeIndex + 1;
-      
-      if (nextIndex < currentQuizQuestions.length) {
-        // 还有下一题
-        this.setData({
-          currentChallengeIndex: nextIndex
-        });
-        this.showNextChallengeQuestion();
-      } else {
-        // 挑战完成，显示结果
-        this.setData({
-          showChallengeResult: true
-        });
-        
-        // 延迟绘制雷达图，确保DOM已更新
-        setTimeout(() => {
-          this.drawRadarInResultPanel();
-        }, 100);
-      }
-    }, 800);
-  },
-
-  // 关闭挑战弹窗
-  onCloseChallenge() {
-    this.setData({ showChallengeModal: false, showChallengeResult: false })
-  },
-
-  // 在结算面板中绘制雷达图
-  drawRadarInResultPanel() {
-    // 获取雷达图Canvas上下文
-    const query = wx.createSelectorQuery()
-    query.select('#radarCanvas')
-      .fields({ node: true, size: true })
-      .exec((res) => {
-        if (res && res[0]) {
-          const canvas = res[0].node
-          const ctx = canvas.getContext('2d')
-          const { width, height } = res[0].size
-          
-          // 设置Canvas尺寸
-          canvas.width = width
-          canvas.height = height
-          
-          // 生成雷达图数据
-          const radarData = this.generateRadarData('SS')
-          
-          // 绘制雷达图
-          this.drawRadarChart(ctx, width / 2, height / 2, Math.min(width, height) / 2 - 20, radarData)
-        }
-      })
-  },
-
-  // 领取奖励 - 五题连续挑战结算
-  onClaimReward() {
-    const { challengeCorrectCount, userProfile } = this.data;
-    
-    // 计算奖励：答对题数 * 5 墨玉
-    const reward = challengeCorrectCount * 5;
-    
-    // 更新用户墨玉数量
-    const newInkJades = userProfile.inkJades + reward;
-    
-    this.setData({
-      userProfile: {
-        ...userProfile,
-        inkJades: newInkJades
-      },
-      showChallengeResult: false,
-      showResultPanel: false,
-      showChallengeModal: false
-    });
-    
-    // 显示获得奖励提示
-    wx.showToast({
-      title: `获得 💎x${reward}`,
-      icon: 'none',
-      duration: 1500
-    });
   },
 
   // 购买商品（已废弃，改为荣誉系统）
@@ -6810,23 +6339,20 @@ Page({
     const recognizedWord = getWordByKey(wordKey) || LESSON_DATA[wordKey] || LESSON_DATA.songshu
     const normalizedTrajectory = normalizeTrajectoryPayload(playbackPayload?.standardTrajectory || playbackPayload?.strokes || [])
 
-    if (!normalizedTrajectory.length) {
-      return
-    }
 
     this.setData({
       currentTab: 0,
       currentLesson: recognizedWord || this.data.currentLesson,
-      allStrokes: normalizedTrajectory,
+      allStrokes: normalizedTrajectory.length ? normalizedTrajectory : [],
       showTemplate: true,
       show3DView: false,
       frameProgress: 0,
-      playbackStatus: 'READY'
+      playbackStatus: normalizedTrajectory.length ? 'READY' : 'LESSON_READY'
     }, () => {
-      if (typeof this.redrawAllStrokes === 'function') {
+      if (normalizedTrajectory.length && typeof this.redrawAllStrokes === 'function') {
         this.redrawAllStrokes()
       }
-      if (typeof this.update3DView === 'function') {
+      if (normalizedTrajectory.length && typeof this.update3DView === 'function') {
         this.update3DView(0)
       }
       wx.showToast({

@@ -1,0 +1,70 @@
+.bh-page {
+  min-height: 100vh;
+  background: var(--bg-page);
+  padding: 20rpx 24rpx;
+}
+
+.bh-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+  padding: 0 8rpx;
+}
+
+.bh-count {
+  font-size: 26rpx;
+  color: var(--text-muted);
+}
+
+.bh-clear-btn {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  font-size: 26rpx;
+  color: var(--text-muted);
+}
+
+.bh-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.bh-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  border: 1rpx solid var(--border-soft);
+  padding: 20rpx 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bh-card-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+  flex: 1;
+  overflow: hidden;
+}
+
+.bh-card-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.bh-card-content {
+  font-size: 26rpx;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bh-card-time {
+  font-size: 22rpx;
+  color: var(--text-muted);
+}

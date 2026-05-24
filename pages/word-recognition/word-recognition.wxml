@@ -1,7 +1,6 @@
 <view class="page">
   <canvas canvas-id="cropCanvas" class="hidden-crop-canvas"></canvas>
 
-  <!-- 顶部 Hero -->
   <view class="hero-card">
     <image class="hero-card-image" src="/assets/images/ui/word-recognition-hero-bg.png" mode="aspectFill"></image>
     <view class="hero-mascot">
@@ -9,11 +8,10 @@
     </view>
     <view class="hero-text">
       <text class="hero-title">拍照识别蒙古文</text>
-      <text class="hero-subtitle">先用算法分析图像，再从词库候选里确认你想要的词</text>
+      <text class="hero-subtitle">从相机进入学习，再把识别结果变成释义、讲解、复习和临摹动作。</text>
     </view>
   </view>
 
-  <!-- 主操作 -->
   <view class="action-grid">
     <button class="action-button primary" bindtap="onChooseFromCamera">
       <view class="zm-icon zm-icon-camera zm-icon-white action-button-glyph"></view>
@@ -25,7 +23,6 @@
     </button>
   </view>
 
-  <!-- 图片预览 -->
   <view class="preview-card" wx:if="{{imageTempPath}}">
     <image class="preview-image" src="{{imageTempPath}}" mode="aspectFit"></image>
     <view class="preview-actions">
@@ -36,21 +33,19 @@
     </view>
   </view>
 
-  <!-- 错误提示 -->
   <view class="error-card" wx:if="{{errorMessage}}">
     <view class="error-title-row">
       <view class="zm-icon zm-icon-warning zm-icon-warm error-title-glyph"></view>
-      <text class="error-title">自动识别未判稳</text>
+      <text class="error-title">识别未完全确定</text>
     </view>
     <text class="error-message">{{errorMessage}}</text>
   </view>
 
-  <!-- 候选词 -->
   <view class="result-card" wx:if="{{candidateWords.length}}">
     <view class="result-header">
       <view>
-        <text class="result-title">猜你想要的是</text>
-        <text class="result-subtitle">从三个词里选一个</text>
+        <text class="result-title">候选词</text>
+        <text class="result-subtitle">从最接近的几个结果中选一个继续学习</text>
       </view>
     </view>
     <view class="candidate-grid">
@@ -70,7 +65,6 @@
     </view>
   </view>
 
-  <!-- 识别结果 -->
   <view class="result-card" wx:if="{{recognizedWord}}">
     <view class="result-header">
       <view class="result-title-block">
@@ -79,12 +73,50 @@
       </view>
       <text class="result-time">{{recognizedAtText}}</text>
     </view>
+
     <text class="result-mongolian">{{recognizedWord.mongolian}}</text>
+
+    <view class="lesson-card">
+      <image class="lesson-card-image" src="{{studyNoteImage}}" mode="aspectFill"></image>
+      <view class="lesson-card-overlay"></view>
+      <view class="lesson-card-content">
+        <view class="lesson-row">
+          <text class="lesson-label">释义</text>
+          <text class="lesson-text">{{recognizedWord.definition || '先把词义看明白，再进入轨迹和临摹。'}}</text>
+        </view>
+        <view class="lesson-row">
+          <text class="lesson-label">讲解</text>
+          <text class="lesson-text">{{recognizedWord.explanation || '先看标准字形，再跟着轨迹慢速临摹。'}}</text>
+        </view>
+        <view class="lesson-row" wx:if="{{recognizedWord.memoryTip}}">
+          <text class="lesson-label">记忆点</text>
+          <text class="lesson-text">{{recognizedWord.memoryTip}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="archive-primer-card">
+      <text class="archive-primer-title">来自 archive 的学习提示</text>
+      <view class="archive-primer-list">
+        <view class="archive-primer-item" wx:for="{{archivePrimerPoints}}" wx:key="*this">
+          <view class="archive-primer-dot"></view>
+          <text class="archive-primer-text">{{item}}</text>
+        </view>
+      </view>
+    </view>
+
     <image class="result-preview" src="{{imageTempPath}}" mode="aspectFill"></image>
+
+    <view class="study-actions">
+      <button class="minor-button" bindtap="onAddToReview">
+        {{reviewSaved ? '已加入复习' : '加入复习'}}
+      </button>
+      <button class="minor-button primary" bindtap="onGoToReview">去复习</button>
+    </view>
 
     <view class="player-card" wx:if="{{hasTrajectory}}">
       <view class="player-header">
-        <text class="player-title">标准笔顺预览</text>
+        <text class="player-title">标准轨迹回放</text>
         <text class="player-status">{{animationStatus}}</text>
       </view>
       <canvas canvas-id="recognitionPlayback" class="player-canvas"></canvas>

@@ -1,0 +1,95 @@
+<view class="detail-page">
+  <view class="zm-loading" wx:if="{{!loaded}}">加载中…</view>
+
+  <block wx:if="{{loaded && post}}">
+    <view class="detail-card">
+      <view class="post-user" bindtap="onGoToUser" data-openid="{{post._openid}}">
+        <block wx:if="{{post.avatarIsImage}}">
+          <image class="post-avatar" src="{{post.avatarUrl}}" mode="aspectFill"></image>
+        </block>
+        <block wx:elif="{{post.avatarText || post.avatar}}">
+          <text class="post-avatar-emoji">{{post.avatarText || post.avatar || '🙂'}}</text>
+        </block>
+        <block wx:else>
+          <view class="post-avatar-default">
+            <view class="zm-icon zm-icon-user zm-icon-muted post-avatar-glyph"></view>
+          </view>
+        </block>
+        <view class="post-user-info">
+          <text class="post-nickname">{{post.nickname || '游客'}}</text>
+          <text class="post-time">{{post.create_time_str || ''}}</text>
+        </view>
+      </view>
+
+      <text class="post-content" wx:if="{{post.content}}">{{post.content}}</text>
+
+      <view class="post-images" wx:if="{{post.images && post.images.length}}">
+        <image
+          class="post-image post-image-{{post.images.length}}"
+          wx:for="{{post.images}}"
+          wx:key="*this"
+          src="{{item}}"
+          mode="aspectFill"
+          data-src="{{item}}"
+          data-list="{{post.images}}"
+          bindtap="onPreviewImage"
+        ></image>
+      </view>
+
+      <view class="post-actions">
+        <view class="post-action {{post.liked ? 'post-action-liked' : ''}}" catchtap="onLike">
+          <view class="zm-icon {{post.liked ? 'zm-icon-heart-fill zm-icon-pink' : 'zm-icon-heart zm-icon-muted'}} post-action-glyph"></view>
+          <text class="post-action-count">{{post.likes || 0}}</text>
+        </view>
+        <view class="post-action">
+          <view class="zm-icon zm-icon-comment zm-icon-muted post-action-glyph"></view>
+          <text class="post-action-count">{{post.comments || 0}}</text>
+        </view>
+        <view class="post-action {{post.isFavorited ? 'post-action-favorited' : ''}}" catchtap="onFavorite">
+          <view class="zm-icon {{post.isFavorited ? 'zm-icon-bookmark-fill zm-icon-warm' : 'zm-icon-bookmark zm-icon-muted'}} post-action-glyph"></view>
+          <text class="post-action-count">{{post.isFavorited ? '已收藏' : '收藏'}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="detail-section-title">
+      <text class="detail-section-title-text">全部评论</text>
+      <text class="detail-section-title-count" wx:if="{{post.commentsList && post.commentsList.length}}">{{post.commentsList.length}} 条</text>
+    </view>
+
+    <view class="detail-comments">
+      <view class="zm-empty" wx:if="{{!post.commentsList || !post.commentsList.length}}">
+        <text>暂无评论，快来抢沙发吧</text>
+      </view>
+
+      <view
+        class="detail-comment-item"
+        wx:for="{{post.commentsList}}"
+        wx:key="id"
+      >
+        <text class="inline-comment-name">{{item.nickname || '游客'}}：</text>
+        <text class="inline-comment-text">{{item.content}}</text>
+        <text class="detail-comment-time" wx:if="{{item.create_time_str}}">{{item.create_time_str}}</text>
+      </view>
+    </view>
+  </block>
+
+  <view class="detail-empty" wx:if="{{loaded && !post}}">
+    <text>帖子不存在或已被删除</text>
+  </view>
+</view>
+
+<view class="detail-input-bar" wx:if="{{loaded && post}}">
+  <input
+    class="detail-input"
+    placeholder="写评论…"
+    value="{{commentText}}"
+    bindinput="onCommentInput"
+    confirm-type="send"
+    bindconfirm="onSendComment"
+    adjust-position="{{true}}"
+  />
+  <view class="detail-send-btn {{commentText ? 'detail-send-btn-active' : ''}}" bindtap="onSendComment">
+    <text>发送</text>
+  </view>
+</view>

@@ -1,0 +1,38 @@
+<view class="mf-page">
+  <view class="zm-empty" wx:if="{{loaded && !posts.length}}">
+    <text>你还没有收藏过帖子</text>
+  </view>
+
+  <view class="mf-feed" wx:if="{{posts.length}}">
+    <view class="post-card" wx:for="{{posts}}" wx:key="id">
+      <view class="post-body" data-id="{{item.id}}" bindtap="onGoToPost">
+        <view class="post-user">
+          <block wx:if="{{item.avatarIsImage}}">
+            <image class="post-avatar" src="{{item.avatarUrl}}" mode="aspectFill"></image>
+          </block>
+          <block wx:elif="{{item.avatarText || item.avatar}}">
+            <text class="post-avatar-emoji">{{item.avatarText || item.avatar || '🙂'}}</text>
+          </block>
+          <block wx:else>
+            <view class="post-avatar-default">
+              <view class="zm-icon zm-icon-user zm-icon-muted post-avatar-glyph"></view>
+            </view>
+          </block>
+          <view class="post-user-info">
+            <text class="post-nickname">{{item.nickname || '游客'}}</text>
+            <text class="post-time">{{item.create_time_str || ''}}</text>
+          </view>
+        </view>
+        <text class="post-content" wx:if="{{item.content}}">{{item.content}}</text>
+        <view class="post-images" wx:if="{{item.images && item.images.length}}">
+          <image class="post-image post-image-{{item.images.length}}" wx:for="{{item.images}}" wx:for-item="img" wx:key="*this" src="{{img}}" mode="aspectFill"></image>
+        </view>
+      </view>
+      <view class="mf-unfav-btn" data-id="{{item._id}}" catchtap="onUnfavorite">
+        <view class="zm-icon zm-icon-bookmark-fill zm-icon-warm" style="width:32rpx;height:32rpx;"></view>
+        <text>取消收藏</text>
+      </view>
+    </view>
+    <view class="zm-loading" wx:if="{{loadingMore}}">加载更多…</view>
+  </view>
+</view>

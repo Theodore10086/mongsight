@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const cloud = require('wx-server-sdk');
-const { RECOGNITION_WORDS } = require('../utils/recognition-catalog.js');
+const { CURATED_RECOGNITION_WORDS } = require('../utils/recognition-catalog.js');
 const { buildFeaturesFromTrajectoryPayload } = require('../utils/recognition-feature-utils.js');
 
 const cloudEnv = process.env.CLOUD_ENV || 'cloud1-6g6qzrswbfeff910';
@@ -83,7 +83,7 @@ async function uploadWordAssets(word) {
 }
 
 async function main() {
-  for (const word of RECOGNITION_WORDS) {
+  for (const word of CURATED_RECOGNITION_WORDS) {
     await uploadWordAssets(word);
   }
   console.log('[init-recognition-catalog] done');

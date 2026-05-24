@@ -1,0 +1,25 @@
+<view class="mf-page">
+  <view class="zm-empty" wx:if="{{loaded && !users.length}}">
+    <text>你还没有关注任何人</text>
+  </view>
+
+  <view class="mf-list" wx:if="{{users.length}}">
+    <view class="user-card" wx:for="{{users}}" wx:key="openId">
+      <view class="user-info" data-openid="{{item.openId}}" bindtap="onGoToUser">
+        <block wx:if="{{item.avatar && item.avatar.length}}">
+          <image class="user-avatar" src="{{item.avatar}}" mode="aspectFill"></image>
+        </block>
+        <block wx:else>
+          <view class="user-avatar-default">
+            <view class="zm-icon zm-icon-user zm-icon-muted" style="width:40rpx;height:40rpx;"></view>
+          </view>
+        </block>
+        <text class="user-name">{{item.nickName}}</text>
+      </view>
+      <view class="unfollow-btn" data-openid="{{item.openId}}" catchtap="onUnfollow">
+        <text>已关注</text>
+      </view>
+    </view>
+    <view class="zm-loading" wx:if="{{loadingMore}}">加载更多…</view>
+  </view>
+</view>

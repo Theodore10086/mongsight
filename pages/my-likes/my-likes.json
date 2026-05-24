@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "我的点赞",
+  "navigationBarBackgroundColor": "#fff9ef",
+  "backgroundColor": "#fff9ef",
+  "enablePullDownRefresh": true
+}

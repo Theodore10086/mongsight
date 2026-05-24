@@ -1,0 +1,58 @@
+<view class="challenge-page">
+
+  <view class="challenge-hero">
+    <text class="challenge-hero-title">S1 赛季 · 每日试炼</text>
+    <text class="challenge-hero-desc">回答书法知识问题，赢取墨玉奖励</text>
+  </view>
+
+  <!-- 挑战弹窗 -->
+  <view class="challenge-card" wx:if="{{showModal && !showResult}}">
+    <view class="challenge-progress">
+      <view class="progress-bar">
+        <view class="progress-fill" style="width: {{(currentIndex + 1) / quizQuestions.length * 100}}%"></view>
+      </view>
+      <text class="progress-text">第 {{currentIndex + 1}}/{{quizQuestions.length}} 题</text>
+    </view>
+    <view class="challenge-question-wrap">
+      <view class="challenge-type-pill">{{currentQuestion.type}}</view>
+      <text class="challenge-question">{{currentQuestion.question}}</text>
+    </view>
+    <view class="challenge-options">
+      <view
+        class="challenge-option"
+        wx:for="{{currentQuestion.options}}"
+        wx:key="index"
+        data-index="{{index}}"
+        bindtap="onSelectOption"
+      >
+        <view class="option-letter">{{['A','B','C','D'][index]}}</view>
+        <text class="option-text">{{item}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 结果面板 -->
+  <view class="result-card" wx:if="{{showResult}}">
+    <view class="result-header">
+      <text class="result-title">试炼完成！</text>
+    </view>
+    <view class="result-stats">
+      <view class="result-stat">
+        <text class="result-stat-num">{{correctCount}}/{{quizQuestions.length}}</text>
+        <text class="result-stat-label">答对题数</text>
+      </view>
+      <view class="result-stat">
+        <text class="result-stat-num">{{correctCount * 20}}%</text>
+        <text class="result-stat-label">正确率</text>
+      </view>
+    </view>
+    <view class="result-reward">
+      <text class="reward-text">获得 {{correctCount * 5}} 墨玉</text>
+    </view>
+    <view class="result-actions">
+      <button class="zm-btn-primary" bindtap="onClaimReward">领取奖励</button>
+      <button class="zm-btn-ghost" bindtap="onRestart">再来一次</button>
+    </view>
+  </view>
+
+</view>

@@ -1,4 +1,4 @@
-const { getWordByKey } = require('../../utils/recognition-catalog.js')
+const { getWordByKey, getArchiveStarterWords } = require('../../utils/recognition-catalog.js')
 const {
   normalizeTrajectoryPayload,
   getPendingRecognitionPlayback,
@@ -141,7 +141,13 @@ const calligraphyMap = {
   }
 };
 
-const LESSON_LIST = Object.values(LESSON_DATA);
+const LESSON_LIST = [
+  LESSON_DATA.narasu,
+  LESSON_DATA.hair,
+  LESSON_DATA.huch,
+  ...getArchiveStarterWords(8),
+  LESSON_DATA.collectionLab
+];
 LESSON_DATA.songshu = LESSON_DATA.narasu;
 
 Page({
@@ -629,7 +635,7 @@ Page({
     hasMoreDialog: false, // 是否还有更多对话
     // --------------------
 
-    currentLesson: LESSON_DATA.collectionLab,
+    currentLesson: LESSON_DATA.narasu,
     
     // --- 新增：用户数据和赛季系统 ---
     userProfile: {
@@ -2832,7 +2838,7 @@ Page({
   },
 
   changeLesson(lessonId) {
-     const newLesson = LESSON_DATA[lessonId];
+     const newLesson = LESSON_DATA[lessonId] || getWordByKey(lessonId);
      if (!newLesson) {
        wx.showToast({ title: '课程开发中...', icon: 'none' });
        return;
@@ -2855,9 +2861,9 @@ Page({
          icon: 'none'
        });
 
-       if (this.innerAudioContext) {
-         this.innerAudioContext.src = newLesson.audioSrc;
-       }
+        if (this.innerAudioContext && newLesson.audioSrc) {
+          this.innerAudioContext.src = newLesson.audioSrc;
+        }
      });
    },
 
@@ -2877,7 +2883,7 @@ Page({
       this.changeLesson(lessonId);
       this.setData({
         showLessonPicker: false,
-        showTemplate: true,
+        showTemplate: lessonId !== 'collectionLab',
         showLeftSidebar: false
       });
     }
@@ -6803,23 +6809,20 @@ Page({
     const recognizedWord = getWordByKey(wordKey) || LESSON_DATA[wordKey] || LESSON_DATA.songshu
     const normalizedTrajectory = normalizeTrajectoryPayload(playbackPayload?.standardTrajectory || playbackPayload?.strokes || [])
 
-    if (!normalizedTrajectory.length) {
-      return
-    }
 
     this.setData({
       currentTab: 0,
       currentLesson: recognizedWord || this.data.currentLesson,
-      allStrokes: normalizedTrajectory,
+      allStrokes: normalizedTrajectory.length ? normalizedTrajectory : [],
       showTemplate: true,
       show3DView: false,
       frameProgress: 0,
-      playbackStatus: 'READY'
+      playbackStatus: normalizedTrajectory.length ? 'READY' : 'LESSON_READY'
     }, () => {
-      if (typeof this.redrawAllStrokes === 'function') {
+      if (normalizedTrajectory.length && typeof this.redrawAllStrokes === 'function') {
         this.redrawAllStrokes()
       }
-      if (typeof this.update3DView === 'function') {
+      if (normalizedTrajectory.length && typeof this.update3DView === 'function') {
         this.update3DView(0)
       }
       wx.showToast({

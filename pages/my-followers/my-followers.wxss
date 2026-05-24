@@ -1,0 +1,53 @@
+.mfr-page {
+  min-height: 100vh;
+  background: var(--bg-page);
+  padding: 20rpx 24rpx;
+}
+
+.mfr-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.user-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  border: 1rpx solid var(--border-soft);
+  padding: 20rpx 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  flex: 1;
+}
+
+.user-avatar {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.user-avatar-default {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  background: var(--bg-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.user-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--text-primary);
+}

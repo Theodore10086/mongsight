@@ -1,0 +1,38 @@
+<view class="ml-page">
+  <view class="zm-empty" wx:if="{{loaded && !posts.length}}">
+    <text>你还没有点赞过帖子</text>
+  </view>
+
+  <view class="ml-feed" wx:if="{{posts.length}}">
+    <view class="post-card" wx:for="{{posts}}" wx:key="id">
+      <view class="post-body" data-id="{{item.id}}" bindtap="onGoToPost">
+        <view class="post-user">
+          <block wx:if="{{item.avatarIsImage}}">
+            <image class="post-avatar" src="{{item.avatarUrl}}" mode="aspectFill"></image>
+          </block>
+          <block wx:elif="{{item.avatarText || item.avatar}}">
+            <text class="post-avatar-emoji">{{item.avatarText || item.avatar || '🙂'}}</text>
+          </block>
+          <block wx:else>
+            <view class="post-avatar-default">
+              <view class="zm-icon zm-icon-user zm-icon-muted post-avatar-glyph"></view>
+            </view>
+          </block>
+          <view class="post-user-info">
+            <text class="post-nickname">{{item.nickname || '游客'}}</text>
+            <text class="post-time">{{item.create_time_str || ''}}</text>
+          </view>
+        </view>
+        <text class="post-content" wx:if="{{item.content}}">{{item.content}}</text>
+        <view class="post-images" wx:if="{{item.images && item.images.length}}">
+          <image class="post-image post-image-{{item.images.length}}" wx:for="{{item.images}}" wx:for-item="img" wx:key="*this" src="{{img}}" mode="aspectFill"></image>
+        </view>
+      </view>
+      <view class="ml-unlike-btn" data-id="{{item._id}}" catchtap="onUnlike">
+        <view class="zm-icon zm-icon-heart-fill zm-icon-pink" style="width:32rpx;height:32rpx;"></view>
+        <text>取消点赞</text>
+      </view>
+    </view>
+    <view class="zm-loading" wx:if="{{loadingMore}}">加载更多…</view>
+  </view>
+</view>

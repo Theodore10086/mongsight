@@ -546,74 +546,40 @@
   
   <view class="picker-content">
     <view class="picker-header">
-      <text class="picker-title">习字薄</text>
+      <text class="picker-title">Choose Lesson</text>
       <view class="picker-close" bindtap="onCloseLessonPicker">
-        <text class="close-icon">✕</text>
+        <text class="close-icon">X</text>
       </view>
     </view>
-    
+
     <view class="picker-body">
       <view class="lesson-grid">
-        <view 
-          class="lesson-item {{currentLesson.id === 'songshu' ? 'active' : ''}}"
+        <view
+          wx:for="{{lessonList}}"
+          wx:key="id"
+          class="lesson-item {{currentLesson.id === item.id ? 'active' : ''}}"
           bindtap="onSelectLesson"
-          data-lesson-id="songshu"
+          data-lesson-id="{{item.id}}"
         >
-          <view class="lesson-icon icon-lesson-tree"></view>
-          <view class="lesson-name">松树</view>
-          <view class="lesson-subtitle">narasu</view>
-          <view class="seal-mark" wx:if="{{currentLesson.id === 'songshu'}}">
-            <text>印</text>
+          <view class="lesson-icon">
+            <text class="lesson-icon-text">{{item.lessonBadge}}</text>
           </view>
-        </view>
-        
-        <view 
-          class="lesson-item {{currentLesson.id === 'hair' ? 'active' : ''}}"
-          bindtap="onSelectLesson"
-          data-lesson-id="hair"
-        >
-          <view class="lesson-icon icon-lesson-heart"></view>
-          <view class="lesson-name">爱</view>
-          <view class="lesson-subtitle">hair</view>
-          <view class="seal-mark" wx:if="{{currentLesson.id === 'hair'}}">
-            <text>印</text>
-          </view>
-        </view>
-        
-        <view 
-          class="lesson-item {{currentLesson.id === 'huch' ? 'active' : ''}}"
-          bindtap="onSelectLesson"
-          data-lesson-id="huch"
-        >
-          <view class="lesson-icon icon-lesson-strength"></view>
-          <view class="lesson-name">力量</view>
-          <view class="lesson-subtitle">huch</view>
-          <view class="seal-mark" wx:if="{{currentLesson.id === 'huch'}}">
-            <text>印</text>
-          </view>
-        </view>
-        <view 
-          class="lesson-item {{currentLesson.id === 'collectionLab' ? 'active' : ''}}"
-          bindtap="onSelectLesson"
-          data-lesson-id="collectionLab"
-        >
-          <view class="lesson-icon icon-lesson-lab"></view>
-          <view class="lesson-name">采集字帖</view>
-          <view class="lesson-subtitle">collection</view>
-          <view class="seal-mark" wx:if="{{currentLesson.id === 'collectionLab'}}">
-            <text>印</text>
+          <view class="lesson-name">{{item.lessonTitle}}</view>
+          <view class="lesson-subtitle">{{item.lessonSubtitle}}</view>
+          <view class="seal-mark" wx:if="{{currentLesson.id === item.id}}">
+            <text>Active</text>
           </view>
         </view>
       </view>
     </view>
-    
+
     <view class="picker-footer">
       <view class="footer-actions">
         <view class="ghost-button" bindtap="onClearTemplate">
-          <text class="ghost-text">暂不临摹</text>
+          <text class="ghost-text">Hide Template</text>
         </view>
       </view>
-      <text class="footer-tip">请赐教</text>
+      <text class="footer-tip">Starter words and collection lab</text>
     </view>
   </view>
 </view>

@@ -1,0 +1,287 @@
+page {
+  background: linear-gradient(180deg, #f5efe3 0%, #fcf8f0 100%);
+}
+
+.review-page {
+  min-height: 100vh;
+  padding: 28rpx 28rpx calc(48rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.review-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 28rpx;
+  min-height: 360rpx;
+  border: 1rpx solid rgba(31, 20, 16, 0.08);
+  box-shadow: 0 16rpx 36rpx rgba(31, 20, 16, 0.1);
+}
+
+.review-hero-image,
+.review-hero-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.review-hero-overlay {
+  background: linear-gradient(135deg, rgba(255, 249, 239, 0.92) 0%, rgba(245, 234, 214, 0.84) 100%);
+}
+
+.review-hero-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  padding: 32rpx 28rpx;
+}
+
+.review-hero-title,
+.plan-card-title,
+.review-empty-title,
+.review-card-title,
+.plan-word-title,
+.knowledge-card-title,
+.review-section-title {
+  color: #221813;
+}
+
+.review-hero-title {
+  font-size: 42rpx;
+  font-weight: 800;
+  letter-spacing: 1rpx;
+}
+
+.review-hero-subtitle,
+.plan-card-subtitle,
+.review-empty-text,
+.review-card-subtitle,
+.review-card-text,
+.review-card-tip,
+.plan-word-subtitle,
+.plan-word-text,
+.knowledge-card-body,
+.knowledge-panel-subtitle {
+  font-size: 24rpx;
+  line-height: 1.65;
+  color: #5e5349;
+}
+
+.review-stats {
+  display: flex;
+  align-items: center;
+  margin-top: 10rpx;
+  padding: 18rpx 18rpx 0;
+  border-top: 1rpx solid rgba(34, 24, 19, 0.08);
+}
+
+.review-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.review-stat-num,
+.review-fact-value {
+  font-size: 40rpx;
+  font-weight: 800;
+  color: #7d5317;
+}
+
+.review-stat-label,
+.review-fact-label {
+  font-size: 22rpx;
+  color: #75685d;
+}
+
+.review-stat-divider {
+  width: 1rpx;
+  height: 56rpx;
+  background: rgba(34, 24, 19, 0.08);
+}
+
+.review-facts-card,
+.plan-card,
+.knowledge-panel,
+.review-empty,
+.review-card {
+  padding: 24rpx;
+  border-radius: 24rpx;
+  background: rgba(255, 252, 247, 0.96);
+  border: 1rpx solid rgba(31, 20, 16, 0.08);
+  box-shadow: 0 10rpx 28rpx rgba(31, 20, 16, 0.06);
+}
+
+.review-section-title,
+.plan-card-title,
+.review-empty-title,
+.review-card-title,
+.plan-word-title,
+.knowledge-card-title {
+  font-size: 32rpx;
+  font-weight: 800;
+}
+
+.review-facts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14rpx;
+  margin-top: 16rpx;
+}
+
+.review-fact-chip {
+  background: #f6efe2;
+  border-radius: 20rpx;
+  padding: 18rpx;
+  border: 1rpx solid rgba(125, 83, 23, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.plan-card,
+.knowledge-panel,
+.review-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.plan-card-header,
+.review-card-header,
+.knowledge-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.plan-card-tag,
+.review-card-tag {
+  font-size: 22rpx;
+  color: #75685d;
+  background: #f2ece3;
+  border-radius: 999rpx;
+  padding: 8rpx 16rpx;
+  white-space: nowrap;
+}
+
+.review-card-tag.due {
+  color: #8f5a00;
+  background: #fff2c8;
+}
+
+.review-filter-bar {
+  display: flex;
+  gap: 12rpx;
+  overflow-x: auto;
+}
+
+.review-filter-chip {
+  flex-shrink: 0;
+  padding: 14rpx 20rpx;
+  border-radius: 999rpx;
+  background: rgba(255, 252, 247, 0.92);
+  color: #5e5349;
+  font-size: 24rpx;
+  border: 1rpx solid transparent;
+}
+
+.review-filter-chip.active {
+  background: #fff2c8;
+  color: #7d5317;
+  border-color: rgba(143, 90, 0, 0.12);
+}
+
+.knowledge-chart-image {
+  width: 100%;
+  border-radius: 20rpx;
+  background: #f7f1e8;
+  border: 1rpx solid rgba(31, 20, 16, 0.08);
+}
+
+.knowledge-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+}
+
+.knowledge-card {
+  padding: 18rpx;
+  border-radius: 20rpx;
+  background: linear-gradient(180deg, #f9f4ea 0%, #fffdf8 100%);
+  border: 1rpx solid rgba(31, 20, 16, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+
+.review-empty {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  align-items: flex-start;
+}
+
+.review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+}
+
+.review-card-mongolian {
+  font-size: 68rpx;
+  writing-mode: vertical-rl;
+  min-height: 200rpx;
+  color: #221813;
+  letter-spacing: 10rpx;
+}
+
+.review-card-text.muted {
+  color: #75685d;
+}
+
+.review-card-tip {
+  color: #6d4d1e;
+}
+
+.plan-actions,
+.review-card-actions {
+  display: flex;
+  gap: 16rpx;
+}
+
+.review-primary-btn,
+.review-secondary-btn {
+  flex: 1;
+  height: 84rpx;
+  border-radius: 18rpx;
+  font-size: 28rpx;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.review-primary-btn::after,
+.review-secondary-btn::after {
+  border: none;
+}
+
+.review-primary-btn {
+  background: linear-gradient(180deg, #c79235 0%, #9a671d 100%);
+  color: #fff;
+  box-shadow: 0 8rpx 18rpx rgba(154, 103, 29, 0.22);
+}
+
+.review-secondary-btn {
+  background: #f2ece3;
+  color: #221813;
+  border: 2rpx solid rgba(31, 20, 16, 0.12);
+}

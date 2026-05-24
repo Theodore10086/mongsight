@@ -1,160 +1,90 @@
 <view class="home-page">
 
-  <!-- 今日学习目标 — 进度环 + XP -->
-  <view class="goal-card">
-    <image class="home-note-image" src="/assets/images/ui/home-note-bg.png" mode="aspectFill"></image>
-    <view class="goal-info">
-      <text class="goal-title">今日学习目标</text>
-      <text class="goal-subtitle">{{goalSubtitle}}</text>
-      <view class="goal-bar">
-        <view class="goal-bar-fill" style="width: {{goalPercent}}%;"></view>
-      </view>
-      <view class="goal-bar-meta">
-        <text class="goal-bar-current">{{todayXp}} XP</text>
-        <text class="goal-bar-target">/ {{dailyGoalXp}} XP</text>
-      </view>
-    </view>
-    <view class="goal-medal" hover-class="goal-medal-hover" bindtap="onTapDailyGoal">
-      <view class="goal-medal-ring"></view>
-      <text class="goal-medal-percent">{{goalPercent}}%</text>
-    </view>
+  <!-- ─────────── Greeting ─────────── -->
+  <view class="home-greeting">
+    <text class="home-greeting-date">{{todayLabel}}</text>
+    <text class="home-greeting-title">{{greeting}}，{{nickname}}</text>
+    <text class="home-greeting-sub">今天也来穿梭蒙古文字之间</text>
   </view>
 
-  <!-- 学习中心 -->
-  <view class="zm-section-title">
-    <text class="zm-section-title-text">学习中心</text>
-    <text class="zm-section-title-aside">挑一个开始练习</text>
+  <!-- ─────────── Gold divider ─────────── -->
+  <view class="home-divider">
+    <view class="home-rhombus"></view>
+    <view class="home-divider-line"></view>
+    <view class="home-rhombus"></view>
   </view>
 
-  <!-- 主路径：书写练习 -->
-  <view class="path-card path-card-primary" hover-class="path-card-hover" bindtap="onGoToWriting">
-    <image class="path-card-image" src="/assets/images/ui/home-writing-card-bg.png" mode="aspectFill"></image>
-    <view class="path-card-bg">
-      <view class="path-card-blob path-blob-a"></view>
-      <view class="path-card-blob path-blob-b"></view>
-    </view>
-    <view class="path-card-body">
-      <view class="path-card-icon">
-        <text class="path-card-icon-text">书</text>
-      </view>
-      <view class="path-card-text">
-        <view class="path-card-title-row">
-          <text class="path-card-title">书写练习</text>
+  <!-- ─────────── Feature card · 拍照识别 ─────────── -->
+  <view class="home-feature" hover-class="home-feature-hover" hover-stay-time="60" bindtap="onGoToRecognition">
+    <image class="home-feature-img" src="/assets/images/ui/home-recognition-card-bg.png" mode="aspectFill"></image>
+    <view class="home-feature-veil"></view>
+    <view class="home-feature-body">
+      <view class="home-feature-top">
+        <view class="home-feature-badge">
+          <view class="zm-icon zm-icon-camera zm-icon-gold-dark home-feature-badge-glyph"></view>
         </view>
-        <text class="path-card-desc">临摹蒙古文字帖、自由书写、蒙宝AI实时评分</text>
-        <view class="path-card-stats">
-          <view class="path-card-stat">
-            <text class="stat-num">{{writingProgress.completed}}</text>
-            <text class="stat-label">已完成</text>
-          </view>
-          <view class="path-card-divider"></view>
-          <view class="path-card-stat">
-            <text class="stat-num">{{writingProgress.total}}</text>
-            <text class="stat-label">字帖</text>
-          </view>
-        </view>
+        <text class="home-feature-eyebrow">主线 · 识读起点</text>
       </view>
-    </view>
-    <view class="path-card-cta">
-      <text class="cta-text">开始</text>
-      <text class="cta-arrow">›</text>
+      <text class="home-feature-title">拍照识别</text>
+      <text class="home-feature-desc">打开相机识读蒙古文，开启完整学习闭环</text>
+      <text class="home-feature-flow">{{flowLine}}</text>
+      <view class="home-feature-action">
+        <text class="home-feature-action-text">开始穿梭</text>
+        <text class="home-feature-action-arrow">→</text>
+      </view>
     </view>
   </view>
 
-  <!-- 次路径：单词识别 -->
-  <view class="path-card path-card-secondary" hover-class="path-card-hover" bindtap="onGoToRecognition">
-    <image class="path-card-image" src="/assets/images/ui/home-recognition-card-bg.png" mode="aspectFill"></image>
-    <view class="path-card-bg">
-      <view class="path-card-blob path-blob-a"></view>
-      <view class="path-card-blob path-blob-b"></view>
+  <!-- ─────────── Stats (divided) ─────────── -->
+  <view class="home-stats">
+    <view class="home-stat">
+      <text class="home-stat-num">{{recognitionTotal}}</text>
+      <text class="home-stat-label">词条</text>
     </view>
-    <view class="path-card-body">
-      <view class="path-card-icon">
-        <view class="zm-icon zm-icon-camera zm-icon-white path-card-icon-glyph"></view>
-      </view>
-      <view class="path-card-text">
-        <view class="path-card-title-row">
-          <text class="path-card-title">单词识别</text>
-        </view>
-        <text class="path-card-desc">拍照识别蒙古文词汇，自动跳转结果回放</text>
-        <view class="path-card-stats">
-          <view class="path-card-stat">
-            <text class="stat-num">{{todayReviewWords}}</text>
-            <text class="stat-label">待复习</text>
-          </view>
-          <view class="path-card-divider"></view>
-          <view class="path-card-stat">
-            <text class="stat-num">{{recognitionTotal}}</text>
-            <text class="stat-label">词条</text>
-          </view>
-        </view>
-      </view>
+    <view class="home-stat-divider"></view>
+    <view class="home-stat" hover-class="home-stat-hover" hover-stay-time="60" bindtap="onGoToReview">
+      <text class="home-stat-num">{{todayReviewWords}}</text>
+      <text class="home-stat-label">待复习</text>
     </view>
-    <view class="path-card-cta cta-blue">
-      <text class="cta-text">前往</text>
-      <text class="cta-arrow">›</text>
+    <view class="home-stat-divider"></view>
+    <view class="home-stat">
+      <text class="home-stat-num">{{totalXp}}</text>
+      <text class="home-stat-label">经验</text>
+    </view>
+    <view class="home-stat-divider"></view>
+    <view class="home-stat" hover-class="home-stat-hover" hover-stay-time="60" bindtap="onGoToChallenge">
+      <text class="home-stat-num">{{streakDays}}</text>
+      <text class="home-stat-label">连击</text>
     </view>
   </view>
 
-  <!-- 三宫格快捷入口（蒙宝AI / 每日试炼 / 收藏） -->
-  <view class="quick-grid">
-    <view class="quick-tile" hover-class="quick-tile-hover" bindtap="onGoToMengbao">
-      <view class="quick-tile-icon quick-tile-icon-purple">
-        <view class="zm-icon zm-icon-sparkle zm-icon-white quick-tile-glyph"></view>
-      </view>
-      <text class="quick-tile-title">蒙宝AI</text>
-      <text class="quick-tile-desc">书法对话</text>
-    </view>
-    <view class="quick-tile" hover-class="quick-tile-hover" bindtap="onGoToChallenge">
-      <view class="quick-tile-icon quick-tile-icon-warm">
-        <view class="zm-icon zm-icon-flag zm-icon-white quick-tile-glyph"></view>
-      </view>
-      <text class="quick-tile-title">每日试炼</text>
-      <text class="quick-tile-desc">赢取墨玉</text>
-    </view>
-    <view class="quick-tile" hover-class="quick-tile-hover" bindtap="onGoToWorks">
-      <view class="quick-tile-icon quick-tile-icon-accent">
-        <view class="zm-icon zm-icon-frame zm-icon-white quick-tile-glyph"></view>
-      </view>
-      <text class="quick-tile-title">我的作品</text>
-      <text class="quick-tile-desc">{{myWorksCount}}件珍藏</text>
-    </view>
+  <!-- ─────────── Section divider · 探索 ─────────── -->
+  <view class="home-divider">
+    <view class="home-rhombus"></view>
+    <view class="home-divider-line"></view>
+    <text class="home-divider-label">探索</text>
+    <view class="home-divider-line"></view>
+    <view class="home-rhombus"></view>
   </view>
 
-  <!-- 数据概览 -->
-  <view class="zm-section-title">
-    <text class="zm-section-title-text">数据概览</text>
-  </view>
-
-  <view class="stats-card">
-    <view class="stat-cell">
-      <view class="zm-icon zm-icon-flame zm-icon-warm stat-cell-glyph"></view>
-      <text class="stat-cell-num">{{streakDays}}</text>
-      <text class="stat-cell-label">连续天数</text>
-    </view>
-    <view class="stat-cell-divider"></view>
-    <view class="stat-cell">
-      <view class="zm-icon zm-icon-bolt zm-icon-gold stat-cell-glyph"></view>
-      <text class="stat-cell-num">{{totalXp}}</text>
-      <text class="stat-cell-label">总经验</text>
-    </view>
-    <view class="stat-cell-divider"></view>
-    <view class="stat-cell">
-      <view class="zm-icon zm-icon-gem zm-icon-secondary stat-cell-glyph"></view>
-      <text class="stat-cell-num">{{inkJades}}</text>
-      <text class="stat-cell-label">墨玉</text>
-    </view>
-  </view>
-
-  <!-- 蒙宝小贴士 -->
-  <view class="tip-card">
-    <image class="home-note-image" src="/assets/images/ui/home-note-bg.png" mode="aspectFill"></image>
-    <view class="tip-card-mascot">
-      <view class="zm-icon zm-icon-bulb zm-icon-gold-dark tip-card-glyph"></view>
-    </view>
-    <view class="tip-card-content">
-      <text class="tip-card-title">蒙宝小贴士</text>
-      <text class="tip-card-text">{{dailyTip}}</text>
+  <!-- ─────────── Quick grid ─────────── -->
+  <view class="home-quick-grid">
+    <view
+      class="home-quick-card"
+      wx:for="{{quickActions}}"
+      wx:key="key"
+      data-key="{{item.key}}"
+      hover-class="home-quick-card-hover"
+      hover-stay-time="60"
+      bindtap="onTapQuickAction"
+    >
+      <view class="home-quick-icon home-quick-icon-{{item.key}}">
+        <view class="zm-icon zm-icon-{{item.icon}} home-quick-glyph"></view>
+      </view>
+      <view class="home-quick-body">
+        <text class="home-quick-title">{{item.title}}</text>
+        <text class="home-quick-desc">{{item.desc}}</text>
+      </view>
     </view>
   </view>
 

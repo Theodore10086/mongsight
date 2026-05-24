@@ -302,6 +302,77 @@ function pickMengbaoReply() {
   return MENGBAO_REPLIES[Math.floor(Math.random() * MENGBAO_REPLIES.length)];
 }
 
+// ── mengbaoChat: 模拟对话，预留 API 接口 ──
+// 若要接入真实 AI API（如 豆包/DeepSeek），只需替换 matchAndReply 的实现：
+//   1. 在云函数环境变量配置 API_KEY、API_ENDPOINT
+//   2. 将 matchAndReply 改为调用 fetch(API_ENDPOINT, { ... }) 即可
+async function mengbaoChat(openId, event) {
+  requireOpenId(openId);
+  const message = String(event.message || '').trim();
+  if (!message) {
+    return { reply: '你想问蒙宝什么呢？说说看～' };
+  }
+
+  const reply = matchAndReply(message);
+  return { reply };
+}
+
+// 关键词匹配核心 — 替换此函数即可接入真实 AI
+function matchAndReply(message) {
+  const msg = message.toLowerCase();
+
+  // 回纥/回鹘
+  if (/回[鹘纥]/.test(msg)) return '回纥体是蒙古文经典的书法风格，起源于古代回纥（回鹘）文字，笔画流畅、弧线优美，被称为"草原上的书法之花"。想了解更多吗？';
+
+  // 松树
+  if (/松树|narasu|ᠨᠠᠱᠤ/.test(msg)) return '松树（narasu）是蒙古文书法入门的经典字例之一。书写时注意纵向结构：起笔逆锋，转折处提笔换锋，收笔回锋。识别后建议先看标准字形，再跟着轨迹慢速临摹。';
+
+  // 力量
+  if (/力量|huch|ᠬᠦᠴᠦ/.test(msg)) return '力量（huch）是一个训练笔画力度控制的好词。临摹时要注意线条稳定，笔力递进、起落分明、重按轻提。想练习这个词吗？';
+
+  // 爱
+  if (/爱|hair|ᠬᠠᠢᠷ/.test(msg)) return '爱（hair）是蒙古文中非常高频的基础词。运笔如行云流水，笔画圆润流畅。在文化表达和日常教学里，"爱"承载着丰富的情感内涵。';
+
+  // 竖排
+  if (/竖排|字序|书写方向|怎么.*写|写法/.test(msg)) return '蒙古文的标准书写字序为从上到下竖排，列序从左到右。这是蒙古文书法最重要的基础规范，所有字母均采用上下叠连的连接方式。';
+
+  // 竹笔
+  if (/竹笔|毛笔|工具|笔尖|硬笔/.test(msg)) return '蒙古文书法传统使用竹笔（双锋笔尖）和骨制硬笔。竹笔笔尖为双锋，能精准表现圆转与方折笔画；硬笔多为骨制，以兽骨为材，质地坚硬耐用。';
+
+  // 墨色
+  if (/墨色|墨|浓墨|淡墨/.test(msg)) return '蒙古文书法讲究墨色变化。书写苍劲、厚重的词（如松树、力量）时用浓墨；书写柔美、清雅的词时可用淡墨或宿墨。浓墨色泽厚重、力透纸背。';
+
+  // 笔纸
+  if (/纸|桑皮|载体|材料/.test(msg)) return '传统蒙古文书法多使用桑皮纸作为书写载体。桑皮纸吸墨性好、质地细腻，是草原书写者的首选。现代练习也可以用宣纸或元书纸替代。';
+
+  // 落款
+  if (/落款|印泥|印谱|印章/.test(msg)) return '传统蒙古文诗篇落款采用四字名格式（作者 + 书法机构或敬语），增强仪式感。古典印谱中最常用红色印泥，象征庄重与权威。';
+
+  // 连续/签到
+  if (/连续|签到|streak|等级|升级/.test(msg)) return '坚持每日签到可以积累连续天数，每次签到获得 5 墨玉！连续天数越多，你的等级和称号也会随之提升。加油，草原书写者！';
+
+  // 墨玉
+  if (/墨玉|奖励|积分/.test(msg)) return '墨玉是草原书法圈的通用积分。你可以通过每日签到、完成试炼、提交书写作品等方式获得墨玉，用于兑换书写道具和荣誉勋章。';
+
+  // 复习
+  if (/复习|记忆|怎么.*记|怎么.*学|怎么.*练/.test(msg)) return '复习是学习蒙古文书法的关键！建议每天进行少量多次的复习：先识读 → 释义 → 讲解 → 练写 → 评测 → 复习，形成完整的学习闭环。';
+
+  // 笔画
+  if (/笔画|起笔|收笔|转折|运笔/.test(msg)) return '蒙古文书法笔画的要点：起笔逆锋（蓄势）、转折处提笔换锋（干净利落）、收笔回锋（圆润有力）。每一个笔画都要稳定流畅，不急不躁。';
+
+  // 草书/行书
+  if (/草书|行书|楷书|字体|风格/.test(msg)) return '蒙古文书法有多种风格：楷书端正规范适合初学，行书流畅连贯适合日常书写，草书简化洒脱适合艺术创作，回纥体古朴典雅适合正式场合。';
+
+  // 托忒文
+  if (/托忒|新疆|卫拉特/.test(msg)) return '托忒文是蒙古文的一种重要变体，主要用于新疆蒙古族。托忒文通过附加符号（圆点、钩等）区分传统蒙文中易混淆的字母，书写更加精确。';
+
+  // 打招呼
+  if (/你好|赛努|sain|hello|嗨|hi/.test(msg)) return '赛努！我是蒙宝 AI，你的草原书法小助手。有什么关于蒙古文书法的问题，尽管问我！';
+
+  // 默认回复：从 280 条彩虹屁中随机选取
+  return MENGBAO_REPLIES[Math.floor(Math.random() * MENGBAO_REPLIES.length)];
+}
+
 function buildAvatarView(avatar) {
   const avatarValue = String(avatar || '🙂');
   const avatarIsImage = /^https?:\/\//.test(avatarValue) || avatarValue.startsWith('cloud://');
@@ -864,6 +935,145 @@ async function getUserInfo(openId, event) {
   };
 }
 
+async function searchCommunity(openId, event) {
+  requireOpenId(openId);
+  const keyword = (event.keyword || '').trim();
+  if (!keyword) {
+    return { posts: [], users: [] };
+  }
+
+  const limit = Math.min(Number(event.limit) || 20, 50);
+  const skip = Number(event.skip) || 0;
+
+  // 搜索帖子：内容模糊匹配
+  let posts = [];
+  let users = [];
+  const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  try {
+    const postsResult = await db.collection('posts')
+      .where({
+        content: db.RegExp({
+          regexp: escaped,
+          options: 'i'
+        })
+      })
+      .orderBy('create_time', 'desc')
+      .skip(skip)
+      .limit(limit)
+      .get();
+    const matchedPosts = postsResult.data || [];
+    if (matchedPosts.length) {
+      const postIds = matchedPosts.map((p) => p._id);
+      const commentsResult = await db.collection('comments')
+        .where({ post_id: _.in(postIds) })
+        .orderBy('create_time', 'asc')
+        .get();
+      const comments = commentsResult.data || [];
+      for (const post of matchedPosts) {
+        posts.push(await buildPostView(post, openId, comments));
+      }
+    }
+  } catch (e) {
+    console.warn('[community] search posts failed', e.message);
+  }
+
+  // 搜索用户：昵称模糊匹配
+  try {
+    const usersResult = await db.collection('user_profiles')
+      .where({
+        nickName: db.RegExp({
+          regexp: escaped,
+          options: 'i'
+        })
+      })
+      .field({ nickName: true, nickname: true, avatarUrl: true, avatar: true, level: true, title: true })
+      .skip(0)
+      .limit(10)
+      .get();
+    users = (usersResult.data || []).map((u) => {
+      const avatar = u.avatarUrl || u.avatar || '';
+      const avatarIsImage = typeof avatar === 'string' && /^(https?:|wxfile:|cloud:|\/)/i.test(avatar);
+      return {
+        openId: u._openid || u.openId,
+        nickName: u.nickName || u.nickname || '墨客',
+        avatarUrl: avatarIsImage ? avatar : '',
+        avatar: avatarIsImage ? '' : avatar,
+        avatarIsImage,
+        avatarText: avatarIsImage ? '' : avatar,
+        level: u.level || 1,
+        title: u.title || '牧羊人'
+      };
+    });
+  } catch (e) {
+    console.warn('[community] search users failed', e.message);
+  }
+
+  return { posts, users };
+}
+
+async function getPost(openId, event) {
+  requireOpenId(openId);
+  const postId = event.postId;
+  if (!postId) {
+    throw new Error('missing postId');
+  }
+
+  const postResult = await db.collection('posts').doc(postId).get();
+  const post = postResult.data;
+  if (!post) {
+    throw new Error('post not found');
+  }
+
+  const commentsResult = await db.collection('comments')
+    .where({ post_id: postId })
+    .orderBy('create_time', 'asc')
+    .get();
+  const comments = commentsResult.data || [];
+
+  return { post: await buildPostView(post, openId, comments) };
+}
+
+async function getUserPosts(openId, event) {
+  requireOpenId(openId);
+  const targetOpenId = event.targetOpenId;
+  if (!targetOpenId) {
+    throw new Error('missing targetOpenId');
+  }
+  const limit = Math.min(Number(event.limit) || 20, 50);
+  const skip = Number(event.skip) || 0;
+
+  const postsResult = await db.collection('posts')
+    .where({ _openid: targetOpenId })
+    .orderBy('create_time', 'desc')
+    .skip(skip)
+    .limit(limit)
+    .get();
+
+  const posts = postsResult.data || [];
+  if (!posts.length) {
+    return { posts: [], total: 0 };
+  }
+
+  const postIds = posts.map((post) => post._id);
+  const commentsResult = await db.collection('comments')
+    .where({ post_id: _.in(postIds) })
+    .orderBy('create_time', 'asc')
+    .get();
+  const comments = commentsResult.data || [];
+
+  const countResult = await db.collection('posts')
+    .where({ _openid: targetOpenId })
+    .count();
+  const total = countResult.total || 0;
+
+  const hydratedPosts = [];
+  for (const post of posts) {
+    hydratedPosts.push(await buildPostView(post, openId, comments));
+  }
+
+  return { posts: hydratedPosts, total };
+}
+
 async function getPostsLikedByMe(openId, event) {
   requireOpenId(openId);
   const limit = Math.min(Number(event.limit) || 20, 50);
@@ -931,8 +1141,16 @@ exports.main = async (event) => {
         return { success: true, data: await getMyFollowers(openId, event) };
       case 'getUserInfo':
         return { success: true, data: await getUserInfo(openId, event) };
+      case 'getPost':
+        return { success: true, data: await getPost(openId, event) };
+      case 'search':
+        return { success: true, data: await searchCommunity(openId, event) };
+      case 'getUserPosts':
+        return { success: true, data: await getUserPosts(openId, event) };
       case 'getPostsLikedByMe':
         return { success: true, data: await getPostsLikedByMe(openId, event) };
+      case 'mengbaoChat':
+        return { success: true, data: await mengbaoChat(openId, event) };
       default:
         return { success: false, message: 'unsupported action' };
     }

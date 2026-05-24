@@ -295,10 +295,6 @@
         <view class="tab-icon icon-tab-lk"></view>
         <text class="tab-text">落款</text>
       </view>
-      <view class="tab-item {{leftSidebarTab === 'shilian' ? 'active' : ''}}" data-tab="shilian" bindtap="onSelectLeftTab">
-        <view class="tab-icon icon-tab-sl"></view>
-        <text class="tab-text">试炼</text>
-      </view>
     </view>
   </view>
   
@@ -433,32 +429,6 @@
       </view>
     </scroll-view>
     
-    <!-- 试炼内容 -->
-    <scroll-view scroll-y class="tab-panel {{leftSidebarTab === 'shilian' ? 'active' : ''}}" wx:if="{{leftSidebarTab === 'shilian'}}">
-      <view class="challenge-entry-large" bindtap="onOpenChallenge">
-        <view class="challenge-icon-large">
-          <view class="zm-icon zm-icon-flag zm-icon-gold-dark challenge-icon-large-glyph"></view>
-        </view>
-        <view class="challenge-content">
-          <text class="challenge-title-large">每日试炼</text>
-          <text class="challenge-desc-large">回答书法知识问题，赢取墨玉奖励</text>
-        </view>
-      </view>
-      <view class="challenge-stats">
-        <view class="stat-box">
-          <text class="stat-num">{{userProfile.level || 1}}</text>
-          <text class="stat-label">等级</text>
-        </view>
-        <view class="stat-box">
-          <text class="stat-num">{{userProfile.inkJades || 0}}</text>
-          <text class="stat-label">墨玉</text>
-        </view>
-        <view class="stat-box">
-          <text class="stat-num">{{userProfile.streak || 0}}</text>
-          <text class="stat-label">连续</text>
-        </view>
-      </view>
-    </scroll-view>
   </view>
 </view>
 
@@ -546,74 +516,40 @@
   
   <view class="picker-content">
     <view class="picker-header">
-      <text class="picker-title">习字薄</text>
+      <text class="picker-title">Choose Lesson</text>
       <view class="picker-close" bindtap="onCloseLessonPicker">
-        <text class="close-icon">✕</text>
+        <text class="close-icon">X</text>
       </view>
     </view>
-    
+
     <view class="picker-body">
       <view class="lesson-grid">
-        <view 
-          class="lesson-item {{currentLesson.id === 'songshu' ? 'active' : ''}}"
+        <view
+          wx:for="{{lessonList}}"
+          wx:key="id"
+          class="lesson-item {{currentLesson.id === item.id ? 'active' : ''}}"
           bindtap="onSelectLesson"
-          data-lesson-id="songshu"
+          data-lesson-id="{{item.id}}"
         >
-          <view class="lesson-icon icon-lesson-tree"></view>
-          <view class="lesson-name">松树</view>
-          <view class="lesson-subtitle">narasu</view>
-          <view class="seal-mark" wx:if="{{currentLesson.id === 'songshu'}}">
-            <text>印</text>
+          <view class="lesson-icon">
+            <text class="lesson-icon-text">{{item.lessonBadge}}</text>
           </view>
-        </view>
-        
-        <view 
-          class="lesson-item {{currentLesson.id === 'hair' ? 'active' : ''}}"
-          bindtap="onSelectLesson"
-          data-lesson-id="hair"
-        >
-          <view class="lesson-icon icon-lesson-heart"></view>
-          <view class="lesson-name">爱</view>
-          <view class="lesson-subtitle">hair</view>
-          <view class="seal-mark" wx:if="{{currentLesson.id === 'hair'}}">
-            <text>印</text>
-          </view>
-        </view>
-        
-        <view 
-          class="lesson-item {{currentLesson.id === 'huch' ? 'active' : ''}}"
-          bindtap="onSelectLesson"
-          data-lesson-id="huch"
-        >
-          <view class="lesson-icon icon-lesson-strength"></view>
-          <view class="lesson-name">力量</view>
-          <view class="lesson-subtitle">huch</view>
-          <view class="seal-mark" wx:if="{{currentLesson.id === 'huch'}}">
-            <text>印</text>
-          </view>
-        </view>
-        <view 
-          class="lesson-item {{currentLesson.id === 'collectionLab' ? 'active' : ''}}"
-          bindtap="onSelectLesson"
-          data-lesson-id="collectionLab"
-        >
-          <view class="lesson-icon icon-lesson-lab"></view>
-          <view class="lesson-name">采集字帖</view>
-          <view class="lesson-subtitle">collection</view>
-          <view class="seal-mark" wx:if="{{currentLesson.id === 'collectionLab'}}">
-            <text>印</text>
+          <view class="lesson-name">{{item.lessonTitle}}</view>
+          <view class="lesson-subtitle">{{item.lessonSubtitle}}</view>
+          <view class="seal-mark" wx:if="{{currentLesson.id === item.id}}">
+            <text>Active</text>
           </view>
         </view>
       </view>
     </view>
-    
+
     <view class="picker-footer">
       <view class="footer-actions">
         <view class="ghost-button" bindtap="onClearTemplate">
-          <text class="ghost-text">暂不临摹</text>
+          <text class="ghost-text">Hide Template</text>
         </view>
       </view>
-      <text class="footer-tip">请赐教</text>
+      <text class="footer-tip">Starter words and collection lab</text>
     </view>
   </view>
 </view>
@@ -1008,69 +944,6 @@
   </view>
 </view>
 
-<view class="challenge-modal" wx:if="{{showChallengeModal}}">
-  <view class="modal-content">
-    <view class="modal-header">
-      <text class="modal-title">S1 赛季 · 每日试炼</text>
-      <view class="modal-close" bindtap="onCloseChallenge">✕</view>
-    </view>
-    <view class="challenge-progress">
-      <view class="progress-bar">
-        <view class="progress-fill" style="width: {{(currentChallengeIndex + 1) / 5 * 100}}%"></view>
-      </view>
-      <text class="progress-text">当前第 {{currentChallengeIndex + 1}}/5 题</text>
-    </view>
-    <view class="modal-body">
-      <text class="challenge-question">{{challengeData.question}}</text>
-      <view class="options-container">
-        <view 
-          wx:for="{{challengeData.options}}" 
-          wx:key="index"
-          class="option-item"
-          data-index="{{index}}"
-          bindtap="onSelectOption"
-        >
-          {{item}}
-        </view>
-      </view>
-    </view>
-  </view>
-</view>
-
-<view class="result-panel" wx:if="{{showChallengeResult}}">
-  <view class="result-content">
-    <view class="result-header">
-      <text class="result-title">试炼完成！</text>
-    </view>
-    <view class="result-body">
-      <view class="result-stats">
-        <view class="stat-item">
-          <text class="stat-value">{{challengeCorrectCount}}/5</text>
-          <text class="stat-label">答对题数</text>
-        </view>
-        <view class="stat-item">
-          <text class="stat-value">{{challengeCorrectCount * 20}}%</text>
-          <text class="stat-label">正确率</text>
-        </view>
-      </view>
-      <view class="result-reward-highlight">
-        <view class="reward-icon icon-reward-gem"></view>
-        <text class="reward-text">获得 {{challengeCorrectCount * 5}} 墨玉</text>
-      </view>
-      <view class="radar-container">
-        <canvas 
-          type="2d" 
-          id="radarCanvas" 
-          class="radar-canvas"
-          style="width: 280px; height: 280px;"
-        ></canvas>
-      </view>
-    </view>
-    <view class="result-footer">
-      <button class="claim-button" bindtap="onClaimReward">领取奖励</button>
-    </view>
-  </view>
-</view>
 
 <!-- 截图闪光效果 -->
 <view class="screenshot-flash {{startFlash ? 'active' : ''}}"></view>

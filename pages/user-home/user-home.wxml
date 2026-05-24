@@ -1,0 +1,109 @@
+<view class="uh-page">
+  <view class="zm-loading" wx:if="{{!loaded}}">加载中…</view>
+
+  <block wx:if="{{loaded && profile}}">
+    <view class="uh-header-card">
+      <view class="uh-header-bg"></view>
+      <view class="uh-header-body">
+        <block wx:if="{{profile.avatarUrl && profile.avatarUrl.length}}">
+          <image class="uh-avatar" src="{{profile.avatarUrl}}" mode="aspectFill"></image>
+        </block>
+        <block wx:elif="{{profile.avatar && profile.avatar.length < 8}}">
+          <text class="uh-avatar-emoji">{{profile.avatar}}</text>
+        </block>
+        <block wx:else>
+          <view class="uh-avatar-default">
+            <view class="zm-icon zm-icon-user zm-icon-muted" style="width:52rpx;height:52rpx;"></view>
+          </view>
+        </block>
+
+        <text class="uh-nickname">{{profile.nickName || profile.nickname || '墨客'}}</text>
+        <view class="uh-level-row">
+          <text class="uh-level-pill" wx:if="{{profile.level}}">Lv.{{profile.level}}</text>
+          <text class="uh-title" wx:if="{{profile.title}}">{{profile.title}}</text>
+        </view>
+
+        <view class="uh-stats">
+          <view class="uh-stat">
+            <text class="uh-stat-num">{{stats.postsCount || 0}}</text>
+            <text class="uh-stat-label">帖子</text>
+          </view>
+          <view class="uh-stat">
+            <text class="uh-stat-num">{{stats.followersCount || 0}}</text>
+            <text class="uh-stat-label">粉丝</text>
+          </view>
+          <view class="uh-stat">
+            <text class="uh-stat-num">{{stats.followingCount || 0}}</text>
+            <text class="uh-stat-label">关注</text>
+          </view>
+        </view>
+
+        <view class="uh-follow-btn {{isFollowing ? 'uh-follow-btn-following' : ''}}" bindtap="onToggleFollow">
+          <text>{{followLoading ? '…' : (isFollowing ? '已关注' : '+ 关注')}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="zm-section-title">
+      <text class="zm-section-title-text">TA 的帖子</text>
+    </view>
+
+    <view class="zm-empty" wx:if="{{!posts.length}}">
+      <text>TA 还没有发布过帖子</text>
+    </view>
+
+    <view class="uh-feed" wx:if="{{posts.length}}">
+      <view
+        class="post-card"
+        wx:for="{{posts}}"
+        wx:key="id"
+        data-id="{{item.id}}"
+        bindtap="onGoToPost"
+      >
+        <view class="post-user">
+          <block wx:if="{{item.avatarIsImage}}">
+            <image class="post-avatar" src="{{item.avatarUrl}}" mode="aspectFill"></image>
+          </block>
+          <block wx:elif="{{item.avatarText || item.avatar}}">
+            <text class="post-avatar-emoji">{{item.avatarText || item.avatar || '🙂'}}</text>
+          </block>
+          <block wx:else>
+            <view class="post-avatar-default">
+              <view class="zm-icon zm-icon-user zm-icon-muted post-avatar-glyph"></view>
+            </view>
+          </block>
+          <view class="post-user-info">
+            <text class="post-nickname">{{item.nickname || '游客'}}</text>
+            <text class="post-time">{{item.create_time_str || ''}}</text>
+          </view>
+        </view>
+
+        <text class="post-content" wx:if="{{item.content}}">{{item.content}}</text>
+
+        <view class="post-images" wx:if="{{item.images && item.images.length}}">
+          <image
+            class="post-image post-image-{{item.images.length}}"
+            wx:for="{{item.images}}"
+            wx:for-item="img"
+            wx:key="*this"
+            src="{{img}}"
+            mode="aspectFill"
+          ></image>
+        </view>
+
+        <view class="post-actions">
+          <view class="post-action {{item.liked ? 'post-action-liked' : ''}}">
+            <view class="zm-icon {{item.liked ? 'zm-icon-heart-fill zm-icon-pink' : 'zm-icon-heart zm-icon-muted'}} post-action-glyph"></view>
+            <text class="post-action-count">{{item.likes || 0}}</text>
+          </view>
+          <view class="post-action">
+            <view class="zm-icon zm-icon-comment zm-icon-muted post-action-glyph"></view>
+            <text class="post-action-count">{{item.comments || 0}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="zm-loading" wx:if="{{loadingMore}}">加载更多…</view>
+    </view>
+  </block>
+</view>

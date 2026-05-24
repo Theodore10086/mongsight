@@ -12,8 +12,84 @@
     </view>
   </view>
 
+  <!-- 搜索栏 -->
+  <view class="comm-search">
+    <view class="comm-search-bar">
+      <view class="zm-icon zm-icon-search zm-icon-muted comm-search-icon"></view>
+      <input
+        class="comm-search-input"
+        placeholder="搜索帖子和用户…"
+        value="{{searchKeyword}}"
+        bindinput="onSearchInput"
+        confirm-type="search"
+        bindconfirm="onSearchConfirm"
+      />
+      <view class="comm-search-clear" wx:if="{{searchKeyword}}" catchtap="onClearSearch">
+        <text>✕</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 搜索结果面板 -->
+  <view class="comm-search-panel" wx:if="{{searchKeyword}}">
+    <view class="comm-search-tabs">
+      <text class="comm-search-tab {{searchTab === 'posts' ? 'active' : ''}}" bindtap="onSwitchSearchTab" data-tab="posts">帖子</text>
+      <text class="comm-search-tab {{searchTab === 'users' ? 'active' : ''}}" bindtap="onSwitchSearchTab" data-tab="users">用户</text>
+    </view>
+
+    <view class="zm-empty" wx:if="{{searchTab === 'posts' && !searchPosts.length && !searching}}">
+      <text>未找到相关帖子</text>
+    </view>
+    <view class="zm-empty" wx:if="{{searchTab === 'users' && !searchUsers.length && !searching}}">
+      <text>未找到相关用户</text>
+    </view>
+
+    <view class="comm-search-results" wx:if="{{searchTab === 'posts' && searchPosts.length}}">
+      <view class="post-card" wx:for="{{searchPosts}}" wx:key="id" data-id="{{item.id}}" bindtap="onGoToPostDetail">
+        <view class="post-user">
+          <block wx:if="{{item.avatarIsImage}}">
+            <image class="post-avatar" src="{{item.avatarUrl}}" mode="aspectFill"></image>
+          </block>
+          <block wx:elif="{{item.avatarText || item.avatar}}">
+            <text class="post-avatar post-avatar-emoji"><text>{{item.avatarText || item.avatar}}</text></text>
+          </block>
+          <block wx:else>
+            <view class="post-avatar post-avatar-default">
+              <view class="zm-icon zm-icon-user zm-icon-gold-dark post-avatar-glyph"></view>
+            </view>
+          </block>
+          <view class="post-user-info">
+            <text class="post-nickname">{{item.nickname || '游客'}}</text>
+            <text class="post-time" wx:if="{{item.create_time_str}}">{{item.create_time_str}}</text>
+          </view>
+        </view>
+        <text class="post-content" wx:if="{{item.content}}">{{item.content}}</text>
+      </view>
+    </view>
+
+    <view class="comm-search-results" wx:if="{{searchTab === 'users' && searchUsers.length}}">
+      <view class="search-user-card" wx:for="{{searchUsers}}" wx:key="openId" data-openid="{{item.openId}}" bindtap="onGoToUserHome">
+        <block wx:if="{{item.avatarIsImage}}">
+          <image class="search-user-avatar" src="{{item.avatarUrl}}" mode="aspectFill"></image>
+        </block>
+        <block wx:elif="{{item.avatarText}}">
+          <text class="search-user-avatar-emoji">{{item.avatarText}}</text>
+        </block>
+        <block wx:else>
+          <view class="search-user-avatar-default">
+            <view class="zm-icon zm-icon-user zm-icon-muted" style="width:36rpx;height:36rpx;"></view>
+          </view>
+        </block>
+        <view class="search-user-info">
+          <text class="search-user-name">{{item.nickName}}</text>
+          <text class="search-user-level" wx:if="{{item.level}}">Lv.{{item.level}} · {{item.title || ''}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
   <!-- Feed 主体 -->
-  <view class="comm-feed">
+  <view class="comm-feed" wx:if="{{!searchKeyword}}">
 
     <!-- 空状态 -->
     <view class="zm-empty" wx:if="{{!isLoadingPosts && communityPosts.length === 0}}">
@@ -26,6 +102,8 @@
       class="post-card"
       wx:for="{{communityPosts}}"
       wx:key="id"
+      data-id="{{item.id}}"
+      bindtap="onGoToPostDetail"
     >
       <!-- 用户头部 -->
       <view class="post-user">
@@ -75,7 +153,7 @@
           <view class="zm-icon {{item.liked ? 'zm-icon-heart-fill zm-icon-pink' : 'zm-icon-heart zm-icon-secondary-text'}} post-action-glyph"></view>
           <text class="post-action-count">{{item.likes || 0}}</text>
         </view>
-        <view class="post-action" data-id="{{item.id}}" catchtap="onOpenComment">
+        <view class="post-action" data-id="{{item.id}}" catchtap="onGoToPostDetail">
           <view class="zm-icon zm-icon-comment zm-icon-secondary-text post-action-glyph"></view>
           <text class="post-action-count">{{item.comments || 0}}</text>
         </view>

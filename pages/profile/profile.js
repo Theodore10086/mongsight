@@ -18,7 +18,6 @@ Page({
 
     tempNickname: '',
 
-    myWorksCount: 0,
     myPostCount: 0,
     myLikesCount: 0,
 
@@ -61,10 +60,7 @@ Page({
   },
 
   loadLocalCounters() {
-    const works = wx.getStorageSync(STORAGE_KEYS.WORKS) || []
-    this.setData({
-      myWorksCount: Array.isArray(works) ? works.length : 0
-    })
+    // 作品计数已移除
   },
 
   refreshCheckinState() {
@@ -249,27 +245,24 @@ Page({
     wx.vibrateShort({ type: 'light' })
   },
 
-  /* ──────────────── 菜单跳转（部分功能尚未实现 → toast） ──────────────── */
-  onGoToMyWorks() {
-    wx.showToast({ title: '我的作品 即将上线', icon: 'none' })
-  },
+  /* ──────────────── 菜单跳转 ──────────────── */
   onGoToMyPosts() {
-    wx.showToast({ title: '我的帖子 即将上线', icon: 'none' })
+    wx.navigateTo({ url: '/pages/my-posts/my-posts' })
   },
   onGoToMyLikes() {
-    wx.showToast({ title: '我的点赞 即将上线', icon: 'none' })
+    wx.navigateTo({ url: '/pages/my-likes/my-likes' })
   },
   onGoToMyCollections() {
-    wx.showToast({ title: '我的收藏 即将上线', icon: 'none' })
+    wx.navigateTo({ url: '/pages/my-favorites/my-favorites' })
   },
   onGoToFollows() {
-    wx.showToast({ title: '我的关注 即将上线', icon: 'none' })
+    wx.navigateTo({ url: '/pages/my-follows/my-follows' })
   },
   onGoToFollowers() {
-    wx.showToast({ title: '我的粉丝 即将上线', icon: 'none' })
+    wx.navigateTo({ url: '/pages/my-followers/my-followers' })
   },
-  onGoToAchievements() {
-    wx.showToast({ title: '成就中心 即将上线', icon: 'none' })
+  onGoToHistory() {
+    wx.navigateTo({ url: '/pages/browsing-history/browsing-history' })
   },
 
   /* ──────────────── 设置 ──────────────── */

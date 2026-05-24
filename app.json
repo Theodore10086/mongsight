@@ -1,10 +1,10 @@
 {
   "pages": [
-    "pages/splash/splash",
     "pages/home/home",
     "pages/class-tab/class-tab",
     "pages/community/community",
     "pages/profile/profile",
+    "pages/review/review",
     "pages/writing-practice/writing-practice",
     "pages/word-recognition/word-recognition",
     "pages/index/index",
@@ -18,7 +18,18 @@
     "pages/class/teacher/assignment-review/assignment-review",
     "pages/class/student/dashboard/dashboard",
     "pages/class/student/class-home/class-home",
-    "pages/class/student/canvas/canvas"
+    "pages/class/student/canvas/canvas",
+    "pages/post-detail/post-detail",
+    "pages/user-home/user-home",
+    "pages/my-posts/my-posts",
+    "pages/my-likes/my-likes",
+    "pages/my-favorites/my-favorites",
+    "pages/my-follows/my-follows",
+    "pages/my-followers/my-followers",
+    "pages/browsing-history/browsing-history",
+    "pages/learning-stats/learning-stats",
+    "pages/mengbao-chat/mengbao-chat",
+    "pages/daily-challenge/daily-challenge"
   ],
   "window": {
     "navigationBarTextStyle": "black",

@@ -1,0 +1,234 @@
+.detail-page {
+  min-height: 100vh;
+  background: var(--bg-page);
+  padding: 20rpx 24rpx;
+  padding-bottom: 140rpx;
+}
+
+.detail-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  border: 1rpx solid var(--border-soft);
+  padding: 28rpx 24rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.post-user {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.post-avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.post-avatar-emoji {
+  font-size: 64rpx;
+  width: 80rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.post-avatar-default {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  background: var(--bg-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.post-avatar-glyph {
+  width: 40rpx;
+  height: 40rpx;
+}
+
+.post-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.post-nickname {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.post-time {
+  font-size: 24rpx;
+  color: var(--text-muted);
+}
+
+.post-content {
+  font-size: 30rpx;
+  color: var(--text-primary);
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.post-images {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8rpx;
+}
+
+.post-image {
+  width: 100%;
+  border-radius: var(--radius-sm);
+  aspect-ratio: 1;
+}
+
+.post-image-1,
+.post-image-2 {
+  grid-column: span 3;
+  aspect-ratio: 16 / 10;
+}
+
+.post-actions {
+  display: flex;
+  align-items: center;
+  gap: 36rpx;
+  padding-top: 8rpx;
+  border-top: 1rpx solid var(--border-soft);
+}
+
+.post-action {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.post-action-glyph {
+  width: 36rpx;
+  height: 36rpx;
+}
+
+.post-action-count {
+  font-size: 26rpx;
+  color: var(--text-secondary);
+}
+
+.post-action-liked .post-action-count {
+  color: var(--brand-pink);
+}
+
+.post-action-favorited .post-action-count {
+  color: var(--brand-warm);
+}
+
+.detail-section-title {
+  display: flex;
+  align-items: baseline;
+  gap: 12rpx;
+  margin-top: 36rpx;
+  margin-bottom: 16rpx;
+  padding: 0 8rpx;
+}
+
+.detail-section-title-text {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.detail-section-title-count {
+  font-size: 24rpx;
+  color: var(--text-muted);
+}
+
+.detail-comments {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.detail-comment-item {
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
+  padding: 22rpx 24rpx;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8rpx;
+  border-bottom: 1rpx solid var(--border-soft);
+}
+
+.inline-comment-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--text-primary);
+  flex-shrink: 0;
+}
+
+.inline-comment-text {
+  font-size: 28rpx;
+  color: var(--text-secondary);
+  flex: 1;
+}
+
+.detail-comment-time {
+  font-size: 22rpx;
+  color: var(--text-muted);
+  width: 100%;
+}
+
+.detail-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx 0;
+  color: var(--text-muted);
+  font-size: 28rpx;
+}
+
+.detail-input-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 16rpx 24rpx;
+  padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
+  background: var(--bg-card);
+  border-top: 1rpx solid var(--border-soft);
+  box-shadow: 0 -2rpx 12rpx rgba(31, 20, 16, 0.04);
+  z-index: 10;
+}
+
+.detail-input {
+  flex: 1;
+  height: 72rpx;
+  padding: 0 20rpx;
+  background: var(--bg-soft);
+  border-radius: 36rpx;
+  font-size: 28rpx;
+}
+
+.detail-send-btn {
+  padding: 14rpx 28rpx;
+  border-radius: 36rpx;
+  background: var(--bg-muted);
+  font-size: 28rpx;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.detail-send-btn-active {
+  background: var(--brand-primary);
+  color: #fff;
+}

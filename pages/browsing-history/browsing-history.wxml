@@ -1,0 +1,30 @@
+<view class="bh-page">
+  <view class="bh-header" wx:if="{{history.length}}">
+    <text class="bh-count">共 {{history.length}} 条记录</text>
+    <view class="bh-clear-btn" bindtap="onClearAll">
+      <view class="zm-icon zm-icon-trash zm-icon-muted" style="width:28rpx;height:28rpx;"></view>
+      <text>清空</text>
+    </view>
+  </view>
+
+  <view class="zm-empty" wx:if="{{loaded && !history.length}}">
+    <text>暂无浏览记录</text>
+  </view>
+
+  <view class="bh-list" wx:if="{{history.length}}">
+    <view
+      class="bh-card"
+      wx:for="{{history}}"
+      wx:key="id"
+      data-id="{{item.id}}"
+      bindtap="onGoToPost"
+    >
+      <view class="bh-card-left">
+        <text class="bh-card-title">{{item.nickname || '游客'}} 的帖子</text>
+        <text class="bh-card-content">{{item.content || '暂无内容'}}</text>
+        <text class="bh-card-time">{{item.visitedAtStr || item.create_time_str || ''}}</text>
+      </view>
+      <view class="zm-icon zm-icon-chevron-right zm-icon-muted" style="width:28rpx;height:28rpx;"></view>
+    </view>
+  </view>
+</view>

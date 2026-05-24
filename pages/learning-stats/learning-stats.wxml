@@ -1,0 +1,94 @@
+<view class="stats-page">
+
+  <!-- 概览卡片 -->
+  <view class="stats-overview">
+    <view class="stats-hero">
+      <text class="stats-hero-num">{{catalogTotal}}</text>
+      <text class="stats-hero-label">词条总数</text>
+    </view>
+    <view class="stats-row-top">
+      <view class="stats-mini">
+        <text class="stats-mini-num">{{inReview}}</text>
+        <text class="stats-mini-label">复习队列</text>
+      </view>
+      <view class="stats-mini">
+        <text class="stats-mini-num">{{dueToday}}</text>
+        <text class="stats-mini-label">今日待复习</text>
+      </view>
+      <view class="stats-mini">
+        <text class="stats-mini-num">{{completedToday}}</text>
+        <text class="stats-mini-label">今日已完成</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 掌握度分布 -->
+  <view class="zm-section-title">
+    <text class="zm-section-title-text">掌握度分布</text>
+  </view>
+
+  <view class="mastery-grid">
+    <view class="mastery-card mastery-new">
+      <text class="mastery-num">{{masteryNew}}</text>
+      <text class="mastery-label">新词</text>
+      <text class="mastery-hint">0 次复习</text>
+    </view>
+    <view class="mastery-card mastery-learning">
+      <text class="mastery-num">{{masteryLearning}}</text>
+      <text class="mastery-label">学习中</text>
+      <text class="mastery-hint">1-2 次</text>
+    </view>
+    <view class="mastery-card mastery-proficient">
+      <text class="mastery-num">{{masteryProficient}}</text>
+      <text class="mastery-label">已熟练</text>
+      <text class="mastery-hint">3-5 次</text>
+    </view>
+    <view class="mastery-card mastery-mastered">
+      <text class="mastery-num">{{masteryMastered}}</text>
+      <text class="mastery-label">已掌握</text>
+      <text class="mastery-hint">6+ 次</text>
+    </view>
+  </view>
+
+  <!-- 进度条 -->
+  <view class="mastery-bar-wrap">
+    <view class="mastery-bar">
+      <view class="mastery-bar-seg mastery-bar-new" wx:if="{{masteryNew > 0}}" style="flex: {{masteryNew}}"></view>
+      <view class="mastery-bar-seg mastery-bar-learning" wx:if="{{masteryLearning > 0}}" style="flex: {{masteryLearning}}"></view>
+      <view class="mastery-bar-seg mastery-bar-proficient" wx:if="{{masteryProficient > 0}}" style="flex: {{masteryProficient}}"></view>
+      <view class="mastery-bar-seg mastery-bar-mastered" wx:if="{{masteryMastered > 0}}" style="flex: {{masteryMastered}}"></view>
+    </view>
+    <view class="mastery-bar-legend">
+      <view class="legend-dot legend-new"></view><text class="legend-text">新词</text>
+      <view class="legend-dot legend-learning"></view><text class="legend-text">学习</text>
+      <view class="legend-dot legend-proficient"></view><text class="legend-text">熟练</text>
+      <view class="legend-dot legend-mastered"></view><text class="legend-text">掌握</text>
+    </view>
+  </view>
+
+  <!-- 复习队列预览 -->
+  <view class="zm-section-title">
+    <text class="zm-section-title-text">待复习词条</text>
+  </view>
+
+  <view class="queue-list">
+    <view class="queue-item" wx:for="{{reviewQueuePreview}}" wx:key="wordKey">
+      <view class="queue-word">
+        <text class="queue-word-title">{{item.title || item.wordKey}}</text>
+        <text class="queue-word-def">{{item.definition}}</text>
+      </view>
+      <view class="queue-meta">
+        <text class="queue-review-count">复习 {{item.reviewCount || 0}} 次</text>
+        <view class="zm-icon zm-icon-chevron-right zm-icon-muted queue-arrow"></view>
+      </view>
+    </view>
+    <view class="queue-empty" wx:if="{{reviewQueuePreview.length === 0}}">
+      <text>暂无复习词条，去识别页面添加吧</text>
+    </view>
+  </view>
+
+  <view class="stats-cta" wx:if="{{dueToday > 0}}">
+    <button class="zm-btn-primary" bindtap="onGoToReview">去复习（{{dueToday}} 个待复习）</button>
+  </view>
+
+</view>

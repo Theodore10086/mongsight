@@ -1,0 +1,132 @@
+<view class="review-page">
+  <view class="review-hero">
+    <image class="review-hero-image" src="{{reviewHeroImage}}" mode="aspectFill"></image>
+    <view class="review-hero-overlay"></view>
+    <view class="review-hero-content">
+      <text class="review-hero-title">Review Library</text>
+      <text class="review-hero-subtitle">Turn every recognized word into a small study loop: understand it, review it, then practice writing.</text>
+      <view class="review-stats">
+        <view class="review-stat">
+          <text class="review-stat-num">{{dueCount}}</text>
+          <text class="review-stat-label">Due today</text>
+        </view>
+        <view class="review-stat-divider"></view>
+        <view class="review-stat">
+          <text class="review-stat-num">{{completedTodayCount}}</text>
+          <text class="review-stat-label">Done today</text>
+        </view>
+        <view class="review-stat-divider"></view>
+        <view class="review-stat">
+          <text class="review-stat-num">{{totalCount}}</text>
+          <text class="review-stat-label">All words</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="review-facts-card">
+    <text class="review-section-title">Archive Highlights</text>
+    <view class="review-facts-grid">
+      <view class="review-fact-chip" wx:for="{{datasetFacts}}" wx:key="label">
+        <text class="review-fact-value">{{item.value}}</text>
+        <text class="review-fact-label">{{item.label}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="plan-card" wx:if="{{recommendedWord}}">
+    <view class="plan-card-header">
+      <view>
+        <text class="plan-card-title">Today's Plan</text>
+        <text class="plan-card-subtitle">Start with the word that is due, then jump into writing practice.</text>
+      </view>
+      <text class="plan-card-tag">{{recommendedWord.dueText}}</text>
+    </view>
+    <view class="plan-word">
+      <text class="plan-word-title">{{recommendedWord.chinese}}</text>
+      <text class="plan-word-subtitle">{{recommendedWord.transliteration}}</text>
+    </view>
+    <text class="plan-word-text">{{recommendedWord.definition}}</text>
+    <view class="plan-actions">
+      <button class="review-secondary-btn" data-word-key="{{recommendedWord.wordKey}}" bindtap="onGoToWriting">Practice writing</button>
+      <button class="review-primary-btn" data-word-key="{{recommendedWord.wordKey}}" bindtap="onMarkReviewed">Mark reviewed</button>
+    </view>
+  </view>
+
+  <view class="review-filter-bar" wx:if="{{reviewList.length}}">
+    <view class="review-filter-chip {{filter === 'all' ? 'active' : ''}}" data-filter="all" bindtap="onChangeFilter">All</view>
+    <view class="review-filter-chip {{filter === 'due' ? 'active' : ''}}" data-filter="due" bindtap="onChangeFilter">Due today</view>
+    <view class="review-filter-chip {{filter === 'done' ? 'active' : ''}}" data-filter="done" bindtap="onChangeFilter">Done today</view>
+  </view>
+
+  <view class="knowledge-panel">
+    <view class="knowledge-panel-header">
+      <view>
+        <text class="review-section-title">From Archive to Learning</text>
+        <text class="knowledge-panel-subtitle">These are the pieces of knowledge pulled from `D:\archive` and turned into study hints.</text>
+      </view>
+    </view>
+    <image class="knowledge-chart-image" src="{{graphemeChartImage}}" mode="widthFix"></image>
+    <view class="knowledge-card-list">
+      <view class="knowledge-card" wx:for="{{knowledgeCards}}" wx:key="title">
+        <text class="knowledge-card-title">{{item.title}}</text>
+        <text class="knowledge-card-body">{{item.body}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="review-list" wx:if="{{starterWords.length}}">
+    <view class="review-card" wx:for="{{starterWords}}" wx:key="wordKey">
+      <view class="review-card-header">
+        <view>
+          <text class="review-card-title">{{item.chinese}}</text>
+          <text class="review-card-subtitle">{{item.transliteration}}</text>
+        </view>
+        <text class="review-card-tag">Starter pack</text>
+      </view>
+      <text class="review-card-mongolian">{{item.mongolian}}</text>
+      <text class="review-card-text">{{item.definition}}</text>
+      <text class="review-card-text muted">{{item.explanation}}</text>
+      <text class="review-card-tip">Grapheme code: {{item.graphemeCode}}</text>
+      <view class="review-card-actions">
+        <button class="review-secondary-btn" data-word-key="{{item.wordKey}}" bindtap="onGoToWriting">Practice writing</button>
+        <button class="review-primary-btn" data-word-key="{{item.wordKey}}" bindtap="onAddStarterWord">Add to review</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="review-empty" wx:if="{{!reviewList.length}}">
+    <text class="review-empty-title">No review words yet</text>
+    <text class="review-empty-text">Recognize a word first, then save it into the review library.</text>
+    <button class="review-primary-btn" bindtap="onGoToRecognition">Go recognize</button>
+  </view>
+
+  <view class="review-empty" wx:elif="{{!displayedList.length}}">
+    <text class="review-empty-title">Nothing in this filter</text>
+    <text class="review-empty-text">Switch filters or recognize a new word to keep building your review set.</text>
+  </view>
+
+  <view class="review-list" wx:else>
+    <view class="review-card" wx:for="{{displayedList}}" wx:key="wordKey">
+      <view class="review-card-header">
+        <view>
+          <text class="review-card-title">{{item.chinese}}</text>
+          <text class="review-card-subtitle">{{item.transliteration}}</text>
+        </view>
+        <text class="review-card-tag {{item.isDue ? 'due' : ''}}">{{item.reviewedToday ? 'Reviewed today' : item.dueText}}</text>
+      </view>
+
+      <text class="review-card-mongolian">{{item.mongolian}}</text>
+      <text class="review-card-text">{{item.definition}}</text>
+      <text class="review-card-text muted">{{item.explanation}}</text>
+      <text class="review-card-tip" wx:if="{{item.memoryTip}}">Memory cue: {{item.memoryTip}}</text>
+
+      <view class="review-card-actions">
+        <button class="review-secondary-btn" data-word-key="{{item.wordKey}}" bindtap="onGoToWriting">Practice writing</button>
+        <button class="review-primary-btn" data-word-key="{{item.wordKey}}" bindtap="onMarkReviewed">
+          {{item.reviewedToday ? 'Review again' : 'Mark reviewed'}}
+        </button>
+      </view>
+    </view>
+  </view>
+</view>
